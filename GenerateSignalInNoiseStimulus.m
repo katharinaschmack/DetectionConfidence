@@ -9,6 +9,7 @@ global BpodSystem %we need this for volume adjustment
 
 %% abbreviate variable names for better handling
 SamplingRate=StimulusSettings.SamplingRate;
+EmbedSignal=StimulusSettings.EmbedSignal;
 NoiseColor=StimulusSettings.NoiseColor;
 NoiseDuration=StimulusSettings.NoiseDuration;
 NoiseVolume=StimulusSettings.NoiseVolume;
@@ -58,58 +59,65 @@ noise=noise*att;
 
 
 %% generate signal
-%make signal
-t=linspace(0,SignalDuration,[SamplingRate*SignalDuration]); %time vector for chirp
-switch SignalForm
-    case 'LinearUpsweep'
-        signal=chirp(t,SignalMinFreq,SignalDuration,SignalMaxFreq);
-        freqvec=SignalMinFreq+(SignalMaxFreq-SignalMinFreq)*t;
-    case 'LinearDownsweep' %gaussian noise from mean 0 std .25
-        signal=chirp(t,SignalMaxFreq,SignalDuration,SignalMinFreq);
-        freqvec=SignalMaxFreq+(SignalMinFreq-SignalMaxFreq)*t;
-    case 'QuadraticConvex'
-        tnew=t-mean(t);
-        signal=chirp(tnew,SignalMinFreq,SignalDuration./2,SignalMaxFreq,'quadratic',[],'convex'); %make chirp
-        freqvec=SignalMinFreq+(SignalMaxFreq-SignalMinFreq)./tnew(1)*tnew.^2;
+if EmbedSignal
+    %make signal
+    t=linspace(0,SignalDuration,[SamplingRate*SignalDuration]); %time vector for chirp
+    switch SignalForm
+        case 'LinearUpsweep'
+            signal=chirp(t,SignalMinFreq,SignalDuration,SignalMaxFreq);
+            freqvec=SignalMinFreq+(SignalMaxFreq-SignalMinFreq)*t;
+        case 'LinearDownsweep' %gaussian noise from mean 0 std .25
+            signal=chirp(t,SignalMaxFreq,SignalDuration,SignalMinFreq);
+            freqvec=SignalMaxFreq+(SignalMinFreq-SignalMaxFreq)*t;
+        case 'QuadraticConvex'
+            tnew=t-mean(t);
+            signal=chirp(tnew,SignalMinFreq,SignalDuration./2,SignalMaxFreq,'quadratic',[],'convex'); %make chirp
+            freqvec=SignalMinFreq+(SignalMaxFreq-SignalMinFreq)./tnew(1)*tnew.^2;
+    end
+    
+    %adjust signal volume
+    SoundCal = BpodSystem.CalibrationTables.SoundCal;
+    if(isempty(SoundCal))
+        disp('Error: no sound calibration file specified');
+        return
+    end
+    toneAtt = polyval(SoundCal(1,1).Coefficient,freqvec);%Frequency dependent attenuation factor with less attenuation for higher frequency (based on calibration polynomial)
+    %toneAtt = [polyval(SoundCal(1,1).Coefficient,toneFreq)' polyval(SoundCal(1,2).Coefficient,toneFreq)']; in Torben's script
+    diffSPL = SignalVolume - [SoundCal.TargetSPL];
+    attFactor = sqrt(10.^(diffSPL./10)); %sqrt(10.^(diffSPL./10)) in Torben's script WHY sqrt?
+    att = toneAtt.*attFactor;%this is the value for multiplying signal scaled/clipped to [-1 to 1]
+    signal=signal.*att;
 end
-
-%adjust signal volume
-SoundCal = BpodSystem.CalibrationTables.SoundCal;
-if(isempty(SoundCal))
-    disp('Error: no sound calibration file specified');
-    return
-end
-toneAtt = polyval(SoundCal(1,1).Coefficient,freqvec);%Frequency dependent attenuation factor with less attenuation for higher frequency (based on calibration polynomial)
-%toneAtt = [polyval(SoundCal(1,1).Coefficient,toneFreq)' polyval(SoundCal(1,2).Coefficient,toneFreq)']; in Torben's script
-diffSPL = SignalVolume - [SoundCal.TargetSPL];
-attFactor = sqrt(10.^(diffSPL./10)); %sqrt(10.^(diffSPL./10)) in Torben's script WHY sqrt?
-att = toneAtt.*attFactor;%this is the value for multiplying signal scaled/clipped to [-1 to 1]
-signal=signal.*att;
 
 %% embed signal in noise
-maxLat=NoiseDuration-SignalDuration;%maximum latency
-lat=NoiseDuration;%initialize latency at a higher value than allowed
-loopCounter=0;
-if maxLat<0
-    warning('Cannot place signal in noise. Check noise and signal duration. Will produce pure noise stimulus...')
-    embed=false;
-    stimulus=noise;
-else
-    while lat>maxLat
-        lat=exprnd(SignalLatency);
-        if loopCounter>1000
-            warning('Cannot place signal in noise. Check noise and signal duration. Will produce pure noise stimulus...')
-            embed=false;
-            stimulus=noise;
-            break
+if EmbedSignal
+    maxLat=NoiseDuration-SignalDuration;%maximum latency
+    lat=NoiseDuration;%initialize latency at a higher value than allowed
+    loopCounter=0;
+    if maxLat<0
+        warning('Cannot place signal in noise. Check noise and signal duration. Will produce pure noise stimulus...')
+        embed=false;
+        stimulus=noise;
+    else
+        while lat>maxLat
+            lat=exprnd(SignalLatency);
+            if loopCounter>1000
+                warning('Cannot place signal in noise. Check noise and signal duration. Will produce pure noise stimulus...')
+                embed=false;
+                stimulus=noise;
+                break
+            end
+            stimulus=zeros(size(noise));
+            SignalStartSample=floor(lat*SamplingRate)+1;
+            SignalEndSample=SignalStartSample+length(signal)-1;
+            stimulus(SignalStartSample:SignalEndSample)=signal;
+            stimulus=stimulus+noise;
+            embed=true;
         end
-        stimulus=zeros(size(noise));
-        SignalStartSample=floor(lat*SamplingRate)+1;
-        SignalEndSample=SignalStartSample+length(signal)-1;
-        stimulus(SignalStartSample:SignalEndSample)=signal;
-        stimulus=stimulus+noise;
-        embed=true;
     end
+else
+    stimulus=noise;
+    embed=false;
 end
 
 end
