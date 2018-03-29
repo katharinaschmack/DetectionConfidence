@@ -1,4 +1,4 @@
-function [stimulus,embed]=GenerateSignalInNoiseStimulus(StimulusSettings)
+function [stimulus,embed,embedtime]=GenerateSignalInNoiseStimulus(StimulusSettings)
 %makes auditory noise and amplitude modulation envelope (to be implemented) with the following properties
 %NoiseSettings.Dur - Duration of Noise in seconds
 %NoiseSettings.SamplingRate - Sampling Rate of Sound Card
@@ -90,34 +90,26 @@ if EmbedSignal
 end
 
 %% embed signal in noise
-if EmbedSignal
+if EmbedSignal>0
     maxLat=NoiseDuration-SignalDuration;%maximum latency
-    lat=NoiseDuration;%initialize latency at a higher value than allowed
-    loopCounter=0;
+    %lat=NoiseDuration;%initialize latency at a higher value than allowed
+    %loopCounter=0;
     if maxLat<0
         warning('Cannot place signal in noise. Check noise and signal duration. Will produce pure noise stimulus...')
-        embed=false;
         stimulus=noise;
+        embed=nan;
     else
-        while lat>maxLat
-            lat=exprnd(SignalLatency);
-            if loopCounter>1000
-                warning('Cannot place signal in noise. Check noise and signal duration. Will produce pure noise stimulus...')
-                embed=false;
-                stimulus=noise;
-                break
-            end
-            stimulus=zeros(size(noise));
-            SignalStartSample=floor(lat*SamplingRate)+1;
-            SignalEndSample=SignalStartSample+length(signal)-1;
-            stimulus(SignalStartSample:SignalEndSample)=signal;
-            stimulus=stimulus+noise;
-            embed=true;
-        end
+        lat=min( [exprnd(SignalLatency) maxLat] );        
+        stimulus=zeros(size(noise));
+        SignalStartSample=floor(lat*SamplingRate)+1;
+        SignalEndSample=SignalStartSample+length(signal)-1;
+        stimulus(SignalStartSample:SignalEndSample)=signal;
+        stimulus=stimulus+noise;
+        embed=lat;
     end
 else
     stimulus=noise;
-    embed=false;
+    embed=nan;
 end
 
 end
