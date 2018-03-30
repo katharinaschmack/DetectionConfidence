@@ -1,4 +1,4 @@
-function [stimulus,embed]=GenerateSignalInNoiseStimulus(StimulusSettings)
+function [stimulus,embed,embedtime]=GenerateSignalInNoiseStimulus(StimulusSettings)
 %makes auditory noise and amplitude modulation envelope (to be implemented) with the following properties
 %NoiseSettings.Dur - Duration of Noise in seconds
 %NoiseSettings.SamplingRate - Sampling Rate of Sound Card
@@ -30,6 +30,14 @@ switch NoiseColor
         noise = .25 * randn(1, samplenum);%make white gausian noise and clip to [-1 1]
         noise(noise<-1)=-1;
         noise(noise>1)=1;
+    case 'WhiteGaussianModulated' %gaussian noise from mean 0 std .25
+        noise = .25 * randn(1, samplenum);%make white gausian noise and clip to [-1 1]
+        noise(noise<-1)=-1;
+        noise(noise>1)=1;
+        mod     e = .25 * randn(1, samplenum);%make white gausian noise and clip to [-1 1]
+        noise(noise<-1)=-1;
+        noise(noise>1)=1;
+
     case 'PinkGaussian'
         noise = f_alpha_gaussian (samplenum,.2^2,1)';%make colored gaussian noise with std .2 and 1/f^alpha
         %     case 'naturalistic' %https://www.ncbi.nlm.nih.gov/pubmed/18301738 "Efficient coding of naturalistic stimuli"
@@ -87,7 +95,6 @@ if EmbedSignal
     att = toneAtt.*attFactor;%this is the value for multiplying signal scaled/clipped to [-1 to 1]
     signal=signal.*att;
 end
-
 
 %% embed signal in noise at t with t being drawn from an exponential distribution with a mean such that signal is centered in noise (if you are not me and reading this: sorry for this umstaendlich Beschreibung; if you are not me and not German and reading this: sorry for writing in Germlish)
 if EmbedSignal
