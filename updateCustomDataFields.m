@@ -93,7 +93,7 @@ if ResponseCorrect==1
         WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_Fb(1,1) - ...
             BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GraceStart(1,1);
     elseif ~any(strcmp('LinCorrect_Fb',statesThisTrial)) %correct trials without reward: take end last Grace Period to include all grace periods (like in correct trials with reward)
-        WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GracePeriod(end,2) - ...
+        WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod(end,2) - ...
             BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GraceStart(1,1);
     end
     
@@ -102,7 +102,7 @@ elseif ResponseCorrect==0
         WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_Fb(1,1) - ...
             BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GraceStart(1,1);
     elseif ~any(strcmp('LinError_Fb',statesThisTrial)) %error trials without (mock) reward: take end last Grace Period to include all grace periods (like in correct trials with reward)
-        WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GracePeriod(end,2) - ...
+        WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod(end,2) - ...
             BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GraceStart(1,1);
     end
     
@@ -112,19 +112,19 @@ end
     
 %compute time animal spent in grace period during waiting time
 if ResponseCorrect==1
-    if any(strcmp('LinCorrect_GracePeriod',statesThisTrial))
-        GracePeriodDuration = sum(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GracePeriod(:,2) - ...
-            BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GracePeriod(:,1));
-        GracePeriodNumber = size(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GracePeriod,1);
+    if any(strcmp('LoutCorrect_GracePeriod',statesThisTrial))
+        GracePeriodDuration = sum(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod(:,2) - ...
+            BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod(:,1));
+        GracePeriodNumber = size(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod,1);
     else
         GracePeriodDuration = 0;
         GracePeriodNumber = 0;
     end
 elseif ResponseCorrect==0
-    if any(strcmp('LinError_GracePeriod',statesThisTrial))
-        GracePeriodDuration = sum(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GracePeriod(:,2) - ...
-            BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GracePeriod(:,1));
-        GracePeriodNumber = size(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GracePeriod,1);
+    if any(strcmp('LoutError_GracePeriod',statesThisTrial))
+        GracePeriodDuration = sum(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod(:,2) - ...
+            BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod(:,1));
+        GracePeriodNumber = size(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod,1);
     else
         GracePeriodDuration = 0;
         GracePeriodNumber = 0;
@@ -195,9 +195,9 @@ TaskParameters.GUI.ConfidenceWaitingTime = BpodSystem.Data.Custom.ConfidenceWait
 
 %update afterstimulusinterval
 if TaskParameters.GUI.AfterTrialIntervalJitter
-    BpodSystem.Data.Custom.AfterTrialInterval = min( [ exprnd(TaskParameters.GUI.AfterTrialInterval) 5*TaskParameters.GUI.AfterTrialInterval ]);
+    BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = min( [ exprnd(TaskParameters.GUI.AfterTrialInterval) 5*TaskParameters.GUI.AfterTrialInterval ]);
 else
-    BpodSystem.Data.Custom.AfterTrialInterval = TaskParameters.GUI.AfterTrialInterval;
+    BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = TaskParameters.GUI.AfterTrialInterval;
 end
 
 %update stimuli

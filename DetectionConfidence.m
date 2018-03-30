@@ -11,8 +11,8 @@ TaskParameters = BpodSystem.ProtocolSettings;
 if isempty(fieldnames(TaskParameters))
     %general
     TaskParameters.GUI.Ports_LMR = '123'; %Port IDs signal center noise
-    TaskParameters.GUI.AfterTrialInterval = 1; %DurAfterTrialIntervalon of after trial interval before next trial starts(s)
-    TaskParameters.GUI.AfterTrialIntervalJitter = false; %Exponential jitter for after trial interval
+    TaskParameters.GUI.AfterTrialInterval = .5; %DurAfterTrialIntervalon of after trial interval before next trial starts(s)
+    TaskParameters.GUI.AfterTrialIntervalJitter = true; %Exponential jitter for after trial interval
     TaskParameters.GUIMeta.AfterTrialIntervalJitter.Style = 'checkbox';
     TaskParameters.GUIPanels.General = {'Ports_LMR','AfterTrialInterval','AfterTrialIntervalJitter'};
     
