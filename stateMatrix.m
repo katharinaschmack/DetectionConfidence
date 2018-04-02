@@ -33,13 +33,7 @@ CorrectValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCorrect(iTr
 CenterValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCenter(iTrial), CenterPort);
 ErrorValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountError(iTrial), ErrorPort);
 
-% if TaskParameters.GUI.Jackpot == 3 % Decremental Jackpot reward
-%     JackpotFactor = max(2,10 - sum(BpodSystem.Data.Custom.Jackpot)); 
-% else 
-%     JackpotFactor = 2; % Fixed Jackpot reward
-% end
-% ErrorValveTimeJackpot  = JackpotFactor*GetValveTimes(BpodSystem.Data.Custom.RewardMagnitude(iTrial,1), ErrorPort);
-% CorrectValveTimeJackpot  = JackpotFactor*GetValveTimes(BpodSystem.Data.Custom.RewardMagnitude(iTrial,2), CorrectPort);
+ErrorPortLightIntensity = ceil(255* (rand >= BpodSystem.Data.Custom.LightGuidance(iTrial)));%set LED intensity to 0 on error port on some trials for training
 
 if TaskParameters.GUI.PlayStimulus == 1 %none
     StimStartOutput = {};
@@ -80,7 +74,7 @@ sma = AddState(sma, 'Name', 'Cin_Reward',...
 sma = AddState(sma, 'Name', 'wait_Lin',...
     'Timer', TaskParameters.GUI.ChoiceDeadline,...
     'StateChangeConditions', {CorrectPortIn, 'LinCorrect_GraceStart',ErrorPortIn, 'LinError_GraceStart','Tup','EndOfTrialStart'},...
-    'OutputActions', {strcat('PWM',num2str(CorrectPort)),255,strcat('PWM',num2str(ErrorPort)),255});
+    'OutputActions', {strcat('PWM',num2str(CorrectPort)),255,strcat('PWM',num2str(ErrorPort)),ErrorPortLightIntensity});
 %correct answer
 sma = AddState(sma, 'Name', 'LinCorrect_GraceStart',...
     'Timer', 0,...

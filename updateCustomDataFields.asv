@@ -48,7 +48,7 @@ end
 
 %compute time animal spent at center port after first entry (nan on trials without center port entry)
 if any(strcmp(CenterPortIn,eventsThisTrial)) && any(strcmp(CenterPortOut,eventsThisTrial))
-    Cin_Duration=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut]) - ...
+    Cin_Duration=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut '(1)']) - ...
         eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn '(1)']);
 else
     Cin_Duration=nan;
@@ -93,7 +93,7 @@ if ResponseCorrect==1
         WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_Fb(1,1) - ...
             BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GraceStart(1,1);
     elseif ~any(strcmp('LinCorrect_Fb',statesThisTrial)) %correct trials without reward: take end last Grace Period to include all grace periods (like in correct trials with reward)
-        WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GracePeriod(end,2) - ...
+        WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod(end,2) - ...
             BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GraceStart(1,1);
     end
     
@@ -102,7 +102,7 @@ elseif ResponseCorrect==0
         WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_Fb(1,1) - ...
             BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GraceStart(1,1);
     elseif ~any(strcmp('LinError_Fb',statesThisTrial)) %error trials without (mock) reward: take end last Grace Period to include all grace periods (like in correct trials with reward)
-        WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GracePeriod(end,2) - ...
+        WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod(end,2) - ...
             BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GraceStart(1,1);
     end
     
@@ -112,19 +112,19 @@ end
     
 %compute time animal spent in grace period during waiting time
 if ResponseCorrect==1
-    if any(strcmp('LinCorrect_GracePeriod',statesThisTrial))
-        GracePeriodDuration = sum(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GracePeriod(:,2) - ...
-            BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GracePeriod(:,1));
-        GracePeriodNumber = size(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GracePeriod,1);
+    if any(strcmp('LoutCorrect_GracePeriod',statesThisTrial))
+        GracePeriodDuration = sum(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod(:,2) - ...
+            BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod(:,1));
+        GracePeriodNumber = size(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod,1);
     else
         GracePeriodDuration = 0;
         GracePeriodNumber = 0;
     end
 elseif ResponseCorrect==0
-    if any(strcmp('LinError_GracePeriod',statesThisTrial))
-        GracePeriodDuration = sum(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GracePeriod(:,2) - ...
-            BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GracePeriod(:,1));
-        GracePeriodNumber = size(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GracePeriod,1);
+    if any(strcmp('LoutError_GracePeriod',statesThisTrial))
+        GracePeriodDuration = sum(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod(:,2) - ...
+            BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod(:,1));
+        GracePeriodNumber = size(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod,1);
     else
         GracePeriodDuration = 0;
         GracePeriodNumber = 0;
@@ -138,17 +138,21 @@ end
 if any(strcmp('Cin_Reward',statesThisTrial))
    RewardDuration = diff(BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Reward(1,:));%
    RewardReceivedCenter = (RewardDuration/CenterValveTime) * BpodSystem.Data.Custom.RewardAmountCenter(iTrial);
+else 
+    RewardReceivedCenter=0;
 end
 if any(strcmp('LinCorrect_Fb',statesThisTrial))
    RewardDuration = diff(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_Fb(1,:));%
    RewardReceivedCorrect = (RewardDuration/CorrectValveTime) * BpodSystem.Data.Custom.RewardAmountCorrect(iTrial);
+else
+    RewardReceivedCorrect = 0;
 end
 if any(strcmp('LinError_Fb',statesThisTrial))
    RewardDuration = diff(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_Fb(1,:));%
    RewardReceivedError = (RewardDuration/ErrorValveTime) * BpodSystem.Data.Custom.RewardAmountError(iTrial);
+else
+    RewardReceivedError = 0;
 end
-
-
 
 %assemble output
 BpodSystem.Data.Custom.Cout_Early(iTrial) = Cout_Early;
@@ -181,7 +185,7 @@ if TaskParameters.GUI.AutoRampStimDuration
     end
     %clip to max and min StimDuration
     BpodSystem.Data.Custom.StimDuration(BpodSystem.Data.Custom.StimDuration>TaskParameters.GUI.MaxStimDuration)=TaskParameters.GUI.MaxStimDuration;
-    BpodSystem.Data.Custom.StimDuration(BpodSystem.Data.Custom.StimDuration>TaskParameters.GUI.MinStimDuration)=TaskParameters.GUI.MinStimDuration;
+    BpodSystem.Data.Custom.StimDuration(BpodSystem.Data.Custom.StimDuration<TaskParameters.GUI.MinStimDuration)=TaskParameters.GUI.MinStimDuration;
 end
 TaskParameters.GUI.StimDuration = BpodSystem.Data.Custom.StimDuration(iTrial+1); % update StimDuration in GUI
 
@@ -191,9 +195,9 @@ TaskParameters.GUI.ConfidenceWaitingTime = BpodSystem.Data.Custom.ConfidenceWait
 
 %update afterstimulusinterval
 if TaskParameters.GUI.AfterTrialIntervalJitter
-    BpodSystem.Data.Custom.AfterTrialInterval = min( [ exprnd(TaskParameters.GUI.AfterTrialInterval) 5*TaskParameters.GUI.AfterTrialInterval ]);
+    BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = min( [ exprnd(TaskParameters.GUI.AfterTrialInterval) 5*TaskParameters.GUI.AfterTrialInterval ]);
 else
-    BpodSystem.Data.Custom.AfterTrialInterval = TaskParameters.GUI.AfterTrialInterval;
+    BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = TaskParameters.GUI.AfterTrialInterval;
 end
 
 %update stimuli
@@ -213,8 +217,9 @@ if TaskParameters.GUI.PlayStimulus>1
     end
 
     %put trial-by-trial varying settings into BpodSystem.Data.Custom
-    %%UDPATE HERE IF SYSTEM GETS SLOW (maybe it's too much to sa
-    [BpodSystem.Data.Custom.Stimulus(iTrial+1) BpodSystem.Data.Custom.SignalEmbedTime(iTrial+1)] = GenerateSignalInNoiseStimulus(StimulusSettings);
+    %%UDPATE HERE IF SYSTEM GETS SLOW (maybe it's too much to save all the
+    %%stimuli)
+    [BpodSystem.Data.Custom.Stimulus{iTrial+1} BpodSystem.Data.Custom.SignalEmbedTime(iTrial+1)] = GenerateSignalInNoiseStimulus(StimulusSettings);
     BpodSystem.Data.Custom.EmbedSignal(iTrial+1) = StimulusSettings.EmbedSignal;
     BpodSystem.Data.Custom.SignalDuration(iTrial+1) = StimulusSettings.SignalDuration;
     BpodSystem.Data.Custom.SignalVolume(iTrial+1) = StimulusSettings.SignalVolume;
@@ -225,57 +230,39 @@ if TaskParameters.GUI.PlayStimulus>1
         PsychToolboxSoundServer('init');
         BpodSystem.Data.Custom.PsychtoolboxStartup=true;
     end
-    PsychToolboxSoundServer('Load', 1, BpodSystem.Data.Custom.Stimulus);%load noise to slave 1
+    PsychToolboxSoundServer('Load', 1, BpodSystem.Data.Custom.Stimulus{iTrial+1});%load noise to slave 1
 end
 
-if TaskParameters.GUI.PlayStimulus > 1
-    if TaskParameters.GUI.PlayStimulus == 2
-        StimulusSettings.EmbedSignal=0;%if 0 only noise will be played
-        StimulusSettings.NoiseDuration=BpodSystem.Data.Custom.StimDuration(iTrial+1);
-    elseif TaskParameters.GUI.PlayStimulus == 3
-        StimulusSettings.EmbedSignal=(fix(rand*2));
-        StimulusSettings.NoiseDuration=BpodSystem.Data.Custom.StimDuration(iTrial+1);
-    elseif TaskParameters.GUI.PlayStimulus == 4
-        StimulusSettings.EmbedSignal=(fix(rand*5))/4;%for 5 signal intensities
-        StimulusSettings.NoiseDuration=BpodSystem.Data.Custom.StimDuration(iTrial+1);
-    end
-    
-    %put trial-by-trial varying settings into BpodSystem.Data.Custom
-    [BpodSystem.Data.Custom.Stimulus BpodSystem.Data.Custom.SignalEmbedTime] = GenerateSignalInNoiseStimulus(StimulusSettings);
-    BpodSystem.Data.Custom.SignalVolume = StimulusSettings.SignalVolume;
-    BpodSystem.Data.Custom.SignalDuration = StimulusSettings.SignalDuration;
-    BpodSystem.Data.Custom.EmbedSignal = StimulusSettings.EmbedSignal;
-    
-    StimulusSettings.SignalVolume=40;%in dB %ADAPT HERE FOR PRIOR PERFORMANCE
-    StimulusSettings.SignalDuration=min([0.1 StimulusSettings.NoiseDuration]);%plays signal of 0.1 s or sample time duration (if shorter)
-    StimulusSettings.SignalLatency=(StimulusSettings.NoiseDuration-StimulusSettings.SignalDuration)./2;%mean of exponential distribution from which latency is drawn (exponential to keep the hazard ratio flat)
-    
-    %save parameters of interest
-    [BpodSystem.Data.Custom.Stimulus BpodSystem.Data.Custom.SignalEmbedTime(iTrial+1)] = GenerateSignalInNoiseStimulus(StimulusSettings);
-    BpodSystem.Data.Costum.SignalVolume(iTrial+1) = StimulusSettings.SignalVolume;
-    BpodSystem.Data.Costum.SignalDuration(iTrial+1) = StimulusSettings.SignalDuration;
-    BpodSystem.Data.Costum.SignalDifficulty(iTrial+1) = StimulusSettings.EmbedSignal;
-    
-    %load new stimulus
-    if  ~BpodSystem.Data.Custom.PsychtoolboxStartup
-        PsychToolboxSoundServer('init');
-        BpodSystem.Data.Custom.PsychtoolboxStartup=true;
-    end
-    PsychToolboxSoundServer('Load', 1, BpodSystem.Data.Custom.Stimulus);%load stimulus to slave 1
-end
-
-%reward depletion
+%reward depletion %UPDATE HERE IF BIAS CORRECTION IS NEEDED
 BpodSystem.Data.Custom.RewardAmountCorrect(iTrial+1)=BpodSystem.Data.Custom.RewardAmountCorrect(iTrial);
 BpodSystem.Data.Custom.RewardAmountError(iTrial+1)=BpodSystem.Data.Custom.RewardAmountError(iTrial);
 BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=BpodSystem.Data.Custom.RewardAmountCenter(iTrial);
 
-%send bpod status to server
+%light guidance updating (later used to determine whether error port LED will be switched
+%off or switched on on next trial
+if TaskParameters.GUI.AutoRampLightGuidance
+HistoryLight = 50;
+CritLight = 0.8;
+ConsiderTrialsLight = max(1,iTrial-History):1:iTrial;
+ConsiderTrialsLight(isnan(BpodSystem.Data.Custom.Cin_Duration(ConsiderTrialsLight)))=[];%only use trials with central port entry
+ConsiderPerformance = sum(BpodSystem.Data.Custom.ResponseCorrect(ConsiderTrialsLight))/length(ConsiderTrialsLight);
+
+
+BpodSystem.Data.Custom.
+    if  ConsiderPerformance > Crit && ResponseCorrect %if success over all trials AND on last trial: decrease percentage of light guidance
+            BpodSystem.Data.Custom.LightGuidance(iTrial+1) = BpodSystem.Data.Custom.LightGuidance(iTrial) - TaskParameters.GUI.LightGuidanceRampDown; % StimDuration increased
+    elseif ConsiderPerformance < Crit/2 && ~ResponseCorrect  %if failure over all trials (<crit/2) AND on last trial: increase
+            BpodSystem.Data.Custom.LightGuidance(iTrial+1) = BpodSystem.Data.Custom.LightGuidance(iTrial) - TaskParameters.GUI.LightGuidanceRampDown; % StimDuration increased
+    else %if any other case 
+        BpodSystem.Data.Custom.StimDuration(iTrial+1) = BpodSystem.Data.Custom.StimDuration(iTrial); 
+    end
+    %clip to max and min StimDuration
+    BpodSystem.Data.Custom.StimDuration(BpodSystem.Data.Custom.StimDuration>TaskParameters.GUI.MaxStimDuration)=TaskParameters.GUI.MaxStimDuration;
+    BpodSystem.Data.Custom.StimDuration(BpodSystem.Data.Custom.StimDuration<TaskParameters.GUI.MinStimDuration)=TaskParameters.GUI.MinStimDuration;
+end
+%%send bpod status to server
 try
 script = 'receivebpodstatus.php';
-%create a common "outcome" vector
-outcome = BpodSystem.Data.Custom.ChoiceLeft(1:iTrial); %1=left, 0=right
-outcome(BpodSystem.Data.Custom.EarlyWithdrawal(1:iTrial))=3; %early withdrawal=3
-outcome(BpodSystem.Data.Custom.Jackpot(1:iTrial))=4;%jackpot=4
 SendTrialStatusToServer(script,BpodSystem.Data.Custom.Rig,outcome,BpodSystem.Data.Custom.Subject,BpodSystem.CurrentProtocolName);
 catch
 end

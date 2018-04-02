@@ -170,7 +170,7 @@ BpodSystem.Data.Custom.RewardReceivedError(iTrial) = RewardReceivedError;
 
 %% update times & stimulus
 %update stimulus duration     
-if TaskParameters.GUI.AutoRampStimDuration
+if TaskParameters.GUI.AutoRampStimDuration && iTrial > 10 %start after 10th trial
     History = 50; % Rat: History = 50
     Crit = 0.8; % Rat: Crit = 0.8
     ConsiderTrials = max(1,iTrial-History):1:iTrial;
@@ -186,6 +186,8 @@ if TaskParameters.GUI.AutoRampStimDuration
     %clip to max and min StimDuration
     BpodSystem.Data.Custom.StimDuration(BpodSystem.Data.Custom.StimDuration>TaskParameters.GUI.MaxStimDuration)=TaskParameters.GUI.MaxStimDuration;
     BpodSystem.Data.Custom.StimDuration(BpodSystem.Data.Custom.StimDuration<TaskParameters.GUI.MinStimDuration)=TaskParameters.GUI.MinStimDuration;
+else 
+    BpodSystem.Data.Custom.StimDuration(iTrial+1) = BpodSystem.Data.Custom.StimDuration(iTrial); 
 end
 TaskParameters.GUI.StimDuration = BpodSystem.Data.Custom.StimDuration(iTrial+1); % update StimDuration in GUI
 
@@ -233,10 +235,34 @@ if TaskParameters.GUI.PlayStimulus>1
     PsychToolboxSoundServer('Load', 1, BpodSystem.Data.Custom.Stimulus{iTrial+1});%load noise to slave 1
 end
 
-%reward depletion
+%reward depletion %UPDATE HERE IF BIAS CORRECTION IS NEEDED
 BpodSystem.Data.Custom.RewardAmountCorrect(iTrial+1)=BpodSystem.Data.Custom.RewardAmountCorrect(iTrial);
 BpodSystem.Data.Custom.RewardAmountError(iTrial+1)=BpodSystem.Data.Custom.RewardAmountError(iTrial);
 BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=BpodSystem.Data.Custom.RewardAmountCenter(iTrial);
+
+%light guidance updating (later used to determine whether error port LED will be switched
+%off or switched on on next trial
+if TaskParameters.GUI.AutoRampLightGuidance && iTrial > 10 %start after 10th trial
+    HistoryLight = 50;
+    CritLight = 0.8;
+    ConsiderTrialsLight = max(1,iTrial-HistoryLight):1:iTrial;
+    ConsiderTrialsLight(isnan(BpodSystem.Data.Custom.Cin_Duration(ConsiderTrialsLight)))=[];%only use trials with central port entry
+    ConsiderPerformance = sum(BpodSystem.Data.Custom.ResponseCorrect(ConsiderTrialsLight))/length(ConsiderTrialsLight);
+    
+    if  ConsiderPerformance > CritLight && ResponseCorrect %if success over all trials AND on last trial: decrease percentage of light guidance
+        BpodSystem.Data.Custom.LightGuidance(iTrial+1) = BpodSystem.Data.Custom.LightGuidance(iTrial) - TaskParameters.GUI.LightGuidanceRampDown;
+    elseif ConsiderPerformance < CritLight/2 && ~ResponseCorrect  %if failure over all trials (<crit/2) AND on last trial: increase percentage of light guidance
+        BpodSystem.Data.Custom.LightGuidance(iTrial+1) = BpodSystem.Data.Custom.LightGuidance(iTrial) + TaskParameters.GUI.LightGuidanceRampUp;
+    else %if any other case do not chance
+        BpodSystem.Data.Custom.LightGuidance(iTrial+1) = BpodSystem.Data.Custom.LightGuidance(iTrial);
+    end
+    %clip to 0 and 1
+    BpodSystem.Data.Custom.LightGuidance(BpodSystem.Data.Custom.LightGuidance>1)=1;
+    BpodSystem.Data.Custom.LightGuidance(BpodSystem.Data.Custom.LightGuidance<0)=0;
+else
+            BpodSystem.Data.Custom.LightGuidance(iTrial+1) = BpodSystem.Data.Custom.LightGuidance(iTrial);
+end
+TaskParameters.GUI.LightGuidance = BpodSystem.Data.Custom.LightGuidance(iTrial+1); % update StimDuration in GUI
 
 %%send bpod status to server
 try

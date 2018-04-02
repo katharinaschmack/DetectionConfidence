@@ -19,8 +19,7 @@ if isempty(fieldnames(TaskParameters))
     %"stimulus
     TaskParameters.GUI.PlayStimulus = 3; %stimulus to be played at center port
     TaskParameters.GUIMeta.PlayStimulus.Style = 'popupmenu';
-    TaskParameters.GUIMeta.PlayStimulus.String = {'None','Noise','Noise+Signal (easy)','Noise+Signal (variable)'};%
-    %TaskParameters.GUI.LightIntensity = 1; 
+    TaskParameters.GUIMeta.PlayStimulus.String = {'None','Noise','Noise+Signal (easy)','Noise+Signal (variable)'};% 
     TaskParameters.GUI.MinStimDuration = 0.05;%minimum sample time required for reward will not decrease further (0.05 in Marion's script)
     TaskParameters.GUI.StimDuration = TaskParameters.GUI.MinStimDuration;
     TaskParameters.GUIMeta.StimDuration.Style = 'text';
@@ -40,13 +39,18 @@ if isempty(fieldnames(TaskParameters))
     
     %Reward & Punishment
     TaskParameters.GUI.ChoiceDeadline = 5; %Maximal Interval for choice after stimulus presentAfterTrialIntervalon
-    TaskParameters.GUI.RewardAmountCorrect = 4;%reward amount lateral ports (marion 5)
-    TaskParameters.GUI.RewardAmountError = 2;%reward amount lateral ports (marion 5)
+    TaskParameters.GUI.RewardAmountCorrect = 2;%reward amount lateral ports (marion 5)
+    TaskParameters.GUI.RewardAmountError = 0;%reward amount lateral ports (marion 5)
     TaskParameters.GUI.GracePeriod = 0;%grace period
     %TaskParameters.GUI.ConfidenceWaitingTime = 1;
     TaskParameters.GUI.ErrorTimeout = 1;%time out for errors 
-    TaskParameters.GUIPanels.Response = {'ChoiceDeadline','RewardAmountCorrect','RewardAmountError','GracePeriod','ErrorTimeout'};%,'Deplete','DepleteRate','Jackpot','JackpotMin','JackpotTime'};
-   
+    TaskParameters.GUI.LightGuidance = 1;%proportion of trials with light guidance to correct port    TaskParameters.GUI.AutoRampLightGuidance = false; %for training    
+    TaskParameters.GUI.AutoRampLightGuidance = true;
+    TaskParameters.GUIMeta.AutoRampLightGuidance.Style = 'checkbox';
+    TaskParameters.GUI.LightGuidanceRampDown = .1; %for training
+    TaskParameters.GUI.LightGuidanceRampUp = .1; %for training
+    TaskParameters.GUIPanels.Reward = {'ChoiceDeadline','RewardAmountCorrect','RewardAmountError','GracePeriod','ErrorTimeout','LightGuidance','AutoRampLightGuidance','LightGuidanceRampDown','LightGuidanceRampUp',};%,'Deplete','DepleteRate','Jackpot','JackpotMin','JackpotTime'};
+
     TaskParameters.GUI = orderfields(TaskParameters.GUI);
     TaskParameters.Figures.OutcomePlot.Position = [200, 200, 1000, 400];
 end
@@ -63,7 +67,7 @@ end
 BpodSystem.Data.Custom.RewardAmountCorrect(1) = TaskParameters.GUI.RewardAmountCorrect;
 BpodSystem.Data.Custom.RewardAmountCenter(1) = TaskParameters.GUI.RewardAmountCenter;
 BpodSystem.Data.Custom.RewardAmountError(1) = TaskParameters.GUI.RewardAmountError;
-%BpodSystem.Data.Custom.LightIntensity = floor(255 * TaskParameters.GUI.LightIntensity);
+BpodSystem.Data.Custom.LightGuidance = TaskParameters.GUI.LightGuidance;
 
 %server data
 [~,BpodSystem.Data.Custom.Rig] = system('hostname');
