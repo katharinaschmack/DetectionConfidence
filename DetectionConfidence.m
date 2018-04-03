@@ -46,11 +46,11 @@ if isempty(fieldnames(TaskParameters))
     %TaskParameters.GUI.ConfidenceWaitingTime = 1;
     TaskParameters.GUI.ErrorTimeout = 1;%time out for errors 
     TaskParameters.GUI.MaxLightGuidance = 1;%proportion of trials with light guidance to correct port    TaskParameters.GUI.AutoRampLightGuidance = false; %for training    
-    TaskParameters.GUI.MinLightGuidance = 1;%proportion of trials with light guidance to correct port    TaskParameters.GUI.AutoRampLightGuidance = false; %for training
+    TaskParameters.GUI.MinLightGuidance = 0;%proportion of trials with light guidance to correct port    TaskParameters.GUI.AutoRampLightGuidance = false; %for training
     TaskParameters.GUI.LightGuidance = TaskParameters.GUI.MaxLightGuidance;
     TaskParameters.GUIMeta.LightGuidance.Style = 'text';
 
-    TaskParameters.GUI.AutoRampLightGuidance = true;
+    TaskParameters.GUI.AutoRampLightGuidance = false;
     TaskParameters.GUIMeta.AutoRampLightGuidance.Style = 'checkbox';
     TaskParameters.GUI.LightGuidanceRampDown = .1; %for training
     TaskParameters.GUI.LightGuidanceRampUp = .1; %for training
@@ -67,9 +67,18 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.ShowFix.Style = 'checkbox';
     TaskParameters.GUI.ShowST = 1;
     TaskParameters.GUIMeta.ShowST.Style = 'checkbox';
+    TaskParameters.GUI.ShowFix = 1;
+    TaskParameters.GUIMeta.ShowFix.Style = 'checkbox';
+    TaskParameters.GUI.ShowST = 1;
+    TaskParameters.GUIMeta.ShowST.Style = 'checkbox';
     TaskParameters.GUI.ShowFeedback = 1;
     TaskParameters.GUIMeta.ShowFeedback.Style = 'checkbox';
-    TaskParameters.GUIPanels.ShowPlots = {'ShowPsycAud','ShowVevaiometric','ShowTrialRate','ShowFix','ShowST','ShowFeedback'};
+    TaskParameters.GUI.ShowLightGuidance = 1;
+    TaskParameters.GUIMeta.ShowLightGuidance.Style = 'checkbox';
+    TaskParameters.GUI.ShowStimDuration = 1;
+    TaskParameters.GUIMeta.ShowStimDuration.Style = 'checkbox';
+
+    TaskParameters.GUIPanels.ShowPlots = {'ShowPsycAud','ShowVevaiometric','ShowTrialRate','ShowFix','ShowST','ShowFeedback','ShowLightGuidance','ShowStimDuration'};
     
     TaskParameters.GUI = orderfields(TaskParameters.GUI);
     TaskParameters.Figures.OutcomePlot.Position = [200, 200, 1000, 400];
@@ -81,6 +90,8 @@ BpodSystem.Data.Custom.PreStimDuration = TaskParameters.GUI.PreStimDuration;
 BpodSystem.Data.Custom.StimDuration = TaskParameters.GUI.StimDuration;
 
 BpodSystem.Data.Custom.ConfidenceWaitingTime = 0;%update here for confidence report training
+BpodSystem.Data.Custom.CatchTrial = false;
+
 if TaskParameters.GUI.AfterTrialIntervalJitter
     BpodSystem.Data.Custom.AfterTrialInterval = min( [ exprnd(TaskParameters.GUI.AfterTrialInterval) 5*TaskParameters.GUI.AfterTrialInterval ]);
 else
@@ -93,6 +104,7 @@ BpodSystem.Data.Custom.RewardAmountError(1) = TaskParameters.GUI.RewardAmountErr
 
 BpodSystem.Data.Custom.LightGuidance = TaskParameters.GUI.MaxLightGuidance;
 BpodSystem.Data.Custom.ErrorPortLightIntensity = ceil(255* (rand >= TaskParameters.GUI.LightGuidance));%set LED intensity to 0 on error port on some trials for training
+
 
 %server data
 [~,BpodSystem.Data.Custom.Rig] = system('hostname');
@@ -174,6 +186,9 @@ BpodSystem.GUIHandles.OutcomePlot.HandleFix = axes('Position',        [4*.05 + 3
 BpodSystem.GUIHandles.OutcomePlot.HandleST = axes('Position',         [5*.05 + 4*.08   .6  .1  .3], 'Visible', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleFeedback = axes('Position',   [6*.05 + 5*.08   .6  .1  .3], 'Visible', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleVevaiometric = axes('Position',   [7*.05 + 6*.08   .6  .1  .3], 'Visible', 'off');
+BpodSystem.GUIHandles.OutcomePlot.HandleLightGuidance = axes('Position',   [8*.05 + 7*.08   .6  .1  .3], 'Visible', 'off');
+BpodSystem.GUIHandles.OutcomePlot.HandleStimDuration = axes('Position',   [9*.05 + 8*.08   .6  .1  .3], 'Visible', 'off');
+
 MainPlot(BpodSystem.GUIHandles.OutcomePlot,'init');
 %BpodSystem.ProtocolFigures.ParameterGUI.Position = TaskParameters.Figures.ParameterGUI.Position;
 

@@ -49,20 +49,35 @@ if any(strcmp('Cout_Early',statesThisTrial))
         BrokeFixation = false;
         EarlyWithdrawal = true;
     end
-    Cout_Early = true;
+    CoutEarly = true;
 else
-    Cout_Early = false;
+    CoutEarly = false;
     BrokeFixation = false;
     EarlyWithdrawal = false;
 end
 
 %compute time animal spent at center port after first entry (nan on trials without center port entry)
 if any(strcmp(CenterPortIn,eventsThisTrial)) && any(strcmp(CenterPortOut,eventsThisTrial))
-    Cin_Duration=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut '(1)']) - ...
+    CinDuration=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut '(1)']) - ...
         eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn '(1)']);
 else
-    Cin_Duration=nan;
+    CinDuration=nan;
 end
+
+%compute time animal spent at center during prestimulus interval
+if any(strcmp('Cin_PreStim',statesThisTrial)) 
+    FixDur=BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_PreStim(1,2) - BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_PreStim(1,1);
+else
+    FixDur=nan;
+end
+
+%compute time animal spent at center during stimulus interval
+if any(strcmp('Cin_Stim',statesThisTrial)) 
+    ST=BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Stim(1,2) - BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Stim(1,1);
+else
+    ST=nan;
+end
+
 
 %mark whether animal gave correct or incorrect or no response (nan)
 if any(strcmp('LinCorrect_GraceStart',statesThisTrial))
@@ -102,8 +117,8 @@ end
 %determine whether animal withdraw before set confidence waiting time was
 %over (correct trials only) ADAPT HERE FOR CATCH TRIALS
 if any(strcmp('LinCorrect_PreFb',statesThisTrial))&&~any(strcmp('LinCorrect_Fb',statesThisTrial))
-    Lout_Early = true;
-else Lout_Early = false;
+    LoutEarly = true;
+else LoutEarly = false;
 end
 
 
@@ -154,6 +169,7 @@ else
     GracePeriodNumber = nan;
 end
 
+
 %compute rewards the animal got in this trial
 if any(strcmp('Cin_Reward',statesThisTrial))
    RewardDuration = diff(BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Reward(1,:));%
@@ -175,14 +191,16 @@ else
 end
 
 %assemble output
-BpodSystem.Data.Custom.Cout_Early(iTrial) = Cout_Early;
+BpodSystem.Data.Custom.CoutEarly(iTrial) = CoutEarly;
 BpodSystem.Data.Custom.EarlyWithdrawal(iTrial) = EarlyWithdrawal;
 BpodSystem.Data.Custom.BrokeFixation(iTrial) = BrokeFixation;
-BpodSystem.Data.Custom.Cin_Duration(iTrial)=Cin_Duration;
+BpodSystem.Data.Custom.CinDuration(iTrial)=CinDuration;
+BpodSystem.Data.Custom.FixDur(iTrial)=FixDur;
+BpodSystem.Data.Custom.ST(iTrial)=ST;
 BpodSystem.Data.Custom.ResponseCorrect(iTrial)=ResponseCorrect;
 BpodSystem.Data.Custom.ResponseLeft(iTrial) = ResponseLeft;
 BpodSystem.Data.Custom.ResponseTime(iTrial) = ResponseTime;
-BpodSystem.Data.Custom.Lout_Early(iTrial) = Lout_Early;
+BpodSystem.Data.Custom.LoutEarly(iTrial) = LoutEarly;
 BpodSystem.Data.Custom.WaitingTime(iTrial) = WaitingTime;
 BpodSystem.Data.Custom.GracePeriodDuration(iTrial) = GracePeriodDuration;
 BpodSystem.Data.Custom.GracePeriodNumber(iTrial) = GracePeriodNumber;
@@ -197,21 +215,21 @@ if TaskParameters.GUI.AutoRampStimDuration  %start after 10th trial
     History = 50; % Rat: History = 50
     Crit = 0.8; % Rat: Crit = 0.8
     ConsiderTrials = max(1,iTrial-History):1:iTrial;
-    ConsiderTrials(isnan(BpodSystem.Data.Custom.Cin_Duration(ConsiderTrials)))=[];%only use trials with central port entry 
-    ConsiderPerformance = sum(~BpodSystem.Data.Custom.Cout_Early(ConsiderTrials))/length(ConsiderTrials);
-    if  ConsiderPerformance > Crit && ~Cout_Early %if success over all trials AND on last trial: increase
-            BpodSystem.Data.Custom.StimDuration(iTrial+1) = max([TaskParameters.GUI.MaxStimDuration,... 
-                (BpodSystem.Data.Custom.StimDuration(iTrial) + TaskParameters.GUI.StimDurationRampUp)]); % StimDuration increased
-    elseif ConsiderPerformance < Crit/2 && Cout_Early  %if failure over all trials (<crit/2) AND on last trial: decrease
-            BpodSystem.Data.Custom.StimDuration(iTrial+1) = min([TaskParameters.GUI.MinStimDuration,...
-                (BpodSystem.Data.Custom.StimDuration(iTrial) - TaskParameters.GUI.StimDurationRampDown)]); % StimDuration increased
+    ConsiderTrials(isnan(BpodSystem.Data.Custom.CinDuration(ConsiderTrials)))=[];%only use trials with central port entry 
+    ConsiderPerformance = sum(~BpodSystem.Data.Custom.CoutEarly(ConsiderTrials))/length(ConsiderTrials);
+    if  ConsiderPerformance > Crit && ~CoutEarly %if success over all trials AND on last trial: increase
+            RampedStimDuration = BpodSystem.Data.Custom.StimDuration(iTrial) + TaskParameters.GUI.StimDurationRampUp;
+    elseif ConsiderPerformance < Crit/2 && CoutEarly  %if failure over all trials (<crit/2) AND on last trial: decrease
+        RampedStimDuration = BpodSystem.Data.Custom.StimDuration(iTrial) - TaskParameters.GUI.StimDurationRampDown;
     else %if any other case 
-        BpodSystem.Data.Custom.StimDuration(iTrial+1) = max([TaskParameters.GUI.MaxStimDuration,...
-            min([TaskParameters.GUI.MinStimDuration,BpodSystem.Data.Custom.StimDuration(iTrial)])]); 
+        RampedStimDuration = BpodSystem.Data.Custom.StimDuration(iTrial);
     end
 else 
-    BpodSystem.Data.Custom.StimDuration(iTrial+1) = BpodSystem.Data.Custom.StimDuration(iTrial); 
+    RampedStimDuration = BpodSystem.Data.Custom.StimDuration(iTrial);
 end
+    %clip to max and min StimDuration
+    BpodSystem.Data.Custom.StimDuration(iTrial+1) = min([TaskParameters.GUI.MaxStimDuration,...
+        max([TaskParameters.GUI.MinStimDuration,RampedStimDuration])]);
 TaskParameters.GUI.StimDuration = BpodSystem.Data.Custom.StimDuration(iTrial+1); % update StimDuration in GUI
 BpodSystem.Data.Custom.PreStimDuration(iTrial+1) = BpodSystem.Data.Custom.PreStimDuration(iTrial); 
 
@@ -219,6 +237,7 @@ BpodSystem.Data.Custom.PreStimDuration(iTrial+1) = BpodSystem.Data.Custom.PreSti
 %update confidence waiting time EDIT HERE FOR TRAINING STAGE 4
 BpodSystem.Data.Custom.ConfidenceWaitingTime(iTrial+1) = BpodSystem.Data.Custom.ConfidenceWaitingTime(iTrial); 
 TaskParameters.GUI.ConfidenceWaitingTime = BpodSystem.Data.Custom.ConfidenceWaitingTime(iTrial+1); % update Confidence Waiting Time in GUI
+BpodSystem.Data.Custom.CatchTrial(iTrial+1) = false;
 
 %update afterstimulusinterval
 if TaskParameters.GUI.AfterTrialIntervalJitter
@@ -272,13 +291,13 @@ if TaskParameters.GUI.AutoRampLightGuidance && iTrial > 5 %start after 10th tria
     HistoryLight = 50;
     CritLight = 0.8;
     ConsiderTrialsLight = max(1,iTrial-HistoryLight):1:iTrial;
-    ConsiderTrialsLight(isnan(BpodSystem.Data.Custom.Cin_Duration(ConsiderTrialsLight)))=[];%only use trials with central port entry
-    ConsiderPerformance = sum(BpodSystem.Data.Custom.ResponseCorrect(ConsiderTrialsLight))/length(ConsiderTrialsLight);
+    ConsiderTrialsLight(isnan(BpodSystem.Data.Custom.CinDuration(ConsiderTrialsLight)))=[];%only use trials with central port entry
+    ConsiderPerformance = nansum(BpodSystem.Data.Custom.ResponseCorrect(ConsiderTrialsLight))/length(ConsiderTrialsLight);%count missed responses as errors
     
-    if  ConsiderPerformance > CritLight && ResponseCorrect %if success over all trials AND on last trial: decrease percentage of light guidance
+    if  ConsiderPerformance > CritLight && ResponseCorrect == 1%if success over all trials AND on last trial: decrease percentage of light guidance
         BpodSystem.Data.Custom.LightGuidance(iTrial+1) = min([TaskParameters.GUI.MaxLightGuidance,...
             (BpodSystem.Data.Custom.LightGuidance(iTrial) - TaskParameters.GUI.LightGuidanceRampDown)]);
-    elseif ConsiderPerformance < CritLight/2 && ~ResponseCorrect  %if failure over all trials (<crit/2) AND on last trial: increase percentage of light guidance
+    elseif ConsiderPerformance < CritLight/2 && ResponseCorrect ~= 1  %if failure over all trials (<crit/2) AND on last trial: increase percentage of light guidance
         BpodSystem.Data.Custom.LightGuidance(iTrial+1) = max([TaskParameters.GUI.MinLightGuidance,...
             (BpodSystem.Data.Custom.LightGuidance(iTrial) + TaskParameters.GUI.LightGuidanceRampUp)]);
     else %if any other case do not chance      
