@@ -224,24 +224,55 @@ if TaskParameters.GUI.AutoRampStimDuration  %start after 10th trial
     else %if any other case 
         RampedStimDuration = BpodSystem.Data.Custom.StimDuration(iTrial);
     end
-else 
-    RampedStimDuration = BpodSystem.Data.Custom.StimDuration(iTrial);
-end
-    %clip to max and min StimDuration
     BpodSystem.Data.Custom.StimDuration(iTrial+1) = min([TaskParameters.GUI.MaxStimDuration,...
-        max([TaskParameters.GUI.MinStimDuration,RampedStimDuration])]);
+    max([TaskParameters.GUI.MinStimDuration,RampedStimDuration])]);
+else 
+    BpodSystem.Data.Custom.StimDuration(iTrial+1) = TaskParameters.GUI.MinStimDuration;
+end
+
+%clip to max and min StimDuration
 TaskParameters.GUI.StimDuration = BpodSystem.Data.Custom.StimDuration(iTrial+1); % update StimDuration in GUI
 BpodSystem.Data.Custom.PreStimDuration(iTrial+1) = BpodSystem.Data.Custom.PreStimDuration(iTrial); 
 
 
 %update confidence waiting time EDIT HERE FOR TRAINING STAGE 4
-BpodSystem.Data.Custom.ConfidenceWaitingTime(iTrial+1) = BpodSystem.Data.Custom.ConfidenceWaitingTime(iTrial); 
-TaskParameters.GUI.ConfidenceWaitingTime = BpodSystem.Data.Custom.ConfidenceWaitingTime(iTrial+1); % update Confidence Waiting Time in GUI
-BpodSystem.Data.Custom.CatchTrial(iTrial+1) = false;
+%feedback delay
+switch TaskParameters.GUIMeta.FeedbackDelaySelection.String{TaskParameters.GUI.FeedbackDelaySelection}
+    case 'AutoIncr' %increase if correct and reward on last trial 
+        if BpodSystem.Data.Custom.ResponseCorrect(iTrial)==1&&BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial)     
+           RampedFeedbackDelay= BpodSystem.Data.Custom.FeedbackDelay(iTrial)+TaskParameters.GUI.FeedbackDelayIncr;
+        elseif BpodSystem.Data.Custom.ResponseCorrect(iTrial)==1&&~BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial) %decrease if correct and no reward on last trial
+            RampedFeedbackDelay=BpodSystem.Data.Custom.FeedbackDelay(iTrial)-TaskParameters.GUI.FeedbackDelayDecr;
+        else 
+            RampedFeedbackDelay=BpodSystem.Data.Custom.FeedbackDelay(iTrial);
+        end
+        TaskParameters.GUI.FeedbackDelay = min(TaskParameters.GUI.FeedbackDelayMax,...
+                max(TaskParameters.GUI.FeedbackDelayMin,RampedFeedbackDelay));
+
+    case 'TruncExp'
+        TaskParameters.GUI.FeedbackDelay = TruncatedExponential(TaskParameters.GUI.FeedbackDelayMin,...
+            TaskParameters.GUI.FeedbackDelayMax,TaskParameters.GUI.FeedbackDelayTau);
+    case 'Fix'
+        %     ATTEMPT TO GRAY OUT FIELDS
+        %     if ~strcmp('edit',TaskParameters.GUIMeta.FeedbackDelay.Style)
+        %         TaskParameters.GUIMeta.FeedbackDelay.Style = 'edit';
+        %     end
+        TaskParameters.GUI.FeedbackDelay = TaskParameters.GUI.FeedbackDelayMax;
+end
+BpodSystem.Data.Custom.FeedbackDelay(iTrial+1) = TaskParameters.GUI.FeedbackDelay;
+
+%update catch trial 
+if iTrial > TaskParameters.GUI.StartEasyTrials
+    BpodSystem.Data.Custom.CatchTrial(iTrial+1) = rand(1,1) < TaskParameters.GUI.PercentCatch;
+else
+    BpodSystem.Data.Custom.CatchTrial(iTrial+1) = false;
+end
+
 
 %update afterstimulusinterval
 if TaskParameters.GUI.AfterTrialIntervalJitter
-    BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = min( [ exprnd(TaskParameters.GUI.AfterTrialInterval) 5*TaskParameters.GUI.AfterTrialInterval ]);
+    BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = TruncatedExponential(0,5*TaskParameters.GUI.AfterTrialInterval,...
+    TaskParameters.GUI.AfterTrialInterval);
 else
     BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = TaskParameters.GUI.AfterTrialInterval;
 end
@@ -287,9 +318,9 @@ BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=BpodSystem.Data.Custom.Rewar
 
 %light guidance updating (later used to determine whether error port LED will be switched
 %off or switched on on next trial
-if TaskParameters.GUI.AutoRampLightGuidance && iTrial > 5 %start after 10th trial
+if TaskParameters.GUI.AutoRampLightGuidance && iTrial > 105 %start after 10th trial
     HistoryLight = 50;
-    CritLight = 0.8;
+    CritLight = 0.9;
     ConsiderTrialsLight = max(1,iTrial-HistoryLight):1:iTrial;
     ConsiderTrialsLight(isnan(BpodSystem.Data.Custom.CinDuration(ConsiderTrialsLight)))=[];%only use trials with central port entry
     ConsiderPerformance = nansum(BpodSystem.Data.Custom.ResponseCorrect(ConsiderTrialsLight))/length(ConsiderTrialsLight);%count missed responses as errors
@@ -301,8 +332,8 @@ if TaskParameters.GUI.AutoRampLightGuidance && iTrial > 5 %start after 10th tria
         BpodSystem.Data.Custom.LightGuidance(iTrial+1) = max([TaskParameters.GUI.MinLightGuidance,...
             (BpodSystem.Data.Custom.LightGuidance(iTrial) + TaskParameters.GUI.LightGuidanceRampUp)]);
     else %if any other case do not chance      
-        BpodSystem.Data.Custom.LightGuidance(iTrial+1) = max([TaskParameters.GUI.MaxLightGuidance,...
-            min([TaskParameters.GUI.MinLightGuidance,BpodSystem.Data.Custom.LightGuidance(iTrial)])]);
+        BpodSystem.Data.Custom.LightGuidance(iTrial+1) = min([TaskParameters.GUI.MaxLightGuidance,...
+            max([TaskParameters.GUI.MinLightGuidance,BpodSystem.Data.Custom.LightGuidance(iTrial)])]);
     end
 else
     BpodSystem.Data.Custom.LightGuidance(iTrial+1) = TaskParameters.GUI.MaxLightGuidance;
