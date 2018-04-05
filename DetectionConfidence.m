@@ -158,16 +158,16 @@ BpodSystem.Data.Custom = orderfields(BpodSystem.Data.Custom);
 
 
 %% Configure PulsePal
-load PulsePalParamStimulus.mat
-load PulsePalParamFeedback.mat
-BpodSystem.Data.Custom.PulsePalParamStimulus=PulsePalParamStimulus;
-BpodSystem.Data.Custom.PulsePalParamFeedback=PulsePalParamFeedback;
-clear PulsePalParamFeedback PulsePalParamStimulus
-if ~BpodSystem.EmulatorMode
-    ProgramPulsePal(BpodSystem.Data.Custom.PulsePalParamStimulus);
+%load PulsePalParamStimulus.mat
+%load PulsePalParamFeedback.mat
+%BpodSystem.Data.Custom.PulsePalParamStimulus=PulsePalParamStimulus;
+%BpodSystem.Data.Custom.PulsePalParamFeedback=PulsePalParamFeedback;
+%clear PulsePalParamFeedback PulsePalParamStimulus
+%if ~BpodSystem.EmulatorMode
+    %ProgramPulsePal(BpodSystem.Data.Custom.PulsePalParamStimulus);
     %SendCustomPulseTrain(1, BpodSystem.Data.Custom.RightClickTrain, ones(1,length(BpodSystem.Data.Custom.RightClickTrain))*5);
     %SendCustomPulseTrain(2, BpodSystem.Data.Custom.LeftClickTrain, ones(1,length(BpodSystem.Data.Custom.LeftClickTrain))*5);
-end
+%end
 
 
 %% Initialize plots
