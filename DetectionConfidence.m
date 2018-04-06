@@ -158,6 +158,7 @@ BpodSystem.Data.Custom.PsychtoolboxStartup=false;
 %stimulus settings
 if TaskParameters.GUI.PlayStimulus>1
     StimulusSettings.SamplingRate=192000;%sampling rate of sound card
+    StimulusSettings.Ramp=.01;%duration (s) of ramping at on and offset of stimulus used to avoid clicking sounds
     StimulusSettings.NoiseDuration=BpodSystem.Data.Custom.StimDuration;
     StimulusSettings.NoiseColor='WhiteGaussian';
     StimulusSettings.NoiseVolume=50;%in dB
