@@ -1,7 +1,7 @@
 function sma = stateMatrix(iTrial)
 global BpodSystem
 global TaskParameters
-global StimulusSettings
+%global StimulusSettings
 
 %% Define ports
 %determine whether this is a signal or a noise trial

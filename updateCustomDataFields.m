@@ -232,12 +232,12 @@ switch TaskParameters.GUIMeta.PreStimDurationSelection.String{TaskParameters.GUI
     BpodSystem.Data.Custom.PreStimDuration(iTrial+1) = min([TaskParameters.GUI.PreStimDurationMax,...
     max([TaskParameters.GUI.PreStimDurationMin,RampedPreStimDuration])]);
     case 'TruncExp'
-        TaskParameters.GUI.PreStimDuration = TruncatedExponential(TaskParameters.GUI.PreStimDurationMin,...
+        BpodSystem.Data.Custom.PreStimDuration(iTrial+1) = TruncatedExponential(TaskParameters.GUI.PreStimDurationMin,...
             TaskParameters.GUI.PreStimDurationMax,TaskParameters.GUI.PreStimDurationTau);
     case 'Fix'
-        TaskParameters.GUI.PreStimDuration = TaskParameters.GUI.PreStimDurationMin;
+        BpodSystem.Data.Custom.PreStimDuration(iTrial+1) = TaskParameters.GUI.PreStimDurationMin;
 end
-BpodSystem.Data.Custom.PreStimDuration(iTrial+1) = TaskParameters.GUI.PreStimDuration;
+TaskParameters.GUI.PreStimDuration = BpodSystem.Data.Custom.PreStimDuration(iTrial+1);
 BpodSystem.Data.Custom.StimDuration(iTrial+1) = TaskParameters.GUI.StimDuration; 
 
 
@@ -293,11 +293,11 @@ if TaskParameters.GUI.PlayStimulus>1
     elseif TaskParameters.GUI.PlayStimulus == 3 %noie plus easy signals
         StimulusSettings.EmbedSignal=(fix(rand*2));
         StimulusSettings.SignalDuration=TaskParameters.GUI.StimDuration;%min([0.1 BpodSystem.Data.Custom.StimDuration(iTrial+1)]);%plays signal of 0.1 s or sample time duration (if shorter)
-        StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*40;%in dB
+        StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*TaskParameters.GUI.MaxSignalVolume;%in dB
     elseif TaskParameters.GUI.PlayStimulus == 4 %noise plus easy and difficult signals
         StimulusSettings.EmbedSignal=(fix(rand*5))/4;%for 5 signal intensities between 0(noise) and 1 (signal)
         StimulusSettings.SignalDuration=TaskParameters.GUI.StimDuration;%min([0.1 BpodSystem.Data.Custom.StimDuration(iTrial+1)]);%plays signal of 0.1 s or sample time duration (if shorter)
-        StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*40;%UPDATE HERE FOR TRAINING STAGE 3
+        StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*TaskParameters.GUI.MaxSignalVolume;%UPDATE HERE FOR TRAINING STAGE 3
     end
 
     %put trial-by-trial varying settings into BpodSystem.Data.Custom
@@ -312,9 +312,9 @@ if TaskParameters.GUI.PlayStimulus>1
 end
 
 %reward depletion %UPDATE HERE IF BIAS CORRECTION IS NEEDED
-BpodSystem.Data.Custom.RewardAmountCorrect(iTrial+1)=BpodSystem.Data.Custom.RewardAmountCorrect(iTrial);
-BpodSystem.Data.Custom.RewardAmountError(iTrial+1)=BpodSystem.Data.Custom.RewardAmountError(iTrial);
-BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=BpodSystem.Data.Custom.RewardAmountCenter(iTrial);
+BpodSystem.Data.Custom.RewardAmountCorrect(iTrial+1)=TaskParameters.GUI.RewardAmountCorrect;
+BpodSystem.Data.Custom.RewardAmountError(iTrial+1)=TaskParameters.GUI.RewardAmountError;
+BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=TaskParameters.GUI.RewardAmountCenter;
 
 %light guidance updating (later used to determine whether error port LED will be switched
 %off or switched on on next trial
