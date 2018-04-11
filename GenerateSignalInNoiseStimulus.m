@@ -48,19 +48,27 @@ end
 noise(noise<-1)=-1;
 noise(noise>1)=1;
 
+%put in double speaker
+noise = [noise;noise];
+
 %adjust noise volume
 SoundCal = BpodSystem.CalibrationTables.SoundCal;
 if(isempty(SoundCal))
     disp('Error: no sound calibration file specified');
     return
 end
-toneAtt = mean(polyval(SoundCal.Coefficient,linspace(SignalMinFreq,SignalMaxFreq))); %just take the mean over signal frequencies -
+if size(SoundCal,2)<2
+   disp('Error: no stereo sound calibration file specified') 
+end
+toneAtt = [mean(polyval(SoundCal(1,1).Coefficient,linspace(SignalMinFreq,SignalMaxFreq))),...
+    mean(polyval(SoundCal(1,2).Coefficient,linspace(SignalMinFreq,SignalMaxFreq)))]; %just take the mean over signal frequencies -
 %toneAtt = [polyval(SoundCal(1,1).Coefficient,toneFreq)' polyval(SoundCal(1,2).Coefficient,toneFreq)']; in Torben's script
-diffSPL = NoiseVolume - [SoundCal.TargetSPL];
+diffSPL = NoiseVolume - [SoundCal(1,1).TargetSPL];
 attFactor = sqrt(10.^(diffSPL./10)); %sqrt(10.^(diffSPL./10)) in Torben's script WHY sqrt?
 att = toneAtt.*attFactor;%this is the value for multiplying signal scaled/clipped to [-1 to 1]
-noise=noise*att;
-
+noise(1,:)=noise(1,:)*att(1);
+noise(2,:)=noise(2,:)*att(2);
+%should the two speakers dB be added?
 
 %% generate signal
 if EmbedSignal

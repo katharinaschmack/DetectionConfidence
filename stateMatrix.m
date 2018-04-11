@@ -6,11 +6,11 @@ global StimulusSettings
 %% Define ports
 %determine whether this is a signal or a noise trial
     ports=num2str(TaskParameters.GUI.Ports_LMR);
-if ~isnan(BpodSystem.Data.Custom.SignalEmbedTime(iTrial))%signal embedded    
+if (BpodSystem.Data.Custom.EmbedSignal(iTrial))>0%signal embedded    
     CorrectPort = str2num(ports(1));
     CenterPort = str2num(ports(2));
     ErrorPort = str2num(ports(3));
-elseif isnan(BpodSystem.Data.Custom.SignalEmbedTime(iTrial))%no signal embedded
+elseif (BpodSystem.Data.Custom.EmbedSignal(iTrial))==0 %no signal embedded
     CorrectPort = str2num(ports(3));
     CenterPort = str2num(ports(2));
     ErrorPort = str2num(ports(1));
@@ -38,10 +38,11 @@ if TaskParameters.GUI.PlayStimulus == 1 %none
     StimStartOutput = {};
     StimStopOutput = {};
 elseif TaskParameters.GUI.PlayStimulus > 1 %noise or signals in noise
-    StimStartOutput = {'SoftCode',21};
-    StimStopOutput = {'SoftCode',22};
+    StimStartOutput = {'SoftCode',23};
+    StimStopOutput = {'SoftCode',24};
 end
 
+CenterLedOn={strcat('PWM',num2str(CenterPort)),255};
 
     
     
@@ -54,7 +55,7 @@ sma = SetGlobalTimer(sma,3,BpodSystem.Data.Custom.AfterTrialInterval(iTrial));
 sma = AddState(sma, 'Name', 'wait_Cin',...
     'Timer', 0,...
     'StateChangeConditions', {CenterPortIn, 'Cin_PreStim'},...
-    'OutputActions', {strcat('PWM',num2str(CenterPort)),255});
+    'OutputActions', CenterLedOn);
 sma = AddState(sma, 'Name', 'Cin_PreStim',...
     'Timer', BpodSystem.Data.Custom.PreStimDuration(iTrial),...
     'StateChangeConditions', {CenterPortOut, 'Cout_Early','Tup','Cin_Stim'},...
@@ -62,7 +63,7 @@ sma = AddState(sma, 'Name', 'Cin_PreStim',...
 sma = AddState(sma, 'Name', 'Cin_Stim',...
     'Timer', BpodSystem.Data.Custom.StimDuration(iTrial),...
     'StateChangeConditions', {CenterPortOut, 'Cout_Early','Tup','Cin_PostStim'},...
-    'OutputActions', StimStartOutput);
+    'OutputActions', [StimStartOutput CenterLedOn]);
 sma = AddState(sma, 'Name', 'Cout_Early',...
     'Timer', TaskParameters.GUI.CoutEarlyTimeout,...
     'StateChangeConditions', {'Tup','EndOfTrialStart'},...

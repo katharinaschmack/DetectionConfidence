@@ -83,17 +83,17 @@ switch Action
         AxesHandles.HandleLightGuidance.YLabel.String = 'light guidance (%)';
         AxesHandles.HandleLightGuidance.Title.String = 'Light Guidance';
         %% Stimulus Time
-        hold(AxesHandles.HandleStimDuration,'on')
-        BpodSystem.GUIHandles.OutcomePlot.StimDuration = line(AxesHandles.HandleStimDuration,[0],[0], 'LineStyle','-','Color','k','Visible','off'); %#ok<NBRAK>
-        AxesHandles.HandleStimDuration.XLabel.String = 'trials'; % FIGURE OUT UNIT
-        AxesHandles.HandleStimDuration.YLabel.String = 'stimulus time (ms)';
-        AxesHandles.HandleStimDuration.Title.String = 'Stimulus Time';
+        hold(AxesHandles.HandlePreStimDuration,'on')
+        BpodSystem.GUIHandles.OutcomePlot.PreStimDuration = line(AxesHandles.HandlePreStimDuration,[0],[0], 'LineStyle','-','Color','k','Visible','off'); %#ok<NBRAK>
+        AxesHandles.HandlePreStimDuration.XLabel.String = 'trials'; % FIGURE OUT UNIT
+        AxesHandles.HandlePreStimDuration.YLabel.String = 'stimulus time (ms)';
+        AxesHandles.HandlePreStimDuration.Title.String = 'Stimulus Time';
 
         
     case 'update'
         %% Reposition and hide/show axes
         ShowPlots = [TaskParameters.GUI.ShowPsycAud,TaskParameters.GUI.ShowVevaiometric,...
-            TaskParameters.GUI.ShowTrialRate,TaskParameters.GUI.ShowFix,TaskParameters.GUI.ShowST,TaskParameters.GUI.ShowFeedback,TaskParameters.GUI.ShowLightGuidance,TaskParameters.GUI.ShowStimDuration];
+            TaskParameters.GUI.ShowTrialRate,TaskParameters.GUI.ShowFix,TaskParameters.GUI.ShowST,TaskParameters.GUI.ShowFeedback,TaskParameters.GUI.ShowLightGuidance,TaskParameters.GUI.ShowPreStimDuration];
         NoPlots = sum(ShowPlots);
         NPlot = cumsum(ShowPlots);
         if ShowPlots(1)
@@ -154,12 +154,12 @@ switch Action
         end
         
         if ShowPlots(8)
-            BpodSystem.GUIHandles.OutcomePlot.HandleStimDuration.Position =     [NPlot(8)*.05+0.005 + (NPlot(8)-1)*1/(1.65*NoPlots)    .6   1/(1.65*NoPlots) 0.3];
-            BpodSystem.GUIHandles.OutcomePlot.HandleStimDuration.Visible = 'on';
-            set(get(BpodSystem.GUIHandles.OutcomePlot.HandleStimDuration,'Children'),'Visible','on');
+            BpodSystem.GUIHandles.OutcomePlot.HandlePreStimDuration.Position =     [NPlot(8)*.05+0.005 + (NPlot(8)-1)*1/(1.65*NoPlots)    .6   1/(1.65*NoPlots) 0.3];
+            BpodSystem.GUIHandles.OutcomePlot.HandlePreStimDuration.Visible = 'on';
+            set(get(BpodSystem.GUIHandles.OutcomePlot.HandlePreStimDuration,'Children'),'Visible','on');
         else
-            BpodSystem.GUIHandles.OutcomePlot.HandleStimDuration.Visible = 'off';
-            set(get(BpodSystem.GUIHandles.OutcomePlot.HandleStimDuration,'Children'),'Visible','off');
+            BpodSystem.GUIHandles.OutcomePlot.HandlePreStimDuration.Visible = 'off';
+            set(get(BpodSystem.GUIHandles.OutcomePlot.HandlePreStimDuration,'Children'),'Visible','off');
         end
 
         
@@ -351,9 +351,9 @@ switch Action
             BpodSystem.GUIHandles.OutcomePlot.LightGuidance.YData = BpodSystem.Data.Custom.LightGuidance(~ndxCoutEarly);
         end
         
-        if TaskParameters.GUI.ShowStimDuration
-            BpodSystem.GUIHandles.OutcomePlot.StimDuration.XData = 1:numel(BpodSystem.Data.Custom.StimDuration);
-            BpodSystem.GUIHandles.OutcomePlot.StimDuration.YData = BpodSystem.Data.Custom.StimDuration;
+        if TaskParameters.GUI.ShowPreStimDuration
+            BpodSystem.GUIHandles.OutcomePlot.PreStimDuration.XData = 1:numel(BpodSystem.Data.Custom.PreStimDuration);
+            BpodSystem.GUIHandles.OutcomePlot.PreStimDuration.YData = BpodSystem.Data.Custom.PreStimDuration;
         end
 
 

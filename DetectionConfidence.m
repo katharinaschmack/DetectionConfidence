@@ -17,25 +17,34 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIPanels.General = {'Ports_LMR','AfterTrialInterval','AfterTrialIntervalJitter'};
     
     %sampling period: events, duration and reinforcement for duration
-    TaskParameters.GUI.PlayStimulus = 4; %stimulus to be played at center port
+    
+    
+    TaskParameters.GUI.PlayStimulus =  3;%stimulus to be played at center port
     TaskParameters.GUIMeta.PlayStimulus.Style = 'popupmenu';
     TaskParameters.GUIMeta.PlayStimulus.String = {'None','Noise','Noise+Signal (easy)','Noise+Signal (variable)'};% 
-    TaskParameters.GUI.MinStimDuration = 0.05;%minimum sample time required for reward will not decrease further (0.05 in Marion's script)
-    TaskParameters.GUI.StimDuration = TaskParameters.GUI.MinStimDuration;
-    TaskParameters.GUIMeta.StimDuration.Style = 'text';
-    TaskParameters.GUI.MaxStimDuration = 1; %sample time required for reward will not increase further (0.5)
-    TaskParameters.GUI.AutoRampStimDuration = true; %for training
-    TaskParameters.GUIMeta.AutoRampStimDuration.Style = 'checkbox';
-    TaskParameters.GUI.StimDurationRampUp = 0.01;
-    TaskParameters.GUI.StimDurationRampDown = 0.005;        
-    TaskParameters.GUI.PreStimDuration = 0;
+    TaskParameters.GUI.StimDuration=0.05;
+
+    TaskParameters.GUI.PreStimDurationSelection = 1;
+    TaskParameters.GUIMeta.PreStimDurationSelection.Style = 'popupmenu';
+    TaskParameters.GUIMeta.PreStimDurationSelection.String = {'Fix','AutoIncr','TruncExp'};
+    TaskParameters.GUI.PreStimDurationTau = 0.25;
+
+    TaskParameters.GUI.PreStimDurationMin = 0.05;%minimum sample time required for reward will not decrease further (0.05 in Marion's script)
+    TaskParameters.GUI.PreStimDuration = TaskParameters.GUI.PreStimDurationMin;
+    TaskParameters.GUIMeta.PreStimDuration.Style = 'text';
+    TaskParameters.GUI.PreStimDurationMax = 1; %sample time required for reward will not increase further (0.5)
+   % TaskParameters.GUI.AutoRampPreStimDuration = true; %for training
+    %TaskParameters.GUIMeta.AutoRampPreStimDuration.Style = 'checkbox';
+    TaskParameters.GUI.PreStimDurationRampUp = 0.01;
+    TaskParameters.GUI.PreStimDurationRampDown = 0.005;        
+    %TaskParameters.GUI.PreStimDuration = 0;
     TaskParameters.GUI.PostStimDuration = 0;
     TaskParameters.GUI.RewardAmountCenter = 0;%reward amount center ports (marion .5)
     TaskParameters.GUI.CoutEarlyTimeout = 1;%time out for early withdrawal (marion 1s)
     %TaskParameters.GUI.EarlyWithdrawalNoise = true;%punishing sound for early withdrawal (marion true)
     %TaskParameters.GUIMeta.EarlyWithdrawalNoise.Style='checkbox';
     TaskParameters.GUIPanels.Sampling = {'PlayStimulus','PreStimDuration','StimDuration','PostStimDuration',...
-        'AutoRampStimDuration','MinStimDuration','MaxStimDuration','StimDurationRampUp','StimDurationRampDown',...
+        'PreStimDurationSelection','PreStimDurationMin','PreStimDurationMax','PreStimDurationRampUp','PreStimDurationRampDown','PreStimDurationTau',...
         'RewardAmountCenter','CoutEarlyTimeout'};
     
     %Stimulus Settings TO BE OUTCODED
@@ -95,10 +104,10 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.ShowFeedback.Style = 'checkbox';
     TaskParameters.GUI.ShowLightGuidance = 1;
     TaskParameters.GUIMeta.ShowLightGuidance.Style = 'checkbox';
-    TaskParameters.GUI.ShowStimDuration = 1;
-    TaskParameters.GUIMeta.ShowStimDuration.Style = 'checkbox';
+    TaskParameters.GUI.ShowPreStimDuration = 1;
+    TaskParameters.GUIMeta.ShowPreStimDuration.Style = 'checkbox';
 
-    TaskParameters.GUIPanels.ShowPlots = {'ShowPsycAud','ShowVevaiometric','ShowTrialRate','ShowFix','ShowST','ShowFeedback','ShowLightGuidance','ShowStimDuration'};
+    TaskParameters.GUIPanels.ShowPlots = {'ShowPsycAud','ShowVevaiometric','ShowTrialRate','ShowFix','ShowST','ShowFeedback','ShowLightGuidance','ShowPreStimDuration'};
     
     TaskParameters.GUI = orderfields(TaskParameters.GUI);
     TaskParameters.Figures.OutcomePlot.Position = [200, 200, 1000, 400];
@@ -114,7 +123,17 @@ end
 BpodParameterGUI('init', TaskParameters);
 
 %put trial-by-trial varying settings into BpodSystem.Data.Custom
+switch TaskParameters.GUIMeta.PreStimDurationSelection.String{TaskParameters.GUI.PreStimDurationSelection}
+    case 'AutoIncr'
+        TaskParameters.GUI.PreStimDuration = TaskParameters.GUI.PreStimDurationMin;
+    case 'TruncExp'
+        TaskParameters.GUI.PreStimDuration = TruncatedExponential(TaskParameters.GUI.PreStimDurationMin,...
+            TaskParameters.GUI.PreStimDurationMax,TaskParameters.GUI.PreStimDurationTau);
+    case 'Fix'
+        TaskParameters.GUI.PreStimDuration = TaskParameters.GUI.PreStimDurationMin;
+end
 BpodSystem.Data.Custom.PreStimDuration = TaskParameters.GUI.PreStimDuration;
+
 BpodSystem.Data.Custom.StimDuration = TaskParameters.GUI.StimDuration;
 
 %initialize delay
@@ -158,11 +177,11 @@ BpodSystem.Data.Custom.PsychtoolboxStartup=false;
 %stimulus settings
 if TaskParameters.GUI.PlayStimulus>1
     StimulusSettings.SamplingRate=192000;%sampling rate of sound card
-    StimulusSettings.Ramp=.01;%duration (s) of ramping at on and offset of stimulus used to avoid clicking sounds
-    StimulusSettings.NoiseDuration=BpodSystem.Data.Custom.StimDuration;
+    StimulusSettings.Ramp=.01;%duration (s) of ramping at on and offset of noise used to avoid clicking sounds
+    StimulusSettings.NoiseDuration=60;%BpodSystem.Data.Custom.StimDuration;
     StimulusSettings.NoiseColor='WhiteGaussian';
-    StimulusSettings.NoiseVolume=50;%in dB
-    StimulusSettings.SignalForm='QuadraticConvex';
+    StimulusSettings.NoiseVolume=40;%in dB
+    StimulusSettings.SignalForm='LinearUpsweep';
     StimulusSettings.SignalMinFreq=5E3;
     StimulusSettings.SignalMaxFreq=10E3;
 
@@ -172,19 +191,22 @@ if TaskParameters.GUI.PlayStimulus>1
         StimulusSettings.SignalVolume=0;%in dB
     elseif TaskParameters.GUI.PlayStimulus == 3 %noie plus easy signals
         StimulusSettings.EmbedSignal=(fix(rand*2));
-        StimulusSettings.SignalDuration=min([0.1 BpodSystem.Data.Custom.StimDuration]);%plays signal of 0.1 s or sample time duration (if shorter)
+        StimulusSettings.SignalDuration=0.05;%min([0.1 BpodSystem.Data.Custom.StimDuration]);%plays signal of 0.1 s or sample time duration (if shorter)
         StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*40;%in dB
     elseif TaskParameters.GUI.PlayStimulus == 4 %noise plus easy and difficult signals
         StimulusSettings.EmbedSignal=(fix(rand*5))/4;%for 5 signal intensities between 0(noise) and 1 (signal)
-        StimulusSettings.SignalDuration=min([0.1 BpodSystem.Data.Custom.StimDuration]);%plays signal of 0.1 s or sample time duration (if shorter)
+        StimulusSettings.SignalDuration=0.05;%min([0.1 BpodSystem.Data.Custom.StimDuration]);%plays signal of 0.1 s or sample time duration (if shorter)
         StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*40;%in dB
     end
 
     %put trial-by-trial varying settings into BpodSystem.Data.Custom
-    [BpodSystem.Data.Custom.Stimulus{1} BpodSystem.Data.Custom.SignalEmbedTime] = GenerateSignalInNoiseStimulus(StimulusSettings);
-    BpodSystem.Data.Custom.EmbedSignal = StimulusSettings.EmbedSignal;
+    %[BpodSystem.Data.Custom.Stimulus{1} BpodSystem.Data.Custom.SignalEmbedTime] = GenerateSignalInNoiseStimulus(StimulusSettings);
+    %BpodSystem.Data.Custom.EmbedSignal = StimulusSettings.EmbedSignal;
+    BpodSystem.Data.Custom.Noise = GenerateNoise(StimulusSettings);
+    BpodSystem.Data.Custom.Signal{1} = GenerateSignal(StimulusSettings);
     BpodSystem.Data.Custom.SignalDuration = StimulusSettings.SignalDuration;
     BpodSystem.Data.Custom.SignalVolume = StimulusSettings.SignalVolume;
+    BpodSystem.Data.Custom.EmbedSignal=StimulusSettings.EmbedSignal;
 
     %prepare Psychotoolbox if necessary
     % if ~BpodSystem.EmulatorMode && ~BpodSystem.Data.Custom.PsychtoolboxStartup
@@ -192,13 +214,13 @@ if TaskParameters.GUI.PlayStimulus>1
         PsychToolboxSoundServer('init');
         BpodSystem.Data.Custom.PsychtoolboxStartup=true;
     end
-    PsychToolboxSoundServer('Load', 1, BpodSystem.Data.Custom.Stimulus{1});%load stimulus to slave 1
+    PsychToolboxSoundServer('Load', 1, BpodSystem.Data.Custom.Noise);%load stimulus to slave 1
+    PsychToolboxSoundServerLoop('Play', 1);%start noise stream
+    PsychToolboxSoundServer('Load', 2, BpodSystem.Data.Custom.Signal{1});%load stimulus to slave 1
 end
 BpodSystem.Data.Custom = orderfields(BpodSystem.Data.Custom);
 
 
-<<<<<<< HEAD
-=======
 %% Configure PulsePal
 %load PulsePalParamStimulus.mat
 %load PulsePalParamFeedback.mat
@@ -211,8 +233,6 @@ BpodSystem.Data.Custom = orderfields(BpodSystem.Data.Custom);
     %SendCustomPulseTrain(2, BpodSystem.Data.Custom.LeftClickTrain, ones(1,length(BpodSystem.Data.Custom.LeftClickTrain))*5);
 %end
 
-
->>>>>>> origin/master
 %% Initialize plots
 BpodSystem.ProtocolFigures.SideOutcomePlotFig = figure('Position', TaskParameters.Figures.OutcomePlot.Position,'name','Outcome plot','numbertitle','off', 'MenuBar', 'none', 'Resize', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleOutcome = axes('Position',    [  .055            .15 .91 .3]);
@@ -230,7 +250,7 @@ BpodSystem.GUIHandles.OutcomePlot.HandleST = axes('Position',         [5*.05 + 4
 BpodSystem.GUIHandles.OutcomePlot.HandleFeedback = axes('Position',   [6*.05 + 5*.08   .6  .1  .3], 'Visible', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleVevaiometric = axes('Position',   [7*.05 + 6*.08   .6  .1  .3], 'Visible', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleLightGuidance = axes('Position',   [8*.05 + 7*.08   .6  .1  .3], 'Visible', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandleStimDuration = axes('Position',   [9*.05 + 8*.08   .6  .1  .3], 'Visible', 'off');
+BpodSystem.GUIHandles.OutcomePlot.HandlePreStimDuration = axes('Position',   [9*.05 + 8*.08   .6  .1  .3], 'Visible', 'off');
 
 MainPlot(BpodSystem.GUIHandles.OutcomePlot,'init');
 %BpodSystem.ProtocolFigures.ParameterGUI.Position = TaskParameters.Figures.ParameterGUI.Position;
@@ -264,6 +284,7 @@ while RunSession
     MainPlot(BpodSystem.GUIHandles.OutcomePlot,'update',iTrial);
     iTrial = iTrial + 1;
 end
+    PsychToolboxSoundServer('Stop', 1);%stop noise stream
 
 
 end

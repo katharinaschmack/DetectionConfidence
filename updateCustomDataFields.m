@@ -13,16 +13,18 @@ end
 
 %get port IDs
 ports=num2str(TaskParameters.GUI.Ports_LMR);
-if ~isnan(BpodSystem.Data.Custom.SignalEmbedTime(iTrial))%signal embedded    
+if (BpodSystem.Data.Custom.EmbedSignal(iTrial))>0%signal embedded    
     CorrectPort = str2num(ports(1));
     CenterPort = str2num(ports(2));
     ErrorPort = str2num(ports(3));
-elseif isnan(BpodSystem.Data.Custom.SignalEmbedTime(iTrial))%no signal embedded
+elseif (BpodSystem.Data.Custom.EmbedSignal(iTrial))==0 %no signal embedded
     CorrectPort = str2num(ports(3));
     CenterPort = str2num(ports(2));
     ErrorPort = str2num(ports(1));
 else error('Cannot determine which port is the Error one. Check your code!')
 end
+
+
 
 CorrectPortOut = strcat('Port',num2str(CorrectPort),'Out');
 CenterPortOut = strcat('Port',num2str(CenterPort),'Out');
@@ -89,7 +91,7 @@ else
 end
 
 %mark whether animal went left or right
-SignalPresent=~isnan(BpodSystem.Data.Custom.SignalEmbedTime(iTrial));
+SignalPresent=(BpodSystem.Data.Custom.EmbedSignal(iTrial))>0;
 if (ResponseCorrect==1 && SignalPresent) || ...%correct on signal trials -> left port
         (ResponseCorrect==0 && ~SignalPresent) %incorrect on noise trials -> left port
     ResponseLeft = 1;
@@ -210,29 +212,33 @@ BpodSystem.Data.Custom.RewardReceivedError(iTrial) = RewardReceivedError;
 
 
 %% update times & stimulus
-%update stimulus duration     
-if TaskParameters.GUI.AutoRampStimDuration  %start after 10th trial
+%update stimulus duration 
+
+%put trial-by-trial varying settings into BpodSystem.Data.Custom
+switch TaskParameters.GUIMeta.PreStimDurationSelection.String{TaskParameters.GUI.PreStimDurationSelection}
+    case 'AutoIncr'
     History = 50; % Rat: History = 50
     Crit = 0.8; % Rat: Crit = 0.8
     ConsiderTrials = max(1,iTrial-History):1:iTrial;
     ConsiderTrials(isnan(BpodSystem.Data.Custom.CinDuration(ConsiderTrials)))=[];%only use trials with central port entry 
     ConsiderPerformance = sum(~BpodSystem.Data.Custom.CoutEarly(ConsiderTrials))/length(ConsiderTrials);
     if  ConsiderPerformance > Crit && ~CoutEarly %if success over all trials AND on last trial: increase
-            RampedStimDuration = BpodSystem.Data.Custom.StimDuration(iTrial) + TaskParameters.GUI.StimDurationRampUp;
+            RampedPreStimDuration = BpodSystem.Data.Custom.PreStimDuration(iTrial) + TaskParameters.GUI.PreStimDurationRampUp;
     elseif ConsiderPerformance < Crit/2 && CoutEarly  %if failure over all trials (<crit/2) AND on last trial: decrease
-        RampedStimDuration = BpodSystem.Data.Custom.StimDuration(iTrial) - TaskParameters.GUI.StimDurationRampDown;
+        RampedPreStimDuration = BpodSystem.Data.Custom.PreStimDuration(iTrial) - TaskParameters.GUI.PreStimDurationRampDown;
     else %if any other case 
-        RampedStimDuration = BpodSystem.Data.Custom.StimDuration(iTrial);
+        RampedPreStimDuration = BpodSystem.Data.Custom.PreStimDuration(iTrial);
     end
-    BpodSystem.Data.Custom.StimDuration(iTrial+1) = min([TaskParameters.GUI.MaxStimDuration,...
-    max([TaskParameters.GUI.MinStimDuration,RampedStimDuration])]);
-else 
-    BpodSystem.Data.Custom.StimDuration(iTrial+1) = TaskParameters.GUI.MinStimDuration;
+    BpodSystem.Data.Custom.PreStimDuration(iTrial+1) = min([TaskParameters.GUI.PreStimDurationMax,...
+    max([TaskParameters.GUI.PreStimDurationMin,RampedPreStimDuration])]);
+    case 'TruncExp'
+        TaskParameters.GUI.PreStimDuration = TruncatedExponential(TaskParameters.GUI.PreStimDurationMin,...
+            TaskParameters.GUI.PreStimDurationMax,TaskParameters.GUI.PreStimDurationTau);
+    case 'Fix'
+        TaskParameters.GUI.PreStimDuration = TaskParameters.GUI.PreStimDurationMin;
 end
-
-%clip to max and min StimDuration
-TaskParameters.GUI.StimDuration = BpodSystem.Data.Custom.StimDuration(iTrial+1); % update StimDuration in GUI
-BpodSystem.Data.Custom.PreStimDuration(iTrial+1) = BpodSystem.Data.Custom.PreStimDuration(iTrial); 
+BpodSystem.Data.Custom.PreStimDuration(iTrial+1) = TaskParameters.GUI.PreStimDuration;
+BpodSystem.Data.Custom.StimDuration(iTrial+1) = TaskParameters.GUI.StimDuration; 
 
 
 %update confidence waiting time EDIT HERE FOR TRAINING STAGE 4
@@ -279,36 +285,30 @@ end
 
 %update stimuli
 if TaskParameters.GUI.PlayStimulus>1
-    StimulusSettings.NoiseDuration = BpodSystem.Data.Custom.StimDuration(iTrial+1);
+    %StimulusSettings.NoiseDuration = BpodSystem.Data.Custom.StimDuration(iTrial+1);
     if TaskParameters.GUI.PlayStimulus == 2 %only noise
         StimulusSettings.EmbedSignal=0;
         StimulusSettings.SignalDuration=0;%min([0.1 BpodSystem.Data.Custom.StimDuration]);%plays signal of 0.1 s or sample time duration (if shorter)
         StimulusSettings.SignalVolume=0;%in dB
     elseif TaskParameters.GUI.PlayStimulus == 3 %noie plus easy signals
         StimulusSettings.EmbedSignal=(fix(rand*2));
-        StimulusSettings.SignalDuration=min([0.1 BpodSystem.Data.Custom.StimDuration(iTrial+1)]);%plays signal of 0.1 s or sample time duration (if shorter)
+        StimulusSettings.SignalDuration=TaskParameters.GUI.StimDuration;%min([0.1 BpodSystem.Data.Custom.StimDuration(iTrial+1)]);%plays signal of 0.1 s or sample time duration (if shorter)
         StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*40;%in dB
     elseif TaskParameters.GUI.PlayStimulus == 4 %noise plus easy and difficult signals
         StimulusSettings.EmbedSignal=(fix(rand*5))/4;%for 5 signal intensities between 0(noise) and 1 (signal)
-        StimulusSettings.SignalDuration=min([0.1 BpodSystem.Data.Custom.StimDuration(iTrial+1)]);%plays signal of 0.1 s or sample time duration (if shorter)
+        StimulusSettings.SignalDuration=TaskParameters.GUI.StimDuration;%min([0.1 BpodSystem.Data.Custom.StimDuration(iTrial+1)]);%plays signal of 0.1 s or sample time duration (if shorter)
         StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*40;%UPDATE HERE FOR TRAINING STAGE 3
     end
 
     %put trial-by-trial varying settings into BpodSystem.Data.Custom
     %%UDPATE HERE IF SYSTEM GETS SLOW (maybe it's too much to save all the
     %%stimuli)
-    [BpodSystem.Data.Custom.Stimulus{iTrial+1} BpodSystem.Data.Custom.SignalEmbedTime(iTrial+1)] = GenerateSignalInNoiseStimulus(StimulusSettings);
+    [BpodSystem.Data.Custom.Signal{iTrial+1}] = GenerateSignal(StimulusSettings);
     BpodSystem.Data.Custom.EmbedSignal(iTrial+1) = StimulusSettings.EmbedSignal;
     BpodSystem.Data.Custom.SignalDuration(iTrial+1) = StimulusSettings.SignalDuration;
     BpodSystem.Data.Custom.SignalVolume(iTrial+1) = StimulusSettings.SignalVolume;
 
-    %prepare Psychotoolbox if necessary
-    % if ~BpodSystem.EmulatorMode && ~BpodSystem.Data.Custom.PsychtoolboxStartup
-    if  ~BpodSystem.Data.Custom.PsychtoolboxStartup
-        PsychToolboxSoundServer('init');
-        BpodSystem.Data.Custom.PsychtoolboxStartup=true;
-    end
-    PsychToolboxSoundServer('Load', 1, BpodSystem.Data.Custom.Stimulus{iTrial+1});%load noise to slave 1
+    PsychToolboxSoundServer('Load', 2, BpodSystem.Data.Custom.Signal{iTrial+1});%load signal to slave 2
 end
 
 %reward depletion %UPDATE HERE IF BIAS CORRECTION IS NEEDED
@@ -318,7 +318,7 @@ BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=BpodSystem.Data.Custom.Rewar
 
 %light guidance updating (later used to determine whether error port LED will be switched
 %off or switched on on next trial
-if TaskParameters.GUI.AutoRampLightGuidance && iTrial > 105 %start after 10th trial
+if TaskParameters.GUI.AutoRampLightGuidance && iTrial > 0 %start after 10th trial
     HistoryLight = 50;
     CritLight = 0.9;
     ConsiderTrialsLight = max(1,iTrial-HistoryLight):1:iTrial;
