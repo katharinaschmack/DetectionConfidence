@@ -62,6 +62,10 @@ end
 if any(strcmp(CenterPortIn,eventsThisTrial)) && any(strcmp(CenterPortOut,eventsThisTrial))
     CinDuration=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut '(1)']) - ...
         eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn '(1)']);
+    if CinDuration<0 %for case that animal was in center port at trial start and got out before it got in
+            CinDuration=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut '(2)']) - ...
+        eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn '(1)']);
+    end
 else
     CinDuration=nan;
 end
@@ -191,6 +195,7 @@ if any(strcmp('LinError_Fb',statesThisTrial))
 else
     RewardReceivedError = 0;
 end
+RewardReceivedTotal = RewardReceivedCenter + RewardReceivedCorrect + RewardReceivedError;
 
 %assemble output
 BpodSystem.Data.Custom.CoutEarly(iTrial) = CoutEarly;
@@ -209,6 +214,7 @@ BpodSystem.Data.Custom.GracePeriodNumber(iTrial) = GracePeriodNumber;
 BpodSystem.Data.Custom.RewardReceivedCenter(iTrial) = RewardReceivedCenter;
 BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial) = RewardReceivedCorrect;
 BpodSystem.Data.Custom.RewardReceivedError(iTrial) = RewardReceivedError;
+BpodSystem.Data.Custom.RewardReceivedTotal(iTrial) = RewardReceivedTotal;
 
 
 %% update times & stimulus
@@ -283,10 +289,10 @@ else
     BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = TaskParameters.GUI.AfterTrialInterval;
 end
 
-%update stimuli
-if TaskParameters.GUI.PlayStimulus>1
-    %StimulusSettings.NoiseDuration = BpodSystem.Data.Custom.StimDuration(iTrial+1);
-    if TaskParameters.GUI.PlayStimulus == 2 %only noise
+%update stimuli (unless stimulus will be repeated due to active bias correction)
+RepeatStimulus=(TaskParameters.GUI.BiasCorrection==1&&BpodSystem.Data.Custom.ResponseCorrect(iTrial)==0);
+if ~RepeatStimulus
+    if TaskParameters.GUI.PlayStimulus==1 || TaskParameters.GUI.PlayStimulus == 2
         StimulusSettings.EmbedSignal=0;
         StimulusSettings.SignalDuration=0;%min([0.1 BpodSystem.Data.Custom.StimDuration]);%plays signal of 0.1 s or sample time duration (if shorter)
         StimulusSettings.SignalVolume=0;%in dB
@@ -299,17 +305,17 @@ if TaskParameters.GUI.PlayStimulus>1
         StimulusSettings.SignalDuration=TaskParameters.GUI.StimDuration;%min([0.1 BpodSystem.Data.Custom.StimDuration(iTrial+1)]);%plays signal of 0.1 s or sample time duration (if shorter)
         StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*TaskParameters.GUI.MaxSignalVolume;%UPDATE HERE FOR TRAINING STAGE 3
     end
-
-    %put trial-by-trial varying settings into BpodSystem.Data.Custom
-    %%UDPATE HERE IF SYSTEM GETS SLOW (maybe it's too much to save all the
-    %%stimuli)
-    [BpodSystem.Data.Custom.Signal{iTrial+1}] = GenerateSignal(StimulusSettings);
-    BpodSystem.Data.Custom.EmbedSignal(iTrial+1) = StimulusSettings.EmbedSignal;
-    BpodSystem.Data.Custom.SignalDuration(iTrial+1) = StimulusSettings.SignalDuration;
-    BpodSystem.Data.Custom.SignalVolume(iTrial+1) = StimulusSettings.SignalVolume;
-
-    PsychToolboxSoundServer('Load', 2, BpodSystem.Data.Custom.Signal{iTrial+1});%load signal to slave 2
 end
+%put trial-by-trial varying settings into BpodSystem.Data.Custom
+%%UDPATE HERE IF SYSTEM GETS SLOW (maybe it's too much to save all the
+%%stimuli)
+[BpodSystem.Data.Custom.Signal{iTrial+1}] = GenerateSignal(StimulusSettings);
+BpodSystem.Data.Custom.EmbedSignal(iTrial+1) = StimulusSettings.EmbedSignal;
+BpodSystem.Data.Custom.SignalDuration(iTrial+1) = StimulusSettings.SignalDuration;
+BpodSystem.Data.Custom.SignalVolume(iTrial+1) = StimulusSettings.SignalVolume;
+
+PsychToolboxSoundServer('Load', 2, BpodSystem.Data.Custom.Signal{iTrial+1});%load signal to slave 2
+
 
 %reward depletion %UPDATE HERE IF BIAS CORRECTION IS NEEDED
 BpodSystem.Data.Custom.RewardAmountCorrect(iTrial+1)=TaskParameters.GUI.RewardAmountCorrect;

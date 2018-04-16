@@ -53,6 +53,8 @@ TaskParameters.GUI.MaxSignalVolume=60;
     
     %Choice 
     TaskParameters.GUI.ChoiceDeadline = 5; %Maximal Interval for choice after stimulus presentAfterTrialIntervalon
+    TaskParameters.GUI.BiasCorrection = true; %presents the same stimulus until a correct choice is made, then resumes stimulus sequence
+    TaskParameters.GUIMeta.BiasCorrection.Style = 'checkbox';
 
     TaskParameters.GUI.MaxLightGuidance = 0;%proportion of trials with light guidance to correct port    TaskParameters.GUI.AutoRampLightGuidance = false; %for training
     TaskParameters.GUI.MinLightGuidance = 0;%proportion of trials with light guidance to correct port    TaskParameters.GUI.AutoRampLightGuidance = false; %for training
@@ -67,7 +69,7 @@ TaskParameters.GUI.MaxSignalVolume=60;
     TaskParameters.GUI.RewardAmountError = 2;%reward amount lateral ports (marion 5)
     TaskParameters.GUI.ErrorTimeout = 1;%time out for errors 
     
-    TaskParameters.GUIPanels.Choice = {'ChoiceDeadline','LightGuidance','AutoRampLightGuidance','MaxLightGuidance','MinLightGuidance','LightGuidanceRampDown','LightGuidanceRampUp','RewardAmountCorrect','RewardAmountError','ErrorTimeout'};%,'Deplete','DepleteRate','Jackpot','JackpotMin','JackpotTime'};
+    TaskParameters.GUIPanels.Choice = {'ChoiceDeadline','BiasCorrection','LightGuidance','AutoRampLightGuidance','MaxLightGuidance','MinLightGuidance','LightGuidanceRampDown','LightGuidanceRampUp','RewardAmountCorrect','RewardAmountError','ErrorTimeout'};%,'Deplete','DepleteRate','Jackpot','JackpotMin','JackpotTime'};
 
     %Feedback delay %UPDATE TO GRAY OUT IRRELEVANT FIELDS
     TaskParameters.GUI.FeedbackDelaySelection = 1;
@@ -176,17 +178,17 @@ BpodSystem.Data.Custom.PsychtoolboxStartup=false;
 
 %% Prepare First Auditory Stimulus delivery
 %stimulus settings
-if TaskParameters.GUI.PlayStimulus>1
+%if TaskParameters.GUI.PlayStimulus>1
     StimulusSettings.SamplingRate=192000;%sampling rate of sound card
     StimulusSettings.Ramp=.01;%duration (s) of ramping at on and offset of noise used to avoid clicking sounds
-    StimulusSettings.NoiseDuration=60;%BpodSystem.Data.Custom.StimDuration;
+    StimulusSettings.NoiseDuration=60;%length of noise stream (s) that will be looped
     StimulusSettings.NoiseColor='WhiteGaussian';
     StimulusSettings.NoiseVolume=40;%in dB
     StimulusSettings.SignalForm='LinearUpsweep';
     StimulusSettings.SignalMinFreq=5E3;
     StimulusSettings.SignalMaxFreq=10E3;
 
-    if TaskParameters.GUI.PlayStimulus == 2 %only noise
+    if TaskParameters.GUI.PlayStimulus == 1 || TaskParameters.GUI.PlayStimulus == 2 %no stimulus or only noise
         StimulusSettings.EmbedSignal=0;
         StimulusSettings.SignalDuration=0;%min([0.1 BpodSystem.Data.Custom.StimDuration]);%plays signal of 0.1 s or sample time duration (if shorter)
         StimulusSettings.SignalVolume=0;%in dB
@@ -216,10 +218,9 @@ if TaskParameters.GUI.PlayStimulus>1
         BpodSystem.Data.Custom.PsychtoolboxStartup=true;
     end
     PsychToolboxSoundServer('Load', 1, BpodSystem.Data.Custom.Noise);%load stimulus to slave 1
-    PsychToolboxSoundServerLoop('Play', 1);%start noise stream
-    
+    PsychToolboxSoundServerLoop('Play', 1);%start noise stream   
     PsychToolboxSoundServer('Load', 2, BpodSystem.Data.Custom.Signal{1});%load stimulus to slave 1
-end
+
 BpodSystem.Data.Custom = orderfields(BpodSystem.Data.Custom);
 
 
@@ -236,13 +237,6 @@ BpodSystem.Data.Custom = orderfields(BpodSystem.Data.Custom);
 %end
 
 %% Initialize plots
-BpodSystem.ProtocolFigures.SideOutcomePlotFig = figure('Position', TaskParameters.Figures.OutcomePlot.Position,'name','Outcome plot','numbertitle','off', 'MenuBar', 'none', 'Resize', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandleOutcome = axes('Position',    [  .055            .15 .91 .3]);
-BpodSystem.GUIHandles.OutcomePlot.HandleFeedbackDelayGrace = axes('Position',  [1*.05           .6  .1  .3], 'Visible', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandleTrialRate = axes('Position',    [3*.05 + 2*.08   .6  .1  .3], 'Visible', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandleST = axes('Position',           [5*.05 + 4*.08   .6  .1  .3], 'Visible', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandleMT = axes('Position',           [6*.05 + 6*.08   .6  .1  .3], 'Visible', 'off');
-
 BpodSystem.ProtocolFigures.SideOutcomePlotFig = figure('Position', TaskParameters.Figures.OutcomePlot.Position,'name','Outcome plot','numbertitle','off', 'MenuBar', 'none', 'Resize', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleOutcome = axes('Position',    [  .055          .15 .91 .3]);
 BpodSystem.GUIHandles.OutcomePlot.HandlePsycAud = axes('Position',    [2*.05 + 1*.08   .6  .1  .3], 'Visible', 'off');
@@ -280,6 +274,7 @@ while RunSession
     HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
     if BpodSystem.BeingUsed == 0
         PsychToolboxSoundServer('Stop', 1);%stop noise stream
+        UserKillScript;
         return
     end
     

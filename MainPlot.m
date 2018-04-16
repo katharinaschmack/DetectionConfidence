@@ -177,9 +177,10 @@ switch Action
         
         %Plot past trial outcomes
         indxToPlot = mn:iTrial;
-        RewardReceivedTotal = sum(BpodSystem.Data.Custom.RewardReceivedCenter +...
-                    BpodSystem.Data.Custom.RewardReceivedError  + ...
-                    BpodSystem.Data.Custom.RewardReceivedCorrect);
+        RewardReceivedTotal = sum(BpodSystem.Data.Custom.RewardReceivedTotal);
+%         sum(BpodSystem.Data.Custom.RewardReceivedCenter +...
+%                     BpodSystem.Data.Custom.RewardReceivedError  + ...
+%                     BpodSystem.Data.Custom.RewardReceivedCorrect);
 
         set(BpodSystem.GUIHandles.OutcomePlot.CumRwd, 'position', [iTrial+1 1], 'string', ...
             [num2str(RewardReceivedTotal/1000) ' mL']);
@@ -308,7 +309,7 @@ switch Action
         if TaskParameters.GUI.ShowST
             cla(AxesHandles.HandleST)
             BpodSystem.GUIHandles.OutcomePlot.HistSTEarly = histogram(AxesHandles.HandleST,BpodSystem.Data.Custom.ST(BpodSystem.Data.Custom.EarlyWithdrawal)*1000);
-            BpodSystem.GUIHandles.OutcomePlot.HistSTEarly.BinWidth = 50;
+            BpodSystem.GUIHandles.OutcomePlot.fcoHistSTEarly.BinWidth = 50;
             BpodSystem.GUIHandles.OutcomePlot.HistSTEarly.FaceColor = 'r';
             BpodSystem.GUIHandles.OutcomePlot.HistSTEarly.EdgeColor = 'none';
             BpodSystem.GUIHandles.OutcomePlot.HistST = histogram(AxesHandles.HandleST,BpodSystem.Data.Custom.ST(~BpodSystem.Data.Custom.EarlyWithdrawal)*1000);
