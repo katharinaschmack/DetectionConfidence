@@ -274,7 +274,7 @@ while RunSession
     HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
     if BpodSystem.BeingUsed == 0
         PsychToolboxSoundServer('Stop', 1);%stop noise stream
-        UserKillScript;
+        %UserKillScript;
         return
     end
     
