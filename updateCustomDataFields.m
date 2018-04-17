@@ -290,7 +290,7 @@ else
 end
 
 %update stimuli (unless stimulus will be repeated due to active bias correction)
-RepeatStimulus=(TaskParameters.GUI.BiasCorrection==1&&BpodSystem.Data.Custom.ResponseCorrect(iTrial)==0);
+RepeatStimulus=(TaskParameters.GUI.BiasCorrection==1&&BpodSystem.Data.Custom.ResponseCorrect(iTrial)~=1);
 if ~RepeatStimulus
     if TaskParameters.GUI.PlayStimulus==1 || TaskParameters.GUI.PlayStimulus == 2
         StimulusSettings.EmbedSignal=0;
