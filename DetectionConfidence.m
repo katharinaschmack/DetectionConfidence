@@ -22,6 +22,10 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI.PlayStimulus =  3;%stimulus to be played at center port
     TaskParameters.GUIMeta.PlayStimulus.Style = 'popupmenu';
     TaskParameters.GUIMeta.PlayStimulus.String = {'None','Noise','Noise+Signal (easy)','Noise+Signal (variable)'};% 
+    TaskParameters.GUI.NoiseSettings =  2;%how noise is being played
+    TaskParameters.GUIMeta.NoiseSettings.Style = 'popupmenu'; %1-continuous 2-when mouse is in centerport 
+    TaskParameters.GUIMeta.NoiseSettings.String = {'Continuous','Centerport'};% 
+
     TaskParameters.GUI.StimDuration=0.05;
 TaskParameters.GUI.MaxSignalVolume=60;
 
@@ -39,12 +43,12 @@ TaskParameters.GUI.MaxSignalVolume=60;
     TaskParameters.GUI.PreStimDurationRampUp = 0.01;
     TaskParameters.GUI.PreStimDurationRampDown = 0.005;        
     %TaskParameters.GUI.PreStimDuration = 0;
-    TaskParameters.GUI.PostStimDuration = 0;
+    TaskParameters.GUI.PostStimDuration = 0.05;
     TaskParameters.GUI.RewardAmountCenter = 0.5;%reward amount center ports (marion .5)
     TaskParameters.GUI.CoutEarlyTimeout = 1;%time out for early withdrawal (marion 1s)
     %TaskParameters.GUI.EarlyWithdrawalNoise = true;%punishing sound for early withdrawal (marion true)
     %TaskParameters.GUIMeta.EarlyWithdrawalNoise.Style='checkbox';
-    TaskParameters.GUIPanels.Sampling = {'PlayStimulus','MaxSignalVolume','PreStimDuration','StimDuration','PostStimDuration',...
+    TaskParameters.GUIPanels.Sampling = {'PlayStimulus','NoiseSettings','MaxSignalVolume','PreStimDuration','StimDuration','PostStimDuration',...
         'PreStimDurationSelection','PreStimDurationMin','PreStimDurationMax','PreStimDurationRampUp','PreStimDurationRampDown','PreStimDurationTau',...
         'RewardAmountCenter','CoutEarlyTimeout'};
     
@@ -218,7 +222,9 @@ BpodSystem.Data.Custom.PsychtoolboxStartup=false;
         BpodSystem.Data.Custom.PsychtoolboxStartup=true;
     end
     PsychToolboxSoundServer('Load', 1, BpodSystem.Data.Custom.Noise);%load stimulus to slave 1
-    PsychToolboxSoundServerLoop('Play', 1);%start noise stream   
+    if TaskParameters.GUI.NoiseSettings==1
+        PsychToolboxSoundServerLoop('Play', 1);%start noise stream if continuous noise
+    end
     PsychToolboxSoundServer('Load', 2, BpodSystem.Data.Custom.Signal{1});%load stimulus to slave 1
 
 BpodSystem.Data.Custom = orderfields(BpodSystem.Data.Custom);
@@ -258,11 +264,11 @@ iTrial = 1;
 
 while RunSession
     TaskParameters = BpodParameterGUI('sync', TaskParameters);
-    if TaskParameters.GUI.PlayStimulus>0 && ~BpodSystem.Data.Custom.PsychtoolboxStartup
-        PsychToolboxSoundServer('init');
-        BpodSystem.Data.Custom.PsychtoolboxStartup=true;
-        PsychToolboxSoundServer('Load', 1, BpodSystem.Data.Custom.Stimulus);%load noise to slave 1
-    end
+%     if TaskParameters.GUI.PlayStimulus>0 && ~BpodSystem.Data.Custom.PsychtoolboxStartup
+%         PsychToolboxSoundServer('init');
+%         BpodSystem.Data.Custom.PsychtoolboxStartup=true;
+%         PsychToolboxSoundServer('Load', 1, BpodSystem.Data.Custom.Stimulus);%load stimulus to slave 1
+%     end
     
     sma = stateMatrix(iTrial);
     SendStateMatrix(sma);
@@ -273,7 +279,7 @@ while RunSession
     end
     HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
     if BpodSystem.BeingUsed == 0
-        PsychToolboxSoundServer('Stop', 1);%stop noise stream
+        %PsychToolboxSoundServer('Stop', 1);%stop noise stream
         %UserKillScript;
         return
     end
