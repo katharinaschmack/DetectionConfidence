@@ -11,7 +11,8 @@ SignalMinFreq=StimulusSettings.SignalMinFreq;
 SignalMaxFreq=StimulusSettings.SignalMaxFreq;
 SignalVolume=StimulusSettings.SignalVolume;
 
-    %make signal
+    %make signalclose all
+    
     t=linspace(0,SignalDuration,[SamplingRate*SignalDuration]); %time vector for chirp
     switch SignalForm
         case 'LinearUpsweep'

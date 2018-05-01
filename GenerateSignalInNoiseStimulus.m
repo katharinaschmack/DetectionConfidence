@@ -56,8 +56,7 @@ SoundCal = BpodSystem.CalibrationTables.SoundCal;
 if(isempty(SoundCal))
     disp('Error: no sound calibration file specified');
     return
-end
-<<<<<<< HEAD
+    endc
 toneAtt = mean(polyval(SoundCal(1,1).Coefficient,linspace(SignalMinFreq,SignalMaxFreq))); %just take the mean over signal frequencies -
 =======
 if size(SoundCal,2)<2

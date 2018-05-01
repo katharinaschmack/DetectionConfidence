@@ -272,7 +272,12 @@ while RunSession
     
     sma = stateMatrix(iTrial);
     SendStateMatrix(sma);
+    try
     RawEvents = RunStateMatrix;
+    catch
+      UserKillScriptKatharinaCatchError;
+      pause  
+    end
     if ~isempty(fieldnames(RawEvents))
         BpodSystem.Data = AddTrialEvents(BpodSystem.Data,RawEvents);
         SaveBpodSessionData;
