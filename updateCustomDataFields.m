@@ -283,7 +283,7 @@ end
 
 %update afterstimulusinterval
 if TaskParameters.GUI.AfterTrialIntervalJitter
-    BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = TruncatedExponential(0,5*TaskParameters.GUI.AfterTrialInterval,...
+    BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = TruncatedExponential(TaskParameters.GUI.AfterTrialIntervalMin,TaskParameters.GUI.AfterTrialIntervalMax,...
     TaskParameters.GUI.AfterTrialInterval);
 else
     BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = TaskParameters.GUI.AfterTrialInterval;

@@ -13,8 +13,11 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI.Ports_LMR = '123'; %Port IDs signal center noise
     TaskParameters.GUI.AfterTrialInterval = .5; %DurAfterTrialIntervalon of after trial interval before next trial starts(s)
     TaskParameters.GUI.AfterTrialIntervalJitter = true; %Exponential jitter for after trial interval
+    TaskParameters.GUI.AfterTrialIntervalMin = .1;%Minimum for jitter 
+    TaskParameters.GUI.AfterTrialIntervalMax = 2.5;%Maximum for jitter 
+
     TaskParameters.GUIMeta.AfterTrialIntervalJitter.Style = 'checkbox';
-    TaskParameters.GUIPanels.General = {'Ports_LMR','AfterTrialInterval','AfterTrialIntervalJitter'};
+    TaskParameters.GUIPanels.General = {'Ports_LMR','AfterTrialInterval','AfterTrialIntervalJitter','AfterTrialIntervalMin','AfterTrialIntervalMax'};
     
     %sampling period: events, duration and reinforcement for duration
     
@@ -27,7 +30,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.NoiseSettings.String = {'Continuous','Centerport'};% 
 
     TaskParameters.GUI.StimDuration=0.05;
-TaskParameters.GUI.MaxSignalVolume=60;
+TaskParameters.GUI.MaxSignalVolume=50;
 
     TaskParameters.GUI.PreStimDurationSelection = 2;
     TaskParameters.GUIMeta.PreStimDurationSelection.Style = 'popupmenu';
