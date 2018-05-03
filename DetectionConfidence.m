@@ -285,6 +285,13 @@ while RunSession
         BpodSystem.Data = AddTrialEvents(BpodSystem.Data,RawEvents);
         SaveBpodSessionData;
     end
+    if length(BpodSystem.GUIHandles.OutcomePlot.TrialRate.XData)>20
+    trialtimes=BpodSystem.GUIHandles.OutcomePlot.TrialRate.XData(end-2:end);
+    trialrate=3./(trialtimes(3)-trialtimes(1))*60;
+    if trialrate<1
+       UserKillScriptKatharinaMouseNotWorking;
+    end
+    end
     HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
     if BpodSystem.BeingUsed == 0
         %PsychToolboxSoundServer('Stop', 1);%stop noise stream
