@@ -62,9 +62,15 @@ end
 if any(strcmp(CenterPortIn,eventsThisTrial)) && any(strcmp(CenterPortOut,eventsThisTrial))
     CinDuration=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut '(1)']) - ...
         eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn '(1)']);
-    if CinDuration<0 %for case that animal was in center port at trial start and got out before it got in
-            CinDuration=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut '(2)']) - ...
-        eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn '(1)']);
+    if CinDuration<0 %for case that animal was in center port at trial start 
+        cin=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn]);
+        cout=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut ]);
+        if length(cout)>1 %and got out, in and out again 
+            CinDuration=cout(2)-cin(1);
+        else %and got out, in and stayed until choice deadline over
+            CinDuration=BpodSystem.Data.RawEvents.Trial{iTrial}.States.EndOfTrial(2) - cin(1);
+        end
+            
     end
 else
     CinDuration=nan;

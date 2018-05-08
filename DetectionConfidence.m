@@ -287,7 +287,7 @@ while RunSession
     end
     if length(BpodSystem.GUIHandles.OutcomePlot.TrialRate.XData)>20
     trialtimes=BpodSystem.GUIHandles.OutcomePlot.TrialRate.XData(end-2:end);
-    trialrate=3./(trialtimes(3)-trialtimes(1))*60;
+    trialrate=3./(trialtimes(3)-trialtimes(1));
     if trialrate<1
        UserKillScriptKatharinaMouseNotWorking;
     end
