@@ -59,9 +59,11 @@ TaskParameters.GUI.MaxSignalVolume=50;
     %TaskParameters.GUIPanels.Stimulus = {''};
     
     %Choice 
-    TaskParameters.GUI.ChoiceDeadline = 5; %Maximal Interval for choice after stimulus presentAfterTrialIntervalon
-    TaskParameters.GUI.BiasCorrection = true; %presents the same stimulus until a correct choice is made, then resumes stimulus sequence
-    TaskParameters.GUIMeta.BiasCorrection.Style = 'checkbox';
+    TaskParameters.GUI.ChoiceDeadline = 5; %Maximal Interval for choice after stimulus presentAfterTrialIntervalon    
+    TaskParameters.GUI.BiasCorrection = 3;
+    TaskParameters.GUIMeta.BiasCorrection.Style = 'popupmenu';
+    TaskParameters.GUIMeta.BiasCorrection.String = {'None','BruteForce','Soft'};%BruteForce: presents the same stimulus until a correct choice is made, then resumes stimulus sequence; Soft: calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
+
 
     TaskParameters.GUI.MaxLightGuidance = 0;%proportion of trials with light guidance to correct port    TaskParameters.GUI.AutoRampLightGuidance = false; %for training
     TaskParameters.GUI.MinLightGuidance = 0;%proportion of trials with light guidance to correct port    TaskParameters.GUI.AutoRampLightGuidance = false; %for training

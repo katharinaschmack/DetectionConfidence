@@ -295,19 +295,25 @@ else
     BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = TaskParameters.GUI.AfterTrialInterval;
 end
 
-%update stimuli (unless stimulus will be repeated due to active bias correction)
-RepeatStimulus=(TaskParameters.GUI.BiasCorrection==1&&BpodSystem.Data.Custom.ResponseCorrect(iTrial)~=1);
+%update stimuli (unless stimulus will be repeated due to bruteForce bias correction)
+RepeatStimulus=(TaskParameters.GUI.BiasCorrection==2&&BpodSystem.Data.Custom.ResponseCorrect(iTrial)~=1);
+%show non-prefered stimulus with p=1-bias (max .9)
+if TaskParameters.GUI.BiasCorrection==3 && iTrial > 5
+    CurrentBias=min(.9,max(.1,nansum(BpodSystem.Data.Custom.ResponseLeft)./sum(~isnan(BpodSystem.Data.Custom.ResponseLeft))));
+else 
+    CurrentBias=.5;
+end
 if ~RepeatStimulus
     if TaskParameters.GUI.PlayStimulus==1 || TaskParameters.GUI.PlayStimulus == 2
         StimulusSettings.EmbedSignal=0;
         StimulusSettings.SignalDuration=0;%min([0.1 BpodSystem.Data.Custom.StimDuration]);%plays signal of 0.1 s or sample time duration (if shorter)
         StimulusSettings.SignalVolume=0;%in dB
     elseif TaskParameters.GUI.PlayStimulus == 3 %noie plus easy signals
-        StimulusSettings.EmbedSignal=(fix(rand*2));
+        StimulusSettings.EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);
         StimulusSettings.SignalDuration=TaskParameters.GUI.StimDuration;%min([0.1 BpodSystem.Data.Custom.StimDuration(iTrial+1)]);%plays signal of 0.1 s or sample time duration (if shorter)
         StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*TaskParameters.GUI.MaxSignalVolume;%in dB
     elseif TaskParameters.GUI.PlayStimulus == 4 %noise plus easy and difficult signals
-        StimulusSettings.EmbedSignal=(fix(rand*5))/4;%for 5 signal intensities between 0(noise) and 1 (signal)
+        StimulusSettings.EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);%(fix(rand*5))/4;%for 5 signal intensities between 0(noise) and 1 (signal)
         StimulusSettings.SignalDuration=TaskParameters.GUI.StimDuration;%min([0.1 BpodSystem.Data.Custom.StimDuration(iTrial+1)]);%plays signal of 0.1 s or sample time duration (if shorter)
         StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*TaskParameters.GUI.MaxSignalVolume;%UPDATE HERE FOR TRAINING STAGE 3
     end
