@@ -332,8 +332,17 @@ PsychToolboxSoundServer('Load', 2, BpodSystem.Data.Custom.Signal{iTrial+1});%loa
 %reward depletion %UPDATE HERE IF BIAS CORRECTION IS NEEDED
 BpodSystem.Data.Custom.RewardAmountCorrect(iTrial+1)=TaskParameters.GUI.RewardAmountCorrect;
 BpodSystem.Data.Custom.RewardAmountError(iTrial+1)=TaskParameters.GUI.RewardAmountError;
+if TaskParameters.GUI.RewardAmountCenterSelection==1
 BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=TaskParameters.GUI.RewardAmountCenter;
+elseif TaskParameters.GUI.RewardAmountCenterSelection==2
+   %remove Reward if 50 Trials are sucessfully completed
+   if sum(~isnan(BpodSystem.Data.Custom.ResponseCorrect))>TaskParameters.GUI.RewardAmountCenterEasyTrials
+       BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=0;
+   else
+       BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=TaskParameters.GUI.RewardAmountCenter;
 
+   end
+end
 %light guidance updating (later used to determine whether error port LED will be switched
 %off or switched on on next trial
 if TaskParameters.GUI.AutoRampLightGuidance && iTrial > 0 %start after 10th trial

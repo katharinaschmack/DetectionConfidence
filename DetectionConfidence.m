@@ -48,12 +48,21 @@ TaskParameters.GUI.MaxSignalVolume=50;
     %TaskParameters.GUI.PreStimDuration = 0;
     TaskParameters.GUI.PostStimDuration = 0.05;
     TaskParameters.GUI.RewardAmountCenter = 0.5;%reward amount center ports (marion .5)
+    
+    TaskParameters.GUI.RewardAmountCenterSelection = 2;
+    TaskParameters.GUIMeta.RewardAmountCenterSelection.Style = 'text';
+    TaskParameters.GUIMeta.RewardAmountCenterSelection.Style = 'popupmenu';
+    TaskParameters.GUIMeta.RewardAmountCenterSelection.String = {'Fix','Decrease'};
+    TaskParameters.GUI.RewardAmountCenterEasyTrials = 50;
+
+
+
     TaskParameters.GUI.CoutEarlyTimeout = 0;%time out for early withdrawal (marion 1s)
     %TaskParameters.GUI.EarlyWithdrawalNoise = true;%punishing sound for early withdrawal (marion true)
     %TaskParameters.GUIMeta.EarlyWithdrawalNoise.Style='checkbox';
     TaskParameters.GUIPanels.Sampling = {'PlayStimulus','NoiseSettings','MaxSignalVolume','PreStimDuration','StimDuration','PostStimDuration',...
         'PreStimDurationSelection','PreStimDurationMin','PreStimDurationMax','PreStimDurationRampUp','PreStimDurationRampDown','PreStimDurationTau',...
-        'RewardAmountCenter','CoutEarlyTimeout'};
+        'RewardAmountCenter','RewardAmountCenterSelection','RewardAmountCenterEasyTrials','CoutEarlyTimeout'};
     
     %Stimulus Settings TO BE OUTCODED
     %TaskParameters.GUIPanels.Stimulus = {''};
@@ -123,7 +132,7 @@ TaskParameters.GUI.MaxSignalVolume=50;
     
     TaskParameters.GUI = orderfields(TaskParameters.GUI);
     TaskParameters.Figures.OutcomePlot.Position = [200, 200, 1000, 400];
-    
+
     
     TaskParameters.GUITabs.General = {'General'};
     TaskParameters.GUITabs.Stimulation = {'Sampling'}; 
