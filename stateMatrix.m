@@ -29,9 +29,9 @@ CorrectValve = 2^(CorrectPort-1);
 CenterValve = 2^(CenterPort-1);
 ErrorValve = 2^(ErrorPort-1);
 
-CorrectValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCorrect(iTrial), CorrectPort);
-CenterValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCenter(iTrial), CenterPort);
-ErrorValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountError(iTrial), ErrorPort);
+CorrectValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCorrect(iTrial), CorrectPort)*(BpodSystem.Data.Custom.RewardAmountCorrect(iTrial)>0);
+CenterValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCenter(iTrial), CenterPort)*(BpodSystem.Data.Custom.RewardAmountCenter(iTrial)>0);
+ErrorValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountError(iTrial), ErrorPort)*(BpodSystem.Data.Custom.RewardAmountError(iTrial)>0);
 
 
 if TaskParameters.GUI.PlayStimulus == 1 %none

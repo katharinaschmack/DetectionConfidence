@@ -48,7 +48,7 @@ TaskParameters.GUI.MaxSignalVolume=50;
     %TaskParameters.GUI.PreStimDuration = 0;
     TaskParameters.GUI.PostStimDuration = 0.05;
     TaskParameters.GUI.RewardAmountCenter = 0.5;%reward amount center ports (marion .5)
-    TaskParameters.GUI.CoutEarlyTimeout = 1;%time out for early withdrawal (marion 1s)
+    TaskParameters.GUI.CoutEarlyTimeout = 0;%time out for early withdrawal (marion 1s)
     %TaskParameters.GUI.EarlyWithdrawalNoise = true;%punishing sound for early withdrawal (marion true)
     %TaskParameters.GUIMeta.EarlyWithdrawalNoise.Style='checkbox';
     TaskParameters.GUIPanels.Sampling = {'PlayStimulus','NoiseSettings','MaxSignalVolume','PreStimDuration','StimDuration','PostStimDuration',...
@@ -74,9 +74,9 @@ TaskParameters.GUI.MaxSignalVolume=50;
     TaskParameters.GUI.LightGuidance = TaskParameters.GUI.MaxLightGuidance;
     TaskParameters.GUIMeta.LightGuidance.Style = 'text';
 
-    TaskParameters.GUI.RewardAmountCorrect = 4;%reward amount lateral ports (marion 5)
-    TaskParameters.GUI.RewardAmountError = 2;%reward amount lateral ports (marion 5)
-    TaskParameters.GUI.ErrorTimeout = 1;%time out for errors 
+    TaskParameters.GUI.RewardAmountCorrect = 3;%reward amount lateral ports (marion 5)
+    TaskParameters.GUI.RewardAmountError = 0;%reward amount lateral ports (marion 5)
+    TaskParameters.GUI.ErrorTimeout = 0;%time out for errors 
     
     TaskParameters.GUIPanels.Choice = {'ChoiceDeadline','BiasCorrection','LightGuidance','AutoRampLightGuidance','MaxLightGuidance','MinLightGuidance','LightGuidanceRampDown','LightGuidanceRampUp','RewardAmountCorrect','RewardAmountError','ErrorTimeout'};%,'Deplete','DepleteRate','Jackpot','JackpotMin','JackpotTime'};
 
@@ -287,13 +287,13 @@ while RunSession
         BpodSystem.Data = AddTrialEvents(BpodSystem.Data,RawEvents);
         SaveBpodSessionData;
     end
-    if length(BpodSystem.GUIHandles.OutcomePlot.TrialRate.XData)>20
-    trialtimes=BpodSystem.GUIHandles.OutcomePlot.TrialRate.XData(end-2:end);
-    trialrate=3./(trialtimes(3)-trialtimes(1));
-    if trialrate<1
-       UserKillScriptKatharinaMouseNotWorking;
-    end
-    end
+%     if length(erBpodSystem.GUIHandles.OutcomePlot.TrialRate.XData)>20
+%     trialtimes=BpodSystem.GUIHandles.OutcomePlot.TrialRate.XData(end-2:end);
+%     trialrate=3./(trialtimes(3)-trialtimes(1));
+%     if trialrate<1
+%        UserKillScriptKatharinaMouseNotWorking;
+%     end
+%     end
     HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
     if BpodSystem.BeingUsed == 0
         %PsychToolboxSoundServer('Stop', 1);%stop noise stream
