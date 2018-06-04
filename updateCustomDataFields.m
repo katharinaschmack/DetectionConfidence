@@ -10,7 +10,6 @@ if isfield(BpodSystem.Data.RawEvents.Trial{iTrial},'Events') %not sure why this 
     eventsThisTrial = fieldnames(BpodSystem.Data.RawEvents.Trial{iTrial}.Events)';
 else eventsThisTrial = {};
 end
-
 %get port IDs
 ports=num2str(TaskParameters.GUI.Ports_LMR);
 if (BpodSystem.Data.Custom.EmbedSignal(iTrial))>0%signal embedded    
@@ -62,7 +61,7 @@ end
 if any(strcmp(CenterPortIn,eventsThisTrial)) && any(strcmp(CenterPortOut,eventsThisTrial))
     CinDuration=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut '(1)']) - ...
         eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn '(1)']);
-    if CinDuration<0 %for case that animal was in center port at trial start 
+    if CinDuration<0 %for case that animal was in center port at trial start cc
         cin=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn]);
         cout=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut ]);
         if length(cout)>1 %and got out, in and out again 
@@ -118,6 +117,7 @@ if ~isnan(ResponseLeft)
         error('No event corresponding to calculated response recorded. Check your code!')
     end
 end
+disp(['Update 126'])
 
 %compute time animal needed to give a response (nan if no response is made)
 if ~isnan(ResponseLeft)
@@ -303,6 +303,7 @@ if TaskParameters.GUI.BiasCorrection==3 && iTrial > 5
 else 
     CurrentBias=.5;
 end
+
 if ~RepeatStimulus
     StimulusSettings.EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);%(fix(rand*5))/4;%for 5 signal intensities between 0(noise) and 1 (signal)
     StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*TaskParameters.GUI.MaxSignalVolume;%in dB
@@ -322,11 +323,13 @@ if ~RepeatStimulus
     %    StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*TaskParameters.GUI.SignalVolume;%UPDATE HERE FOR TRAINING STAGE 3
     %end
 end
+
 %put trial-by-trial varying settings into BpodSystem.Data.Custom
 %%UDPATE HERE IF SYSTEM GETS SLOW (maybe it's too much to save all the
 %%stimuli)
     BpodSystem.Data.Custom.Noise = GenerateNoise(StimulusSettings);
 [BpodSystem.Data.Custom.Signal] = GenerateSignal(StimulusSettings);
+
 BpodSystem.Data.Custom.EmbedSignal(iTrial+1) = StimulusSettings.EmbedSignal;
 BpodSystem.Data.Custom.SignalDuration(iTrial+1) = StimulusSettings.SignalDuration;
 BpodSystem.Data.Custom.SignalVolume(iTrial+1) = StimulusSettings.SignalVolume;

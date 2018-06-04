@@ -37,17 +37,17 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.NoiseVolumeTable.ColumnLabel = {'noise level (dB)','P'};  
 
     TaskParameters.GUI.StimDuration=0.05;
-    TaskParameters.GUI.MaxSignalVolume=25;
+    TaskParameters.GUI.MaxSignalVolume=30;
     TaskParameters.GUIPanels.Stimulus = {'NoiseSettings',...
         'MaxSignalVolume','StimDuration'};
     TaskParameters.GUIPanels.NoiseVolumeTable = {'NoiseVolumeTable'};
 
 
     
-    TaskParameters.GUI.PreStimDurationSelection = 2;
+    TaskParameters.GUI.PreStimDurationSelection = 3;
     TaskParameters.GUIMeta.PreStimDurationSelection.Style = 'popupmenu';
     TaskParameters.GUIMeta.PreStimDurationSelection.String = {'Fix','AutoIncr','TruncExp'};
-    TaskParameters.GUI.PreStimDurationTau = 0.25;
+    TaskParameters.GUI.PreStimDurationTau = 0.2;
 
     TaskParameters.GUI.PreStimDurationMin = 0.05;%minimum sample time required for reward will not decrease further (0.05 in Marion's script)
     TaskParameters.GUI.PreStimDuration = TaskParameters.GUI.PreStimDurationMin;
@@ -214,7 +214,7 @@ BpodSystem.Data.Custom.PsychtoolboxStartup=false;
 %if TaskParameters.GUI.PlayStimulus>1
     StimulusSettings.SamplingRate=192000;%sampling rate of sound card
     StimulusSettings.Ramp=.01;%duration (s) of ramping at on and offset of noise used to avoid clicking sounds
-    StimulusSettings.NoiseDuration=60;%length of noise stream (s) that will be looped
+    StimulusSettings.NoiseDuration=10;%length of noise stream (s) that will be looped
     StimulusSettings.NoiseColor='WhiteGaussian';
     %StimulusSettings.NoiseVolume=40;%in dB
     StimulusSettings.SignalForm='LinearUpsweep';
@@ -307,10 +307,12 @@ while RunSession
 %     end
     
     sma = stateMatrix(iTrial);
+    disp(['Trial' iTrial ' will now send stateMatrix\n']);
     SendStateMatrix(sma);
     try
     RawEvents = RunStateMatrix;
     catch
+    disp(['Trial' iTrial ' an error occurred\n']);
       UserKillScriptKatharinaCatchError;
       pause  
     end
@@ -331,9 +333,14 @@ while RunSession
         %UserKillScript;
         return
     end
-    
+                disp(['Trial' iTrial ' will now update Custom\n']);
+
     updateCustomDataFields(iTrial)%get data and create new stimuli here
+                    disp(['Trial' iTrial ' will now plot\n']);
+
     MainPlot(BpodSystem.GUIHandles.OutcomePlot,'update',iTrial);
+                        disp(['Trial' iTrial ' will now increment trial\n']);
+
     iTrial = iTrial + 1;
 end
 

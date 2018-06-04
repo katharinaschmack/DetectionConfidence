@@ -5,7 +5,8 @@ global TaskParameters
 
 switch Action
     case 'init'
-        
+                signalVec=((BpodSystem.Data.Custom.SignalVolume./BpodSystem.Data.Custom.MaxSignalVolume)-.5)*2;%1 when signal, -1 when  no signal
+
         %% Outcome
         %initialize pokes plot
         nTrialsToShow = 90; %default number of trials to display
@@ -16,7 +17,7 @@ switch Action
         axes(AxesHandles.HandleOutcome);
         %plot in specified axes
         BpodSystem.GUIHandles.OutcomePlot.Aud = line(-1,1, 'LineStyle','none','Marker','o','MarkerEdge',[.5,.5,.5],'MarkerFace',[.7,.7,.7], 'MarkerSize',8);
-        BpodSystem.GUIHandles.OutcomePlot.DV = line(1:numel(BpodSystem.Data.Custom.SignalVolume),BpodSystem.Data.Custom.SignalVolume, 'LineStyle','none','Marker','o','MarkerEdge','b','MarkerFace','b', 'MarkerSize',6);
+        BpodSystem.GUIHandles.OutcomePlot.DV = line(1:numel(BpodSystem.Data.Custom.NoiseVolume),BpodSystem.Data.Custom.NoiseVolume.*signalVec, 'LineStyle','none','Marker','o','MarkerEdge','b','MarkerFace','b', 'MarkerSize',6);
         BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCircle = line(1,0, 'LineStyle','none','Marker','o','MarkerEdge','k','MarkerFace',[1 1 1], 'MarkerSize',6);
         BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCross = line(1,0, 'LineStyle','none','Marker','+','MarkerEdge','k','MarkerFace',[1 1 1], 'MarkerSize',6);
         BpodSystem.GUIHandles.OutcomePlot.CumRwd = text(1,1,'0mL','verticalalignment','bottom','horizontalalignment','center');
@@ -172,12 +173,13 @@ switch Action
         %% Outcome
         iTrial = varargin{1};
         [mn, ~] = rescaleX(AxesHandles.HandleOutcome,iTrial,nTrialsToShow); % recompute xlim
-        
-        set(BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCircle, 'xdata', iTrial+1, 'ydata', 0);
-        set(BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCross, 'xdata', iTrial+1, 'ydata', 0);
+        signalVec=((BpodSystem.Data.Custom.SignalVolume./BpodSystem.Data.Custom.MaxSignalVolume)-.5)*2;%1 when signal, -1 when  no signal
+
+        set(BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCircle, 'xdata', iTrial+1, 'ydata', BpodSystem.Data.Custom.NoiseVolume(iTrial+1).*signalVec(iTrial+1));
+        set(BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCross, 'xdata', iTrial+1, 'ydata', BpodSystem.Data.Custom.NoiseVolume(iTrial+1).*signalVec(iTrial+1));
         
         %plot modality background
-        %         set(BpodSystem.GUIHandles.OutcomePlot.Aud,'xdata',find(BpodSystem.Data.Custom.AuditoryTrial),'ydata',BpodSystem.Data.Custom.SignalVolume(BpodSystem.Data.Custom.AuditoryTrial));
+        %set(BpodSystem.GUIHandles.OutcomePlot.Aud,'xdata',find(BpodSystem.Data.Custom.AuditoryTrial),'ydata',BpodSystem.Data.Custom.SignalVolume(BpodSystem.Data.Custom.AuditoryTrial));
         %plot past&future trials
         %set(BpodSystem.GUIHandles.OutcomePlot.DV, 'xdata', mn:numel(BpodSystem.Data.Custom.SignalVolume), 'ydata',BpodSystem.Data.Custom.SignalVolume(mn:end));
         
@@ -190,7 +192,6 @@ switch Action
         
         set(BpodSystem.GUIHandles.OutcomePlot.CumRwd, 'position', [iTrial+1 1], 'string', ...
             [num2str(RewardReceivedTotal/1000) ' mL']);
-        signalVec=((BpodSystem.Data.Custom.SignalVolume./BpodSystem.Data.Custom.MaxSignalVolume)-.5)*2;%1 when signal, -1 when  no signal
         %Plot Correct
         ndxCor = BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==1;
         Xdata = indxToPlot(ndxCor);
