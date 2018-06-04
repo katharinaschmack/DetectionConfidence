@@ -30,14 +30,14 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.NoiseSettings.Style = 'popupmenu'; %1-continuous 2-when mouse is in centerport 
     TaskParameters.GUIMeta.NoiseSettings.String = {'Continuous','Centerport'};% 
     
-    TaskParameters.GUI.NoiseVolumeTable.NoiseVolume = [20:10:60]';
-    TaskParameters.GUI.NoiseVolumeTable.NoiseProb = [.5 .5 0 0 0]';%ones(size(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume))/numel(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
+    TaskParameters.GUI.NoiseVolumeTable.NoiseVolume = [30:5:50]';
+    TaskParameters.GUI.NoiseVolumeTable.NoiseProb = ones(size(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume))/numel(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
     TaskParameters.GUIMeta.NoiseVolumeTable.Style = 'table';
     TaskParameters.GUIMeta.NoiseVolumeTable.String = 'Noise volume probabilities';
     TaskParameters.GUIMeta.NoiseVolumeTable.ColumnLabel = {'noise level (dB)','P'};  
 
     TaskParameters.GUI.StimDuration=0.05;
-    TaskParameters.GUI.MaxSignalVolume=40;
+    TaskParameters.GUI.MaxSignalVolume=25;
     TaskParameters.GUIPanels.Stimulus = {'NoiseSettings',...
         'MaxSignalVolume','StimDuration'};
     TaskParameters.GUIPanels.NoiseVolumeTable = {'NoiseVolumeTable'};
