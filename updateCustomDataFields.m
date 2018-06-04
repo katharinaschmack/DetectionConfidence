@@ -304,29 +304,39 @@ else
     CurrentBias=.5;
 end
 if ~RepeatStimulus
-    if TaskParameters.GUI.PlayStimulus==1 || TaskParameters.GUI.PlayStimulus == 2
-        StimulusSettings.EmbedSignal=0;
-        StimulusSettings.SignalDuration=0;%min([0.1 BpodSystem.Data.Custom.StimDuration]);%plays signal of 0.1 s or sample time duration (if shorter)
-        StimulusSettings.SignalVolume=0;%in dB
-    elseif TaskParameters.GUI.PlayStimulus == 3 %noie plus easy signals
-        StimulusSettings.EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);
-        StimulusSettings.SignalDuration=TaskParameters.GUI.StimDuration;%min([0.1 BpodSystem.Data.Custom.StimDuration(iTrial+1)]);%plays signal of 0.1 s or sample time duration (if shorter)
-        StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*TaskParameters.GUI.MaxSignalVolume;%in dB
-    elseif TaskParameters.GUI.PlayStimulus == 4 %noise plus easy and difficult signals
-        StimulusSettings.EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);%(fix(rand*5))/4;%for 5 signal intensities between 0(noise) and 1 (signal)
-        StimulusSettings.SignalDuration=TaskParameters.GUI.StimDuration;%min([0.1 BpodSystem.Data.Custom.StimDuration(iTrial+1)]);%plays signal of 0.1 s or sample time duration (if shorter)
-        StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*TaskParameters.GUI.MaxSignalVolume;%UPDATE HERE FOR TRAINING STAGE 3
-    end
+    StimulusSettings.EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);%(fix(rand*5))/4;%for 5 signal intensities between 0(noise) and 1 (signal)
+    StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*TaskParameters.GUI.MaxSignalVolume;%in dB
+    StimulusSettings.NoiseVolume=TaskParameters.GUI.NoiseVolumeTable.NoiseVolume(randsample(length(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume),1,true,TaskParameters.GUI.NoiseVolumeTable.NoiseProb));%in dB
+
+
+    %if TaskParameters.GUI.PlayStimulus==1 || TaskParameters.GUI.PlayStimulus == 2
+    %    StimulusSettings.EmbedSignal=0;
+    %    StimulusSettings.SignalDuration=0;%min([0.1 BpodSystem.Data.Custom.StimDuration]);%plays signal of 0.1 s or sample time duration (if shorter)
+    %    StimulusSettings.SignalVolume=0;%in dB
+    %elseif TaskParameters.GUI.PlayStimulus == 3 %noie plus easy signals
+    %    StimulusSettings.EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);
+    %    StimulusSettings.SignalDuration=TaskParameters.GUI.StimDuration;%min([0.1 BpodSystem.Data.Custom.StimDuration(iTrial+1)]);%plays signal of 0.1 s or sample time duration (if shorter)
+    %    StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*TaskParameters.GUI.SignalVolume;%in dB
+    %elseif TaskParameters.GUI.PlayStimulus == 4 %noise plus easy and difficult signals
+    %    StimulusSettings.SignalDuration=TaskParameters.GUI.StimDuration;%min([0.1 BpodSystem.Data.Custom.StimDuration(iTrial+1)]);%plays signal of 0.1 s or sample time duration (if shorter)
+    %    StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*TaskParameters.GUI.SignalVolume;%UPDATE HERE FOR TRAINING STAGE 3
+    %end
 end
 %put trial-by-trial varying settings into BpodSystem.Data.Custom
 %%UDPATE HERE IF SYSTEM GETS SLOW (maybe it's too much to save all the
 %%stimuli)
-[BpodSystem.Data.Custom.Signal{iTrial+1}] = GenerateSignal(StimulusSettings);
+    BpodSystem.Data.Custom.Noise = GenerateNoise(StimulusSettings);
+[BpodSystem.Data.Custom.Signal] = GenerateSignal(StimulusSettings);
 BpodSystem.Data.Custom.EmbedSignal(iTrial+1) = StimulusSettings.EmbedSignal;
 BpodSystem.Data.Custom.SignalDuration(iTrial+1) = StimulusSettings.SignalDuration;
 BpodSystem.Data.Custom.SignalVolume(iTrial+1) = StimulusSettings.SignalVolume;
+BpodSystem.Data.Custom.MaxSignalVolume(iTrial+1) = TaskParameters.GUI.MaxSignalVolume;
 
-PsychToolboxSoundServer('Load', 2, BpodSystem.Data.Custom.Signal{iTrial+1});%load signal to slave 2
+    BpodSystem.Data.Custom.NoiseVolume(iTrial+1) = StimulusSettings.NoiseVolume;
+
+
+PsychToolboxSoundServer('Load', 1, BpodSystem.Data.Custom.Noise);%load noise to slave 1
+PsychToolboxSoundServer('Load', 2, BpodSystem.Data.Custom.Signal);%load signal to slave 2
 
 
 %reward depletion %UPDATE HERE IF BIAS CORRECTION IS NEEDED
@@ -345,28 +355,28 @@ elseif TaskParameters.GUI.RewardAmountCenterSelection==2
 end
 %light guidance updating (later used to determine whether error port LED will be switched
 %off or switched on on next trial
-if TaskParameters.GUI.AutoRampLightGuidance && iTrial > 0 %start after 10th trial
-    HistoryLight = 50;
-    CritLight = 0.9;
-    ConsiderTrialsLight = max(1,iTrial-HistoryLight):1:iTrial;
-    ConsiderTrialsLight(isnan(BpodSystem.Data.Custom.CinDuration(ConsiderTrialsLight)))=[];%only use trials with central port entry
-    ConsiderPerformance = nansum(BpodSystem.Data.Custom.ResponseCorrect(ConsiderTrialsLight))/length(ConsiderTrialsLight);%count missed responses as errors
-    
-    if  ConsiderPerformance > CritLight && ResponseCorrect == 1%if success over all trials AND on last trial: decrease percentage of light guidance
-        BpodSystem.Data.Custom.LightGuidance(iTrial+1) = min([TaskParameters.GUI.MaxLightGuidance,...
-            (BpodSystem.Data.Custom.LightGuidance(iTrial) - TaskParameters.GUI.LightGuidanceRampDown)]);
-    elseif ConsiderPerformance < CritLight/2 && ResponseCorrect ~= 1  %if failure over all trials (<crit/2) AND on last trial: increase percentage of light guidance
-        BpodSystem.Data.Custom.LightGuidance(iTrial+1) = max([TaskParameters.GUI.MinLightGuidance,...
-            (BpodSystem.Data.Custom.LightGuidance(iTrial) + TaskParameters.GUI.LightGuidanceRampUp)]);
-    else %if any other case do not chance      
-        BpodSystem.Data.Custom.LightGuidance(iTrial+1) = min([TaskParameters.GUI.MaxLightGuidance,...
-            max([TaskParameters.GUI.MinLightGuidance,BpodSystem.Data.Custom.LightGuidance(iTrial)])]);
-    end
-else
-    BpodSystem.Data.Custom.LightGuidance(iTrial+1) = TaskParameters.GUI.MaxLightGuidance;
-end
-BpodSystem.Data.Custom.ErrorPortLightIntensity(iTrial+1) = ceil(255* (rand >= BpodSystem.Data.Custom.LightGuidance(iTrial+1)));%set LED intensity to 0 on error port on some trials for training
-TaskParameters.GUI.LightGuidance = BpodSystem.Data.Custom.LightGuidance(iTrial+1); % update Light Guidance in GUI
+%if TaskParameters.GUI.AutoRampLightGuidance && iTrial > 0 %start after 10th trial
+%     HistoryLight = 50;
+%     CritLight = 0.9;
+%     ConsiderTrialsLight = max(1,iTrial-HistoryLight):1:iTrial;
+%     ConsiderTrialsLight(isnan(BpodSystem.Data.Custom.CinDuration(ConsiderTrialsLight)))=[];%only use trials with central port entry
+%     ConsiderPerformance = nansum(BpodSystem.Data.Custom.ResponseCorrect(ConsiderTrialsLight))/length(ConsiderTrialsLight);%count missed responses as errors
+%     
+%     if  ConsiderPerformance > CritLight && ResponseCorrect == 1%if success over all trials AND on last trial: decrease percentage of light guidance
+%         BpodSystem.Data.Custom.LightGuidance(iTrial+1) = min([TaskParameters.GUI.MaxLightGuidance,...
+%             (BpodSystem.Data.Custom.LightGuidance(iTrial) - TaskParameters.GUI.LightGuidanceRampDown)]);
+%     elseif ConsiderPerformance < CritLight/2 && ResponseCorrect ~= 1  %if failure over all trials (<crit/2) AND on last trial: increase percentage of light guidance
+%         BpodSystem.Data.Custom.LightGuidance(iTrial+1) = max([TaskParameters.GUI.MinLightGuidance,...
+%             (BpodSystem.Data.Custom.LightGuidance(iTrial) + TaskParameters.GUI.LightGuidanceRampUp)]);
+%     else %if any other case do not chance      
+%         BpodSystem.Data.Custom.LightGuidance(iTrial+1) = min([TaskParameters.GUI.MaxLightGuidance,...
+%             max([TaskParameters.GUI.MinLightGuidance,BpodSystem.Data.Custom.LightGuidance(iTrial)])]);
+%     end
+%else
+%    BpodSystem.Data.Custom.LightGuidance(iTrial+1) = TaskParameters.GUI.MaxLightGuidance;
+%end
+%BpodSystem.Data.Custom.ErrorPortLightIntensity(iTrial+1) = ceil(255* (rand >= BpodSystem.Data.Custom.LightGuidance(iTrial+1)));%set LED intensity to 0 on error port on some trials for training
+%TaskParameters.GUI.LightGuidance = BpodSystem.Data.Custom.LightGuidance(iTrial+1); % update Light Guidance in GUI
 
 %%send bpod status to server
 try

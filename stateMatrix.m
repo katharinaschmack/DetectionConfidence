@@ -34,13 +34,13 @@ CenterValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCenter(iTria
 ErrorValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountError(iTrial), ErrorPort)*(BpodSystem.Data.Custom.RewardAmountError(iTrial)>0);
 
 
-if TaskParameters.GUI.PlayStimulus == 1 %none
-    StimStartOutput = {};
-    StimStopOutput = {};
-elseif TaskParameters.GUI.PlayStimulus > 1 %noise or signals in noise
+%if TaskParameters.GUI.PlayStimulus == 1 %none
+%    StimStartOutput = {};
+%    StimStopOutput = {};
+%elseif TaskParameters.GUI.PlayStimulus > 1 %noise or signals in noise
     StimStartOutput = {'SoftCode',23};
     StimStopOutput = {'SoftCode',24};
-end
+%end
 
 if TaskParameters.GUI.NoiseSettings==1
     NoiseStartOutput = {};
@@ -89,7 +89,7 @@ sma = AddState(sma, 'Name', 'Cout_Early',...
     'OutputActions', [StimStopOutput,NoiseStopOutput]);
 
 sma = AddState(sma, 'Name', 'Cin_PostStim',...
-    'Timer', TaskParameters.GUI.PostStimDuration,...
+    'Timer', BpodSystem.Data.Custom.PostStimDuration,...
     'StateChangeConditions', {CenterPortOut, 'Cout_Early','Tup','Cin_Reward'},...
     'OutputActions', StimStopOutput);
 sma = AddState(sma, 'Name', 'Cin_Reward',...
@@ -101,7 +101,8 @@ if TaskParameters.GUI.NoiseSettings==1
     sma = AddState(sma, 'Name', 'wait_Lin',...
         'Timer', TaskParameters.GUI.ChoiceDeadline,...
         'StateChangeConditions', {CorrectPortIn, 'LinCorrect_GraceStart',ErrorPortIn, 'LinError_GraceStart','Tup','EndOfTrial'},...
-        'OutputActions', {strcat('PWM',num2str(CorrectPort)),255,strcat('PWM',num2str(ErrorPort)),BpodSystem.Data.Custom.ErrorPortLightIntensity(iTrial)});
+        'OutputActions', {strcat('PWM',num2str(CorrectPort)),255,strcat('PWM',num2str(ErrorPort)),255});
+    %'OutputActions', {strcat('PWM',num2str(CorrectPort)),255,strcat('PWM',num2str(ErrorPort)),BpodSystem.Data.Custom.ErrorPortLightIntensity(iTrial)});
 elseif TaskParameters.GUI.NoiseSettings==2
     sma = AddState(sma, 'Name', 'wait_Lin',...
         'Timer', TaskParameters.GUI.ChoiceDeadline,...
