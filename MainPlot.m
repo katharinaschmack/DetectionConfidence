@@ -3,9 +3,15 @@ global nTrialsToShow %this is for convenience
 global BpodSystem
 global TaskParameters
 
+signalVec=((BpodSystem.Data.Custom.SignalVolume./BpodSystem.Data.Custom.MaxSignalVolume)-.5)*2;%1 when signal, -1 when  no signal
+noiseVec=BpodSystem.Data.Custom.NoiseVolume.*signalVec;
+bins=[sort([-TaskParameters.GUI.NoiseVolumeTable.NoiseVolume],'descend');sort(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume,'descend')];
+noiseBinned=zeros(size(noiseVec));
+for b=1:length(bins)
+   noiseBinned(noiseVec==bins(b))=b; 
+end
 switch Action
     case 'init'
-                signalVec=((BpodSystem.Data.Custom.SignalVolume./BpodSystem.Data.Custom.MaxSignalVolume)-.5)*2;%1 when signal, -1 when  no signal
 
         %% Outcome
         %initialize pokes plot
@@ -16,25 +22,24 @@ switch Action
         end
         axes(AxesHandles.HandleOutcome);
         %plot in specified axes
-        BpodSystem.GUIHandles.OutcomePlot.Aud = line(-1,1, 'LineStyle','none','Marker','o','MarkerEdge',[.5,.5,.5],'MarkerFace',[.7,.7,.7], 'MarkerSize',8);
-        BpodSystem.GUIHandles.OutcomePlot.DV = line(1:numel(BpodSystem.Data.Custom.NoiseVolume),BpodSystem.Data.Custom.NoiseVolume.*signalVec, 'LineStyle','none','Marker','o','MarkerEdge','b','MarkerFace','b', 'MarkerSize',6);
-        BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCircle = line(1,0, 'LineStyle','none','Marker','o','MarkerEdge','k','MarkerFace',[1 1 1], 'MarkerSize',6);
-        BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCross = line(1,0, 'LineStyle','none','Marker','+','MarkerEdge','k','MarkerFace',[1 1 1], 'MarkerSize',6);
-        BpodSystem.GUIHandles.OutcomePlot.CumRwd = text(1,1,'0mL','verticalalignment','bottom','horizontalalignment','center');
-        BpodSystem.GUIHandles.OutcomePlot.Correct = line(-1,1, 'LineStyle','none','Marker','o','MarkerEdge','g','MarkerFace','g', 'MarkerSize',6);
-        BpodSystem.GUIHandles.OutcomePlot.Incorrect = line(-1,1, 'LineStyle','none','Marker','o','MarkerEdge','r','MarkerFace','r', 'MarkerSize',6);
-        BpodSystem.GUIHandles.OutcomePlot.BrokeFix = line(-1,0, 'LineStyle','none','Marker','d','MarkerEdge','b','MarkerFace','none', 'MarkerSize',6);
-        BpodSystem.GUIHandles.OutcomePlot.EarlyWithdrawal = line(-1,0, 'LineStyle','none','Marker','d','MarkerEdge','none','MarkerFace','b', 'MarkerSize',6);
-        BpodSystem.GUIHandles.OutcomePlot.NoFeedback = line(-1,0, 'LineStyle','none','Marker','o','MarkerEdge','none','MarkerFace','w', 'MarkerSize',5);
-        BpodSystem.GUIHandles.OutcomePlot.NoResponse = line(-1,[0 1], 'LineStyle','none','Marker','x','MarkerEdge','w','MarkerFace','none', 'MarkerSize',6);
+        BpodSystem.GUIHandles.OutcomePlot.Aud = line(-1,noiseBinned, 'LineStyle','none','Marker','o','MarkerEdge',[.5,.5,.5],'MarkerFace',[.7,.7,.7], 'MarkerSize',8);
+        BpodSystem.GUIHandles.OutcomePlot.DV = line(1:numel(noiseVec),noiseBinned, 'LineStyle','none','Marker','o','MarkerEdge','b','MarkerFace','b', 'MarkerSize',6);
+        BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCircle = line(1,noiseBinned, 'LineStyle','none','Marker','o','MarkerEdge','k','MarkerFace',[1 1 1], 'MarkerSize',6);
+        BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCross = line(1,noiseBinned, 'LineStyle','none','Marker','+','MarkerEdge','k','MarkerFace',[1 1 1], 'MarkerSize',6);
+        BpodSystem.GUIHandles.OutcomePlot.CumRwd = text(1,noiseBinned,'0mL','verticalalignment','bottom','horizontalalignment','center');
+        BpodSystem.GUIHandles.OutcomePlot.Correct = line(-1,noiseBinned, 'LineStyle','none','Marker','o','MarkerEdge','g','MarkerFace','g', 'MarkerSize',6);
+        BpodSystem.GUIHandles.OutcomePlot.Incorrect = line(-1,noiseBinned, 'LineStyle','none','Marker','o','MarkerEdge','r','MarkerFace','r', 'MarkerSize',6);
+        BpodSystem.GUIHandles.OutcomePlot.BrokeFix = line(-1,mean(1:length(bins)), 'LineStyle','none','Marker','d','MarkerEdge','b','MarkerFace','none', 'MarkerSize',6);
+        BpodSystem.GUIHandles.OutcomePlot.EarlyWithdrawal = line(-1,mean(1:length(bins)), 'LineStyle','none','Marker','d','MarkerEdge','none','MarkerFace','b', 'MarkerSize',6);
+        BpodSystem.GUIHandles.OutcomePlot.NoFeedback = line(-1,mean(1:length(bins)), 'LineStyle','none','Marker','o','MarkerEdge','none','MarkerFace','w', 'MarkerSize',5);
+        BpodSystem.GUIHandles.OutcomePlot.NoResponse = line(-1,[0 1], 'LineStyle','none','Marker','x','MarkerEdge','b','MarkerFace','none', 'MarkerSize',6);
         BpodSystem.GUIHandles.OutcomePlot.LightOff = line(-1,[0 1], 'LineStyle','none','Marker','p','MarkerEdge','m','MarkerFace','none', 'MarkerSize',20);
         
         %BpodSystem.GUIHandles.OutcomePlot.Catch = line(-1,[0 1], 'LineStyle','none','Marker','o','MarkerEdge',[0,0,0],'MarkerFace',[0,0,0], 'MarkerSize',4);
         %set(AxesHandles.HandleOutcome,'TickDir', 'out','XLim',[0, nTrialsToShow], 'YTick', [0:20:60],'YTickLabel', {' 0dB','20dB','40dB','60dB'}, 'FontSize', 13);
         %set(BpodSystem.GUIHandles.OutcomePlot.Aud,'xdata',find(BpodSystem.Data.Custom.AuditoryTrial),'ydata',BpodSystem.Data.Custom.SignalVolume(BpodSystem.Data.Custom.AuditoryTrial));
-        yTicks=[-flipud(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);TaskParameters.GUI.NoiseVolumeTable.NoiseVolume];
 
-        set(AxesHandles.HandleOutcome,'TickDir', 'out','XLim',[0, nTrialsToShow], 'YTick',yTicks,'YTickLabels',yTicks, 'FontSize', 13);
+        set(AxesHandles.HandleOutcome,'TickDir', 'out','XLim',[0, nTrialsToShow], 'YTick',1:numel(bins),'YTickLabel', num2str(bins),'FontSize', 13);
         xlabel(AxesHandles.HandleOutcome, 'Trial#', 'FontSize', 14);
         hold(AxesHandles.HandleOutcome, 'on');
         %% Psyc Auditory
@@ -44,8 +49,10 @@ switch Action
         %BpodSystem.GUIHandles.OutcomePlot.PsycAudGuidedFit = line(AxesHandles.HandlePsycAud,[-1. 1.],[.5 .5],'color','r','Visible','off');
         
         AxesHandles.HandlePsycAud.YLim = [-.05 1.05];
-       % AxesHandles.HandlePsycAud.XLim = [0, 60];
-        AxesHandles.HandlePsycAud.XLabel.String = 'Signal evidence (dB)'; % FIGURE OUT UNIT
+        AxesHandles.HandlePsycAud.XLim = [1 length(bins)];
+        %AxesHandles.HandlePsycAud.XTickLabel = num2str(bins);
+
+        AxesHandles.HandlePsycAud.XLabel.String = 'Signal evidence'; % FIGURE OUT UNIT
         AxesHandles.HandlePsycAud.YLabel.String = '% Signal port';
         AxesHandles.HandlePsycAud.Title.String = 'Psychometric Aud';
         %% Vevaiometric curve
@@ -173,10 +180,9 @@ switch Action
         %% Outcome
         iTrial = varargin{1};
         [mn, ~] = rescaleX(AxesHandles.HandleOutcome,iTrial,nTrialsToShow); % recompute xlim
-        signalVec=((BpodSystem.Data.Custom.SignalVolume./BpodSystem.Data.Custom.MaxSignalVolume)-.5)*2;%1 when signal, -1 when  no signal
 
-        set(BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCircle, 'xdata', iTrial+1, 'ydata', BpodSystem.Data.Custom.NoiseVolume(iTrial+1).*signalVec(iTrial+1));
-        set(BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCross, 'xdata', iTrial+1, 'ydata', BpodSystem.Data.Custom.NoiseVolume(iTrial+1).*signalVec(iTrial+1));
+        set(BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCircle, 'xdata', iTrial+1, 'ydata', noiseBinned(iTrial+1));
+        set(BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCross, 'xdata', iTrial+1, 'ydata', noiseBinned(iTrial+1));
         
         %plot modality background
         %set(BpodSystem.GUIHandles.OutcomePlot.Aud,'xdata',find(BpodSystem.Data.Custom.AuditoryTrial),'ydata',BpodSystem.Data.Custom.SignalVolume(BpodSystem.Data.Custom.AuditoryTrial));
@@ -195,31 +201,31 @@ switch Action
         %Plot Correct
         ndxCor = BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==1;
         Xdata = indxToPlot(ndxCor);
-        Ydata = BpodSystem.Data.Custom.NoiseVolume(indxToPlot).*signalVec(indxToPlot); Ydata = Ydata(ndxCor);
+        Ydata = noiseBinned(indxToPlot); Ydata = Ydata(ndxCor);
         set(BpodSystem.GUIHandles.OutcomePlot.Correct, 'xdata', Xdata, 'ydata', Ydata);
         %Plot Incorrect
         ndxInc = BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==0;
         Xdata = indxToPlot(ndxInc);
-        Ydata = BpodSystem.Data.Custom.NoiseVolume(indxToPlot).*signalVec(indxToPlot); Ydata = Ydata(ndxInc);
+        Ydata = noiseBinned(indxToPlot); Ydata = Ydata(ndxInc);
         set(BpodSystem.GUIHandles.OutcomePlot.Incorrect, 'xdata', Xdata, 'ydata', Ydata);
         %Plot Broken Fixation
         ndxBroke = BpodSystem.Data.Custom.BrokeFixation(indxToPlot);
-        Xdata = indxToPlot(ndxBroke); Ydata = zeros(1,sum(ndxBroke));
+        Xdata = indxToPlot(ndxBroke); Ydata = zeros(1,sum(ndxBroke))+mean(1:numel(bins));
         set(BpodSystem.GUIHandles.OutcomePlot.BrokeFix, 'xdata', Xdata, 'ydata', Ydata);
         %Plot Early Withdrawal
         ndxEarly = BpodSystem.Data.Custom.EarlyWithdrawal(indxToPlot);
         Xdata = indxToPlot(ndxEarly);
-        Ydata = zeros(1,sum(ndxEarly));
+        Ydata = zeros(1,sum(ndxEarly))+mean(1:numel(bins));
         set(BpodSystem.GUIHandles.OutcomePlot.EarlyWithdrawal, 'xdata', Xdata, 'ydata', Ydata);
         %Plot missed choice trials
         ndxMiss = isnan(BpodSystem.Data.Custom.ResponseCorrect(indxToPlot))&~ndxBroke&~ndxEarly;
         Xdata = indxToPlot(ndxMiss);
-        Ydata = BpodSystem.Data.Custom.NoiseVolume(indxToPlot).*signalVec(indxToPlot); Ydata = Ydata(ndxMiss);
+        Ydata = noiseBinned(indxToPlot); Ydata = Ydata(ndxMiss);
         set(BpodSystem.GUIHandles.OutcomePlot.NoResponse, 'xdata', Xdata, 'ydata', Ydata);
         %Plot NoFeedback trials
         ndxNoFeedback = (BpodSystem.Data.Custom.RewardReceivedCorrect(indxToPlot)+BpodSystem.Data.Custom.RewardReceivedError(indxToPlot))==0;
         Xdata = indxToPlot(ndxNoFeedback&~ndxMiss);
-        Ydata = BpodSystem.Data.Custom.NoiseVolume(indxToPlot).*signalVec(indxToPlot); Ydata = Ydata(ndxNoFeedback&~ndxMiss);
+        Ydata = noiseBinned(indxToPlot); Ydata = Ydata(ndxNoFeedback&~ndxMiss);
         set(BpodSystem.GUIHandles.OutcomePlot.NoFeedback, 'xdata', Xdata, 'ydata', Ydata);
         %Plot light guidance trials
         %ndxLightGuidance = BpodSystem.Data.Custom.ErrorPortLightIntensity(indxToPlot)==0&~ndxBroke&~ndxEarly;
@@ -236,8 +242,7 @@ switch Action
         if TaskParameters.GUI.ShowPsycAud
                         ndxNan = isnan(BpodSystem.Data.Custom.ResponseLeft);
             if sum(~ndxNan) > 1
-            AudDVabs=((BpodSystem.Data.Custom.SignalVolume./BpodSystem.Data.Custom.MaxSignalVolume)-.5)*2;
-            AudDV = AudDVabs.*BpodSystem.Data.Custom.NoiseVolume;
+            AudDV=noiseBinned;
             %ndxGuided = BpodSystem.Data.Custom.ErrorPortLightIntensity(1:numel(BpodSystem.Data.Custom.ResponseLeft))==0;
             % AudBin = 5;
             %             try
@@ -259,9 +264,9 @@ switch Action
 %                 BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData = linspace(min(AudDV(~ndxNan&~ndxGuided)),max(AudDV(~ndxNan&~ndxGuided)),100);
 %                 BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.YData = glmval(glmfit(AudDV(~ndxNan&~ndxGuided),...
 %                     BpodSystem.Data.Custom.ResponseLeft(~ndxNan&~ndxGuided)','binomial'),linspace(min(AudDV(~ndxNan&~ndxGuided)),max(AudDV(~ndxNan&~ndxGuided)),100),'logit');
-                            BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData = linspace(min(AudDV(~ndxNan)),max(AudDV(~ndxNan)),100);
-                BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.YData = glmval(glmfit(AudDV(~ndxNan),...
-                    BpodSystem.Data.Custom.ResponseLeft(~ndxNan)','binomial'),linspace(min(AudDV(~ndxNan)),max(AudDV(~ndxNan)),100),'logit');
+BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData = linspace(min(AudDV(~ndxNan)),max(AudDV(~ndxNan)),100);
+BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.YData = glmval(glmfit(AudDV(~ndxNan),...
+    BpodSystem.Data.Custom.ResponseLeft(~ndxNan)','binomial'),linspace(min(AudDV(~ndxNan)),max(AudDV(~ndxNan)),100),'logit');
 
             end
             
