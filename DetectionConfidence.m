@@ -158,6 +158,7 @@ end
 
 BpodParameterGUI('init', TaskParameters);
 
+
 %put trial-by-trial varying settings into BpodSystem.Data.Custom
 switch TaskParameters.GUIMeta.PreStimDurationSelection.String{TaskParameters.GUI.PreStimDurationSelection}
     case 'AutoIncr'
@@ -213,7 +214,7 @@ BpodSystem.Data.Custom.PsychtoolboxStartup=false;
 %stimulus settings
 %if TaskParameters.GUI.PlayStimulus>1
     StimulusSettings.SamplingRate=192000;%sampling rate of sound card
-    StimulusSettings.Ramp=.01;%duration (s) of ramping at on and offset of noise used to avoid clicking sounds
+    StimulusSettings.Ramp=.05;%duration (s) of ramping at on and offset of noise used to avoid clicking sounds
     StimulusSettings.NoiseDuration=10;%length of noise stream (s) that will be looped
     StimulusSettings.NoiseColor='WhiteGaussian';
     %StimulusSettings.NoiseVolume=40;%in dB
@@ -243,7 +244,7 @@ BpodSystem.Data.Custom.PsychtoolboxStartup=false;
     %[BpodSystem.Data.Custom.Stimulus{1} BpodSystem.Data.Custom.SignalEmbedTime] = GenerateSignalInNoiseStimulus(StimulusSettings);
     %BpodSystem.Data.Custom.EmbedSignal = StimulusSettings.EmbedSignal;
     BpodSystem.Data.Custom.Noise = GenerateNoise(StimulusSettings);
-    BpodSystem.Data.Custom.Signal = GenerateSignal(StimulusSettings);
+    BpodSystem.Data.Custom.Signal = GenerateSignal(StimulusSettings).*StimulusSettings.EmbedSignal;
     BpodSystem.Data.Custom.NoiseVolume = StimulusSettings.NoiseVolume;
     BpodSystem.Data.Custom.SignalDuration = StimulusSettings.SignalDuration;
     BpodSystem.Data.Custom.SignalVolume = StimulusSettings.SignalVolume;

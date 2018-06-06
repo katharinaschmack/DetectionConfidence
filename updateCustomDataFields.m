@@ -328,7 +328,8 @@ end
 %%UDPATE HERE IF SYSTEM GETS SLOW (maybe it's too much to save all the
 %%stimuli)
     BpodSystem.Data.Custom.Noise = GenerateNoise(StimulusSettings);
-[BpodSystem.Data.Custom.Signal] = GenerateSignal(StimulusSettings);
+    BpodSystem.Data.Custom.Signal = GenerateSignal(StimulusSettings).*StimulusSettings.EmbedSignal;
+
 
 BpodSystem.Data.Custom.EmbedSignal(iTrial+1) = StimulusSettings.EmbedSignal;
 BpodSystem.Data.Custom.SignalDuration(iTrial+1) = StimulusSettings.SignalDuration;
@@ -343,6 +344,7 @@ PsychToolboxSoundServer('Load', 2, BpodSystem.Data.Custom.Signal);%load signal t
 
 
 %reward depletion %UPDATE HERE IF BIAS CORRECTION IS NEEDED
+BpodSystem.Data.Custom.SignalVolume
 BpodSystem.Data.Custom.RewardAmountCorrect(iTrial+1)=TaskParameters.GUI.RewardAmountCorrect;
 BpodSystem.Data.Custom.RewardAmountError(iTrial+1)=TaskParameters.GUI.RewardAmountError;
 if TaskParameters.GUI.RewardAmountCenterSelection==1

@@ -34,13 +34,13 @@ CenterValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCenter(iTria
 ErrorValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountError(iTrial), ErrorPort)*(BpodSystem.Data.Custom.RewardAmountError(iTrial)>0);
 
 
-%if TaskParameters.GUI.PlayStimulus == 1 %none
-%    StimStartOutput = {};
-%    StimStopOutput = {};
-%elseif TaskParameters.GUI.PlayStimulus > 1 %noise or signals in noise
+if BpodSystem.Data.Custom.EmbedSignal(iTrial) == 0 %none
+ StimStartOutput = {};
+    StimStopOutput = {};
+elseif BpodSystem.Data.Custom.EmbedSignal(iTrial) == 1 %none
     StimStartOutput = {'SoftCode',23};
     StimStopOutput = {'SoftCode',24};
-%end
+end
 
 if TaskParameters.GUI.NoiseSettings==1
     NoiseStartOutput = {};
