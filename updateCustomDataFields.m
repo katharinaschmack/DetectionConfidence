@@ -117,7 +117,6 @@ if ~isnan(ResponseLeft)
         error('No event corresponding to calculated response recorded. Check your code!')
     end
 end
-disp(['Update 126'])
 
 %compute time animal needed to give a response (nan if no response is made)
 if ~isnan(ResponseLeft)
