@@ -308,7 +308,6 @@ while RunSession
 %     end
     
     sma = stateMatrix(iTrial);
-    disp(['Trial' iTrial ' will now send stateMatrix\n']);
     SendStateMatrix(sma);
     try
     RawEvents = RunStateMatrix;
@@ -334,13 +333,10 @@ while RunSession
         %UserKillScript;
         return
     end
-                disp(['Trial' iTrial ' will now update Custom\n']);
 
     updateCustomDataFields(iTrial)%get data and create new stimuli here
-                    disp(['Trial' iTrial ' will now plot\n']);
 
     MainPlot(BpodSystem.GUIHandles.OutcomePlot,'update',iTrial);
-                        disp(['Trial' iTrial ' will now increment trial\n']);
 
     iTrial = iTrial + 1;
 end

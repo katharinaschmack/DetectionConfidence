@@ -344,7 +344,6 @@ PsychToolboxSoundServer('Load', 2, BpodSystem.Data.Custom.Signal);%load signal t
 
 
 %reward depletion %UPDATE HERE IF BIAS CORRECTION IS NEEDED
-BpodSystem.Data.Custom.SignalVolume
 BpodSystem.Data.Custom.RewardAmountCorrect(iTrial+1)=TaskParameters.GUI.RewardAmountCorrect;
 BpodSystem.Data.Custom.RewardAmountError(iTrial+1)=TaskParameters.GUI.RewardAmountError;
 if TaskParameters.GUI.RewardAmountCenterSelection==1
