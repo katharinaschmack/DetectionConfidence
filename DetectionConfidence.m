@@ -67,7 +67,8 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.RewardAmountCenterSelection.String = {'Fix','Decrease'};
     TaskParameters.GUI.RewardAmountCenterEasyTrials = 50;
 
-
+    TaskParameters.GUI.AllowBreakFixation = 1;
+    TaskParameters.GUIMeta.AllowBreakFixation.Style = 'checkbox';
 
     TaskParameters.GUI.CoutEarlyTimeout = 0;%time out for early withdrawal (marion 1s)
     %TaskParameters.GUI.EarlyWithdrawalNoise = true;%punishing sound for early withdrawal (marion true)
@@ -75,7 +76,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIPanels.Timing = {'PreStimDuration',...
         'PreStimDurationSelection','PreStimDurationMin','PreStimDurationMax','PreStimDurationRampUp','PreStimDurationRampDown','PreStimDurationTau'};
     
-    TaskParameters.GUIPanels.Sampling = {'RewardAmountCenter',...
+    TaskParameters.GUIPanels.Sampling = {'RewardAmountCenter','AllowBreakFixation'...
         'RewardAmountCenterSelection','RewardAmountCenterEasyTrials','CoutEarlyTimeout'};
     %Stimulus Settings TO BE OUTCODED
     %TaskParameters.GUIPanels.Stimulus = {''};
