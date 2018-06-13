@@ -307,6 +307,7 @@ if ~RepeatStimulus
     StimulusSettings.EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);%(fix(rand*5))/4;%for 5 signal intensities between 0(noise) and 1 (signal)
     StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*TaskParameters.GUI.MaxSignalVolume;%in dB
     StimulusSettings.NoiseVolume=TaskParameters.GUI.NoiseVolumeTable.NoiseVolume(randsample(length(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume),1,true,TaskParameters.GUI.NoiseVolumeTable.NoiseProb));%in dB
+    StimulusSettings.SignalDuration=BpodSystem.Data.Custom.StimDuration(iTrial+1);%plays signal of 0.1 s or sample time duration (if shorter)
 
 
     %if TaskParameters.GUI.PlayStimulus==1 || TaskParameters.GUI.PlayStimulus == 2
@@ -326,7 +327,7 @@ end
 %put trial-by-trial varying settings into BpodSystem.Data.Custom
 %%UDPATE HERE IF SYSTEM GETS SLOW (maybe it's too much to save all the
 %%stimuli)
-    BpodSystem.Data.Custom.Noise = GenerateNoise(StimulusSettings);
+    BpodSystem.Data.Custom.Noise = GenerateNoise(StimulusSettings).*(StimulusSettings.NoiseVolume>0);
     BpodSystem.Data.Custom.Signal = GenerateSignal(StimulusSettings).*StimulusSettings.EmbedSignal;
 
 

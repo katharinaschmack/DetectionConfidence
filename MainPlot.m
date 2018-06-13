@@ -5,7 +5,11 @@ global TaskParameters
 
 signalVec=((BpodSystem.Data.Custom.SignalVolume./BpodSystem.Data.Custom.MaxSignalVolume)-.5)*2;%1 when signal, -1 when  no signal
 noiseVec=BpodSystem.Data.Custom.NoiseVolume.*signalVec;
+noiseVec(noiseVec==0)=signalVec(noiseVec==0);
 bins=[sort([-TaskParameters.GUI.NoiseVolumeTable.NoiseVolume],'descend');sort(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume,'descend')];
+if bins(1)==0;bins(1)=-1;end
+if bins(end)==0;bins(end)=1;end
+
 noiseBinned=zeros(size(noiseVec));
 for b=1:length(bins)
    noiseBinned(noiseVec==bins(b))=b; 

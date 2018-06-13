@@ -222,7 +222,7 @@ BpodSystem.Data.Custom.PsychtoolboxStartup=false;
     StimulusSettings.SignalForm='LinearUpsweep';
     StimulusSettings.SignalMinFreq=10E3;
     StimulusSettings.SignalMaxFreq=15E3;
-    StimulusSettings.SignalDuration=0.05;%min([0.1 BpodSystem.Data.Custom.StimDuration]);%plays signal of 0.1 s or sample time duration (if shorter)
+    StimulusSettings.SignalDuration=BpodSystem.Data.Custom.StimDuration;%plays signal of 0.1 s or sample time duration (if shorter)
     StimulusSettings.EmbedSignal=randsample(0:1,1);
     StimulusSettings.SignalVolume=StimulusSettings.EmbedSignal*TaskParameters.GUI.MaxSignalVolume;%in dB
     StimulusSettings.NoiseVolume=TaskParameters.GUI.NoiseVolumeTable.NoiseVolume(randsample(length(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume),1,true,TaskParameters.GUI.NoiseVolumeTable.NoiseProb));%in dB
@@ -244,7 +244,7 @@ BpodSystem.Data.Custom.PsychtoolboxStartup=false;
     %put trial-by-trial varying settings into BpodSystem.Data.Custom
     %[BpodSystem.Data.Custom.Stimulus{1} BpodSystem.Data.Custom.SignalEmbedTime] = GenerateSignalInNoiseStimulus(StimulusSettings);
     %BpodSystem.Data.Custom.EmbedSignal = StimulusSettings.EmbedSignal;
-    BpodSystem.Data.Custom.Noise = GenerateNoise(StimulusSettings);
+    BpodSystem.Data.Custom.Noise = GenerateNoise(StimulusSettings).*(StimulusSettings.NoiseVolume>0);
     BpodSystem.Data.Custom.Signal = GenerateSignal(StimulusSettings).*StimulusSettings.EmbedSignal;
     BpodSystem.Data.Custom.NoiseVolume = StimulusSettings.NoiseVolume;
     BpodSystem.Data.Custom.SignalDuration = StimulusSettings.SignalDuration;
