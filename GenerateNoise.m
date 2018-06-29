@@ -6,7 +6,7 @@ SamplingRate=StimulusSettings.SamplingRate;
 Ramp=StimulusSettings.Ramp;
 NoiseColor=StimulusSettings.NoiseColor;
 NoiseDuration=StimulusSettings.NoiseDuration;
-NoiseVolume=StimulusSettings.NoiseVolume;
+NoiseVolume=max(min(StimulusSettings.NoiseVolume,StimulusSettings.MaxVolume),StimulusSettings.MinVolume);%clip noise volume to Min and Max
 SignalMinFreq=StimulusSettings.SignalMinFreq;
 SignalMaxFreq=StimulusSettings.SignalMaxFreq;
 

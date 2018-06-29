@@ -17,13 +17,13 @@ See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %}
-function PsychToolboxSoundServer(Function, varargin)
+function PsychToolboxSoundServerLoop(Function, varargin)
 % Note: On some Ubuntu systems with Xonar DX, L&R audio seem to be remapped
 % to the third plug on the card (from the second plug where they're
 % supposed to be). A modified version of this plugin for those systems is
 % available upon request. -JS 8/27/2014
 global BpodSystem
-SF = 192000; % Sound card sampling rate
+SF = 192000;
 nSlaves = 32;
 Function = lower(Function);
 switch Function
@@ -95,7 +95,7 @@ switch Function
         else
             if isfield(BpodSystem.PluginObjects, 'SoundServer')
                 try
-                    PsychPortAudio('Close', BpodSystem.PluginObjects.SoundServer);
+                    PsychPortAudio('Close')%, BpodSystem.PluginObjects.SoundServer);
                 catch
                 end
             end
@@ -104,6 +104,7 @@ switch Function
             BpodSystem.PluginObjects.SoundServer.Sounds = cell(1,32);
             BpodSystem.PluginObjects.SoundServer.Enabled = 1;
             try
+                Data = zeros(6,192);
                 sound(zeros(1,10), 48000);
                 disp('Emulator sound server successfully initialized.')
             catch
@@ -158,19 +159,22 @@ switch Function
                 Data(1,:) = mean(reshape(Data1, 4, length(Data1)/4)); % Down-sample 192kHz to 48kHz
                 Data(2,:) = mean(reshape(Data2, 4, length(Data2)/4)); % Down-sample 192kHz to 48kHz
             end
+%            PsychPortAudio('FillBuffer', BpodSystem.PluginObjects.SoundServer.SlaveOutput(SlaveID), Data);
             BpodSystem.PluginObjects.SoundServer.Sounds{SlaveID} = Data;
+            BpodSystem.PluginObjects.SoundServer.SlaveOutput(SlaveID) = audioplayer(Data,48000);
+                        
         end
     case 'play'
         SlaveID = varargin{1};
         if SlaveID < nSlaves+1
-            if BpodSystem.EmulatorMode == 0 
+            if BpodSystem.EmulatorMode == 0
                 PsychPortAudio('Start', BpodSystem.PluginObjects.SoundServer.SlaveOutput(SlaveID),0);%changed here to loop noise
             else
                 l = size(BpodSystem.PluginObjects.SoundServer.Sounds{SlaveID},1);
                 if l == 2
                     BpodSystem.PluginObjects.SoundServer.Sounds{SlaveID} = BpodSystem.PluginObjects.SoundServer.Sounds{SlaveID}';
                 end
-                sound(BpodSystem.PluginObjects.SoundServer.Sounds{SlaveID}, 48000);
+                play(BpodSystem.PluginObjects.SoundServer.SlaveOutput(SlaveID));
             end
         else
             error(['The psychtoolbox sound server currently supports only ' num2str(nSlaves) ' sounds.'])
@@ -180,7 +184,8 @@ switch Function
             SlaveID = varargin{1};
             PsychPortAudio('Stop', BpodSystem.PluginObjects.SoundServer.SlaveOutput(SlaveID));
         else
-            clear playsnd
+                        SlaveID = varargin{1};
+                stop(BpodSystem.PluginObjects.SoundServer.SlaveOutput(SlaveID));
         end
     case 'stopall'
         for x = 1:nSlaves

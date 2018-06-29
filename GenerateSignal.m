@@ -9,7 +9,7 @@ SignalDuration=StimulusSettings.SignalDuration;
 SignalForm=StimulusSettings.SignalForm;
 SignalMinFreq=StimulusSettings.SignalMinFreq;
 SignalMaxFreq=StimulusSettings.SignalMaxFreq;
-SignalVolume=StimulusSettings.SignalVolume;
+SignalVolume=max(min(StimulusSettings.SignalVolume,StimulusSettings.MaxVolume),StimulusSettings.MinVolume);%clip signal volume to Min and Max
 
     %make signalclose all
     
