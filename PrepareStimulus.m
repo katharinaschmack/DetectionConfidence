@@ -8,7 +8,7 @@ StimulusSettings.SamplingRate=192000;%sampling rate of sound card
 StimulusSettings.Ramp=.02;%duration (s) of ramping at on and offset of noise used to avoid clicking sounds
 StimulusSettings.NoiseDuration=5;%length of noise stream (s) that will be looped
 StimulusSettings.NoiseColor='WhiteGaussian';
-StimulusSettings.MaxVolume=60;
+StimulusSettings.MaxVolume=80;
 StimulusSettings.MinVolume=-20;
 StimulusSettings.SignalForm='LinearUpsweep';
 StimulusSettings.SignalMinFreq=10E3;
@@ -33,40 +33,42 @@ if strcmp(TaskParameters.GUIMeta.NoiseVolumeMode.String{TaskParameters.GUI.Noise
     TargetPerformance=nan;
     
 elseif strcmp(TaskParameters.GUIMeta.NoiseVolumeMode.String{TaskParameters.GUI.NoiseVolumeMode},'Adaptive') 
-    %determine according to performance stream
+    %determine according to performance stream (only consider signal trials
+    %for this)
     targetIdx=randsample(1:numel(TaskParameters.GUI.NoiseVolumeAdaptive.Target),1);
     TargetPerformance=TaskParameters.GUI.NoiseVolumeAdaptive.Target(targetIdx);
     trialsPerformanceStream=find(BpodSystem.Data.Custom.TargetPerformance==TargetPerformance&...       
-        BpodSystem.Data.Custom.EarlyWithdrawal==0);
+        BpodSystem.Data.Custom.EarlyWithdrawal==0&BpodSystem.Data.Custom.EmbedSignal==1);
     
-    if length(trialsPerformanceStream)<10 %start with easy trials per stream
+    
+    if length(trialsPerformanceStream)<3 %start with easy trials per stream
         StimulusSettings.NoiseVolume=TaskParameters.GUI.NoiseVolumeAdaptive.StartNoiseVolume(targetIdx);
-        StimulusSettings.SignalVolume=TaskParameters.GUI.NoiseVolumeAdaptive.StartSignalVolume(targetIdx);
-
+        StimulusSettings.SignalVolume=TaskParameters.GUI.SignalVolume;%NoiseVolumeAdaptive.StartSignalVolume(targetIdx);
+            
     else %adapt according to performance in current performance stream (ONLY TRIALS WITHOUT EARLY WITHDRAWAL)
         trialsToConsider=numel(trialsPerformanceStream)-TaskParameters.GUI.NoiseVolumeAdaptive.StaircaseRule(targetIdx)+1;
         trialsIdx=trialsPerformanceStream(trialsToConsider:end);
         %first try to adapt SNR by changing noise level
-        if sum(BpodSystem.Data.Custom.ResponseCorrect(trialsIdx))==length(trialsIdx) %case 1: nback correct -> evidence step down - increase noise volume or decrease signal volume
+        if sum(BpodSystem.Data.Custom.ResponseCorrect(trialsIdx))==length(trialsIdx)&&BpodSystem.Data.Custom.EmbedSignal(iTrial)==1 %case 1: nback correct -> evidence step down - increase noise volume or decrease signal volume
             StimulusSettings.NoiseVolume=BpodSystem.Data.Custom.NoiseVolume(trialsIdx(end))+...%last volume
                 TaskParameters.GUI.NoiseVolumeAdaptive.StepSize(targetIdx)*TaskParameters.GUI.NoiseVolumeAdaptive.DeltaRatio(targetIdx);%step down
-            if BpodSystem.Data.Custom.NoiseVolume(trialsIdx(end))>StimulusSettings.MaxVolume %decrease signal volume if NoiseVolume is further out of bound
-                StimulusSettings.SignalVolume=BpodSystem.Data.Custom.SignalVolume(trialsIdx(end))-...%last signal volume
-                TaskParameters.GUI.NoiseVolumeAdaptive.StepSize(targetIdx)*TaskParameters.GUI.NoiseVolumeAdaptive.DeltaRatio(targetIdx);%step down
-            else
-                StimulusSettings.SignalVolume=BpodSystem.Data.Custom.SignalVolume(trialsIdx(end));
-            end
-        elseif BpodSystem.Data.Custom.ResponseCorrect(trialsIdx(end))==0%case 2: 1back error -> evidence step up - decrease noise volume
+%             if BpodSystem.Data.Custom.NoiseVolume(trialsIdx(end))>StimulusSettings.MaxVolume %decrease signal volume if NoiseVolume is further out of bound
+%                 StimulusSettings.SignalVolume=BpodSystem.Data.Custom.SignalVolume(trialsIdx(end))-...%last signal volume
+%                 TaskParameters.GUI.NoiseVolumeAdaptive.StepSize(targetIdx)*TaskParameters.GUI.NoiseVolumeAdaptive.DeltaRatio(targetIdx);%step down
+%             else
+%                 StimulusSettings.SignalVolume=BpodSystem.Data.Custom.SignalVolume(trialsIdx(end));
+%             end
+        elseif BpodSystem.Data.Custom.ResponseCorrect(trialsIdx(end))==0&&BpodSystem.Data.Custom.EmbedSignal(iTrial)==1%case 2: 1back error -> evidence step up - decrease noise volume
             StimulusSettings.NoiseVolume=BpodSystem.Data.Custom.NoiseVolume(trialsIdx(end))-...%last volume
                 TaskParameters.GUI.NoiseVolumeAdaptive.StepSize(targetIdx);%step up
-            if BpodSystem.Data.Custom.NoiseVolume(trialsIdx(end))<StimulusSettings.MinVolume %increase signal volume if NoiseVolume is further out of bound
-                StimulusSettings.SignalVolume=BpodSystem.Data.Custom.SignalVolume(trialsIdx(end))+...%last signal volume
-                    TaskParameters.GUI.NoiseVolumeAdaptive.StepSize(targetIdx);%step down
-            else
-                StimulusSettings.SignalVolume=BpodSystem.Data.Custom.SignalVolume(trialsIdx(end));
-            end
+%             if BpodSystem.Data.Custom.NoiseVolume(trialsIdx(end))<StimulusSettings.MinVolume %increase signal volume if NoiseVolume is further out of bound
+%                 StimulusSettings.SignalVolume=BpodSystem.Data.Custom.SignalVolume(trialsIdx(end))+...%last signal volume
+%                     TaskParameters.GUI.NoiseVolumeAdaptive.StepSize(targetIdx);%step down
+%             else
+%                 StimulusSettings.SignalVolume=BpodSystem.Data.Custom.SignalVolume(trialsIdx(end));
+%             end
 
-        else %all other cases (<nback correct, missed choice)
+        else %all other cases (<nback correct, missed choice) and no signal trials
             StimulusSettings.NoiseVolume=BpodSystem.Data.Custom.NoiseVolume(trialsIdx(end));
         end
     end

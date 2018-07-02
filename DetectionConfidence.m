@@ -26,7 +26,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.NoiseSettings.Style = 'popupmenu'; %1-continuous 2-when mouse is in centerport 
     TaskParameters.GUIMeta.NoiseSettings.String = {'Continuous','Centerport'};% 
     
-    TaskParameters.GUI.NoiseVolumeMode=1;
+    TaskParameters.GUI.NoiseVolumeMode=2;
     TaskParameters.GUIMeta.NoiseVolumeMode.Style = 'popupmenu'; %1-continuous 2-when mouse is in centerport
     TaskParameters.GUIMeta.NoiseVolumeMode.String = {'Constant','Adaptive'};%
 
@@ -42,9 +42,9 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI.NoiseVolumeAdaptive.Target = [100,75,50]';
     TaskParameters.GUI.NoiseVolumeAdaptive.StaircaseRule = [2,2,2]';
     TaskParameters.GUI.NoiseVolumeAdaptive.DeltaRatio = [0.0203,0.7393,2.8447]';
-    TaskParameters.GUI.NoiseVolumeAdaptive.StepSize = [5,5,5]';
-    TaskParameters.GUI.NoiseVolumeAdaptive.StartSignalVolume = [60,60,60]';
-    TaskParameters.GUI.NoiseVolumeAdaptive.StartNoiseVolume = [-60,-60,-60]';
+    TaskParameters.GUI.NoiseVolumeAdaptive.StepSize = [10,10,10]';%on average 5dB 
+    %TaskParameters.GUI.NoiseVolumeAdaptive.StartSignalVolume = [60,60,60]';
+    TaskParameters.GUI.NoiseVolumeAdaptive.StartNoiseVolume = [0,20,40]';
 
     TaskParameters.GUIMeta.NoiseVolumeAdaptive.Style = 'table';
     TaskParameters.GUIMeta.NoiseVolumeAdaptive.String = 'Adaptive noise volumes';
@@ -135,16 +135,13 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.ShowST.Style = 'checkbox';
     TaskParameters.GUI.ShowFeedback = 1;
     TaskParameters.GUIMeta.ShowFeedback.Style = 'checkbox';
-    %TaskParameters.GUI.ShowLightGuidance = 1;
-    %TaskParameters.GUIMeta.ShowLightGuidance.Style = 'checkbox';
-    TaskParameters.GUI.ShowPreStimDuration = 1;
-    TaskParameters.GUIMeta.ShowPreStimDuration.Style = 'checkbox';
+    TaskParameters.GUI.ShowStaircase = 1;
+    TaskParameters.GUIMeta.ShowStaircase.Style = 'checkbox';
 
-    %TaskParameters.GUIPanels.ShowPlots = {'ShowPsycAud','ShowVevaiometric','ShowTrialRate','ShowFix','ShowST','ShowFeedback','ShowLightGuidance','ShowPreStimDuration'};
-    TaskParameters.GUIPanels.ShowPlots = {'ShowPsycAud','ShowVevaiometric','ShowTrialRate','ShowFix','ShowST','ShowFeedback','ShowPreStimDuration'};
+    TaskParameters.GUIPanels.ShowPlots = {'ShowPsycAud','ShowVevaiometric','ShowTrialRate','ShowFix','ShowST','ShowFeedback','ShowStaircase'};
 
     TaskParameters.GUI = orderfields(TaskParameters.GUI);
-    TaskParameters.Figures.OutcomePlot.Position = [200, 200, 1000, 400];
+    TaskParameters.Figures.OutcomePlot.Position = [0, 0, 1000, 600];
 
     
     TaskParameters.GUITabs.General = {'General'};
@@ -164,64 +161,22 @@ BpodSystem.SoftCodeHandlerFunction = 'SoftCodeHandler';
 %initialize values and put into BpodSystem.Data.Custom
 updateCustomDataFields(0)
 
-% switch TaskParameters.GUIMeta.PreStimDurationSelection.String{TaskParameters.GUI.PreStimDurationSelection}
-%     case 'AutoIncr'
-%         TaskParameters.GUI.PreStimDuration = TaskParameters.GUI.PreStimDurationMin;
-%     case 'TruncExp'
-%         TaskParameters.GUI.PreStimDuration = TruncatedExponential(TaskParameters.GUI.PreStimDurationMin,...
-%             TaskParameters.GUI.PreStimDurationMax,TaskParameters.GUI.PreStimDurationTau);
-%     case 'Fix'
-%         TaskParameters.GUI.PreStimDuration = TaskParameters.GUI.PreStimDurationMin;
-% end
-% BpodSystem.Data.Custom.PreStimDuration = TaskParameters.GUI.PreStimDuration;
-% 
-% BpodSystem.Data.Custom.StimDuration = TaskParameters.GUI.StimDuration;
-% BpodSystem.Data.Custom.PostStimDuration = 0;
-% %initialize delay
-% switch TaskParameters.GUIMeta.FeedbackDelaySelection.String{TaskParameters.GUI.FeedbackDelaySelection}
-%     case 'AutoIncr'
-%         TaskParameters.GUI.FeedbackDelay = TaskParameters.GUI.FeedbackDelayMin;
-%     case 'TruncExp'
-%         TaskParameters.GUI.FeedbackDelay = TruncatedExponential(TaskParameters.GUI.FeedbackDelayMin,...
-%             TaskParameters.GUI.FeedbackDelayMax,TaskParameters.GUI.FeedbackDelayTau);
-%     case 'Fix'
-%         TaskParameters.GUI.FeedbackDelay = TaskParameters.GUI.FeedbackDelayMin;
-% end
-% BpodSystem.Data.Custom.FeedbackDelay = TaskParameters.GUI.FeedbackDelay;
-% BpodSystem.Data.Custom.CatchTrial = rand<TaskParameters.GUI.PercentCatch;
-%  
-% 
-% if TaskParameters.GUI.AfterTrialIntervalJitter
-%     BpodSystem.Data.Custom.AfterTrialInterval = TruncatedExponential(0,5*TaskParameters.GUI.AfterTrialInterval,TaskParameters.GUI.AfterTrialInterval);% min( [ exprnd(TaskParameters.GUI.AfterTrialInterval) 5*TaskParameters.GUI.AfterTrialInterval ]);
-% else
-%     BpodSystem.Data.Custom.AfterTrialInterval = TaskParameters.GUI.AfterTrialInterval;
-% end
-% BpodSystem.Data.Custom.LightGuidance(1) = TaskParameters.GUI.LightGuidance;
-% BpodSystem.Data.Custom.RewardAmountCorrect(1) = TaskParameters.GUI.RewardAmountCorrect;
-% BpodSystem.Data.Custom.RewardAmountCenter(1) = TaskParameters.GUI.RewardAmountCenter;
-% BpodSystem.Data.Custom.RewardAmountError(1) = TaskParameters.GUI.RewardAmountError;
-% 
-% 
-% %BpodSystem.Data.Custom.LightGuidance = TaskParameters.GUI.MaxLightGuidance;
-% %BpodSystem.Data.Custom.ErrorPortLightIntensity = ceil(255* (rand >= TaskParameters.GUI.LightGuidance));%set LED intensity to 0 on error port on some trials for training
-% 
-% 
-
 
 %% order fields
 BpodSystem.Data.Custom = orderfields(BpodSystem.Data.Custom);
 
 %% Initialize plots
 BpodSystem.ProtocolFigures.SideOutcomePlotFig = figure('Position', TaskParameters.Figures.OutcomePlot.Position,'name','Outcome plot','numbertitle','off', 'MenuBar', 'none', 'Resize', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandleOutcome = axes('Position',    [  .055          .15 .91 .3]);
-BpodSystem.GUIHandles.OutcomePlot.HandlePsycAud = axes('Position',    [2*.05 + 1*.08   .6  .1  .3], 'Visible', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandleTrialRate = axes('Position',  [3*.05 + 2*.08   .6  .1  .3], 'Visible', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandleFix = axes('Position',        [4*.05 + 3*.08   .6  .1  .3], 'Visible', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandleST = axes('Position',         [5*.05 + 4*.08   .6  .1  .3], 'Visible', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandleFeedback = axes('Position',   [6*.05 + 5*.08   .6  .1  .3], 'Visible', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandleVevaiometric = axes('Position',   [7*.05 + 6*.08   .6  .1  .3], 'Visible', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandleLightGuidance = axes('Position',   [8*.05 + 7*.08   .6  .1  .3], 'Visible', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandlePreStimDuration = axes('Position',   [9*.05 + 8*.08   .6  .1  .3], 'Visible', 'off');
+BpodSystem.GUIHandles.OutcomePlot.HandleStaircase = axes('Position',    [0.05 0.1 0.9 .15]);
+
+BpodSystem.GUIHandles.OutcomePlot.HandleOutcome = axes('Position',    [  .05  0.32 0.9 .25]);
+BpodSystem.GUIHandles.OutcomePlot.HandlePsycAud = axes('Position',    [2*.05 + 1*.08   .62  .1  .3], 'Visible', 'off');
+BpodSystem.GUIHandles.OutcomePlot.HandleTrialRate = axes('Position',  [3*.05 + 2*.08   .62  .1  .3], 'Visible', 'off');
+BpodSystem.GUIHandles.OutcomePlot.HandleFix = axes('Position',        [4*.05 + 3*.08   .62  .1  .3], 'Visible', 'off');
+BpodSystem.GUIHandles.OutcomePlot.HandleST = axes('Position',         [5*.05 + 4*.08   .62  .1  .3], 'Visible', 'off');
+BpodSystem.GUIHandles.OutcomePlot.HandleFeedback = axes('Position',   [6*.05 + 5*.08   .62  .1  .3], 'Visible', 'off');
+BpodSystem.GUIHandles.OutcomePlot.HandleVevaiometric = axes('Position',   [7*.05 + 6*.08   .62  .1  .3], 'Visible', 'off');
+%BpodSystem.GUIHandles.OutcomePlot.HandleLightGuidance = axes('Position',   [8*.05 + 7*.08   .6  .1  .3], 'Visible', 'off');
 
 MainPlot(BpodSystem.GUIHandles.OutcomePlot,'init');
 %BpodSystem.ProtocolFigures.ParameterGUI.Position = TaskParameters.Figures.ParameterGUI.Position;
@@ -235,13 +190,7 @@ while RunSession
     TaskParameters = BpodParameterGUI('sync', TaskParameters);   
     sma = stateMatrix(iTrial);
     SendStateMatrix(sma);
-    %try
     RawEvents = RunStateMatrix;
-    %catch
-    %disp(['Trial' iTrial ' an error occurred\n']);
-    %  UserKillScriptKatharinaCatchError;
-    %  pause  
-    %end
     if ~isempty(fieldnames(RawEvents))
         BpodSystem.Data = AddTrialEvents(BpodSystem.Data,RawEvents);
         SaveBpodSessionData;
