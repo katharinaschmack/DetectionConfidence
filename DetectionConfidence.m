@@ -189,9 +189,24 @@ iTrial = 1;
 
 while RunSession
     TaskParameters = BpodParameterGUI('sync', TaskParameters);   
+    try
+        display('193\n')
     sma = stateMatrix(iTrial);
+    catch SM
+        rethrow(SM)
+    end
+    try
+                display('199\n')
     SendStateMatrix(sma);
+    catch SS
+        rethrow(SS)
+    end
+    try
+                     display('205\n')
     RawEvents = RunStateMatrix;
+    catch ME
+        rethrow(ME)
+    end
     if ~isempty(fieldnames(RawEvents))
         BpodSystem.Data = AddTrialEvents(BpodSystem.Data,RawEvents);
         SaveBpodSessionData;
