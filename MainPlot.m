@@ -242,7 +242,8 @@ switch Action
                 BpodSystem.GUIHandles.OutcomePlot.PsycAud.XData = PsycX;
                 
                 %binned according to target performance
-                PerfBinIdx=BpodSystem.Data.Custom.TargetPerformance(~ndxNan).*(BpodSystem.Data.Custom.EmbedSignal(~ndxNan)-.5)*2;
+                PerfBinIdx=BpodSystem.Data.Custom.TargetPerformance(1:length(BpodSystem.Data.Custom.ResponseLeft)).*...
+                    (BpodSystem.Data.Custom.EmbedSignal(1:length(BpodSystem.Data.Custom.ResponseLeft))-.5)*2;
                 PsycYTarget = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan),PerfBinIdx(~ndxNan),'mean');
                 PsycXTarget = grpstats(BpodSystem.Data.Custom.NoiseVolumeRescaled(~ndxNan),PerfBinIdx(~ndxNan),'mean');
                 BpodSystem.GUIHandles.OutcomePlot.PsycAudTarget.YData = PsycYTarget;
