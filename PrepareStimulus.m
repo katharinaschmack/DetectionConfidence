@@ -19,20 +19,20 @@ StimulusSettings.SignalVolume=TaskParameters.GUI.SignalVolume;
 StimulusSettings.EmbedSignal=EmbedSignal;
 
 %% determine noise volume for next trial
-if strcmp(TaskParameters.GUIMeta.NoiseVolumeMode.String{TaskParameters.GUI.NoiseVolumeMode},'Constant')
-  %sample value from NoiseVolumeConstant Table
-    if EmbedSignal
-        values=TaskParameters.GUI.NoiseVolumeConstant.SignalTrials;
-        index=randsample(length(TaskParameters.GUI.NoiseVolumeConstant.SignalTrials),1,true,TaskParameters.GUI.NoiseVolumeConstant.Prob);
-    else
-        values=TaskParameters.GUI.NoiseVolumeConstant.NoiseTrials;
-        index=randsample(length(TaskParameters.GUI.NoiseVolumeConstant.NoiseTrials),1,true,TaskParameters.GUI.NoiseVolumeConstant.Prob);
-    end
-    StimulusSettings.NoiseVolume=values(index);
-    StimulusSettings.SignalVolume=TaskParameters.GUI.SignalVolume;
-    TargetPerformance=nan;
-    
-elseif strcmp(TaskParameters.GUIMeta.NoiseVolumeMode.String{TaskParameters.GUI.NoiseVolumeMode},'Adaptive') 
+% if strcmp(TaskParameters.GUIMeta.NoiseVolumeMode.String{TaskParameters.GUI.NoiseVolumeMode},'Constant')
+%   %sample value from NoiseVolumeConstant Table
+%     if EmbedSignal
+%         values=TaskParameters.GUI.NoiseVolumeConstant.SignalTrials;
+%         index=randsample(length(TaskParameters.GUI.NoiseVolumeConstant.SignalTrials),1,true,TaskParameters.GUI.NoiseVolumeConstant.Prob);
+%     else
+%         values=TaskParameters.GUI.NoiseVolumeConstant.NoiseTrials;
+%         index=randsample(length(TaskParameters.GUI.NoiseVolumeConstant.NoiseTrials),1,true,TaskParameters.GUI.NoiseVolumeConstant.Prob);
+%     end
+%     StimulusSettings.NoiseVolume=values(index);
+%     StimulusSettings.SignalVolume=TaskParameters.GUI.SignalVolume;
+%     TargetPerformance=nan;
+%     
+% elseif strcmp(TaskParameters.GUIMeta.NoiseVolumeMode.String{TaskParameters.GUI.NoiseVolumeMode},'Adaptive') 
     %determine according to performance stream (only consider signal trials
     %for this)
     targetIdx=randsample(1:numel(TaskParameters.GUI.NoiseVolumeAdaptive.Target),1);
@@ -73,10 +73,8 @@ elseif strcmp(TaskParameters.GUIMeta.NoiseVolumeMode.String{TaskParameters.GUI.N
         end
     end
     
-    %increase or decrease stimulus volume if not approximating target
-    %performance
     
-end
+%end
 
 %generate stimuli EDIT HERE TO SAVE THEM
 NoiseStream = GenerateNoise(StimulusSettings);

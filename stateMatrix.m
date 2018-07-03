@@ -42,13 +42,13 @@ elseif BpodSystem.Data.Custom.EmbedSignal(iTrial) == 1 %none
     StimStopOutput = {'SoftCode',24};
 end
 
-if TaskParameters.GUI.NoiseSettings==1
-    NoiseStartOutput = {};
-    NoiseStopOutput = {};
-elseif TaskParameters.GUI.NoiseSettings==2
+% if TaskParameters.GUI.NoiseSettings==1
+%     NoiseStartOutput = {};
+%     NoiseStopOutput = {};
+% elseif TaskParameters.GUI.NoiseSettings==2
     NoiseStartOutput = {'SoftCode',21};
     NoiseStopOutput = {'SoftCode',22};
-end
+% end
 
 %make LED outputs depending on LightGuidance
 CenterLedOn={strcat('PWM',num2str(CenterPort)),255};
@@ -67,17 +67,17 @@ sma = SetGlobalTimer(sma,2,TaskParameters.GUI.ErrorTimeout);
 sma = SetGlobalTimer(sma,3,BpodSystem.Data.Custom.AfterTrialInterval(iTrial));
 sma = SetGlobalTimer(sma,4,BpodSystem.Data.Custom.StimDuration(iTrial));
 
-if TaskParameters.GUI.NoiseSettings==1
-    sma = AddState(sma, 'Name', 'wait_Cin',...
-        'Timer', 0,...
-        'StateChangeConditions', {CenterPortIn, 'Cin_PreStim'},...
-        'OutputActions', LED_wait_Cin);
-elseif TaskParameters.GUI.NoiseSettings==2
+% if TaskParameters.GUI.NoiseSettings==1
+%     sma = AddState(sma, 'Name', 'wait_Cin',...
+%         'Timer', 0,...
+%         'StateChangeConditions', {CenterPortIn, 'Cin_PreStim'},...
+%         'OutputActions', LED_wait_Cin);
+% elseif TaskParameters.GUI.NoiseSettings==2
     sma = AddState(sma, 'Name', 'wait_Cin',...
         'Timer', 0,...
         'StateChangeConditions', {CenterPortIn, 'Cin_PreStim'},...
         'OutputActions', [NoiseStartOutput LED_wait_Cin]);%HERE
-end
+% end
 
 
 sma = AddState(sma, 'Name', 'Cin_PreStim',...
@@ -134,18 +134,18 @@ sma = AddState(sma, 'Name', 'Cin_Reward',...
     'StateChangeConditions', {CenterPortOut, 'wait_Lin','Tup','wait_Lin'},...
     'OutputActions', [{'ValveState', CenterValve}]);
 
-if TaskParameters.GUI.NoiseSettings==1
-    sma = AddState(sma, 'Name', 'wait_Lin',...
-        'Timer', TaskParameters.GUI.ChoiceDeadline,...
-        'StateChangeConditions', {CorrectPortIn, 'LinCorrect_GraceStart',ErrorPortIn, 'LinError_GraceStart','Tup','EndOfTrial'},...
-        'OutputActions', LED_wait_Lin);
-    %'OutputActions', {strcat('PWM',num2str(CorrectPort)),255,strcat('PWM',num2str(ErrorPort)),BpodSystem.Data.Custom.ErrorPortLightIntensity(iTrial)});
-elseif TaskParameters.GUI.NoiseSettings==2
+% if TaskParameters.GUI.NoiseSettings==1
+%     sma = AddState(sma, 'Name', 'wait_Lin',...
+%         'Timer', TaskParameters.GUI.ChoiceDeadline,...
+%         'StateChangeConditions', {CorrectPortIn, 'LinCorrect_GraceStart',ErrorPortIn, 'LinError_GraceStart','Tup','EndOfTrial'},...
+%         'OutputActions', LED_wait_Lin);
+%     %'OutputActions', {strcat('PWM',num2str(CorrectPort)),255,strcat('PWM',num2str(ErrorPort)),BpodSystem.Data.Custom.ErrorPortLightIntensity(iTrial)});
+% elseif TaskParameters.GUI.NoiseSettings==2
     sma = AddState(sma, 'Name', 'wait_Lin',...
         'Timer', TaskParameters.GUI.ChoiceDeadline,...
         'StateChangeConditions', {CorrectPortIn, 'LinCorrect_GraceStart',ErrorPortIn, 'LinError_GraceStart','Tup','MissedChoice'},...
         'OutputActions', LED_wait_Lin);
-end
+% end
 
 
 %correct answer

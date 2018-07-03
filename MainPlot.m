@@ -36,14 +36,15 @@ switch Action
         %set(AxesHandles.HandleOutcome,'TickDir', 'out','XLim',[0, nTrialsToShow], 'YTick', [0:20:60],'YTickLabel', {' 0dB','20dB','40dB','60dB'}, 'FontSize', 13);
         ytick=linspace(-1,1,9);
         ytickLabel=inverseRescaleNoise(ytick);
-        ytickLabelStr=cellfun(@num2str,num2cell(ytickLabel),'uni',0);        
+        ytickLabelStr=cellfun(@num2str,num2cell(ytickLabel),'uni',0);
         set(AxesHandles.HandleOutcome,'TickDir', 'out','XLim',[0, nTrialsToShow], 'YTick',ytick,'YTickLabel', ytickLabelStr,'FontSize', 13);
         xlabel(AxesHandles.HandleOutcome, 'Trial#', 'FontSize', 14);
         hold(AxesHandles.HandleOutcome, 'on');
         
         %% Psyc Auditory
         BpodSystem.GUIHandles.OutcomePlot.PsycAud = line(AxesHandles.HandlePsycAud,[-1 1],[.5 .5], 'LineStyle','none','Marker','o','MarkerEdge','k','MarkerFace','k', 'MarkerSize',6,'Visible','off');
-        BpodSystem.GUIHandles.OutcomePlot.PsycAudFit = line(AxesHandles.HandlePsycAud,[-1. 1.],[.5 .5],'color','k','Visible','off');        
+        BpodSystem.GUIHandles.OutcomePlot.PsycAudTarget = line(AxesHandles.HandlePsycAud,[-1 1],[.5 .5], 'LineStyle','none','Marker','.','MarkerEdge','r','MarkerFace','r', 'MarkerSize',6,'Visible','off');               
+        BpodSystem.GUIHandles.OutcomePlot.PsycAudFit = line(AxesHandles.HandlePsycAud,[-1. 1.],[.5 .5],'color','k','Visible','off');
         AxesHandles.HandlePsycAud.YLim = [-.05 1.05];
         AxesHandles.HandlePsycAud.XLim = [-1.05 1.05];
         %AxesHandles.HandlePsycAud.XTickLabel = num2str(bins);
@@ -95,7 +96,7 @@ switch Action
                 'Marker','.','MarkerSize',10,'LineStyle','-','Visible','off'); %#ok<NBRAK>
             BpodSystem.GUIHandles.OutcomePlot.StaircaseError(t) = line(AxesHandles.HandleStaircase,[0 1],[0 1],...
                 'Color',BpodSystem.GUIHandles.OutcomePlot.StaircaseAll(t).Color,...
-                'Marker','x','MarkerSize',10,'LineStyle','none','Visible','off');           
+                'Marker','x','MarkerSize',10,'LineStyle','none','Visible','off');
             lgdStr{t}=num2str(TaskParameters.GUI.NoiseVolumeAdaptive.Target(t));
         end
         AxesHandles.HandleStaircase.XLabel.String = 'signal trials'; % FIGURE OUT UNIT
@@ -107,19 +108,19 @@ switch Action
         
         legend(AxesHandles.HandleStaircase,BpodSystem.GUIHandles.OutcomePlot.StaircaseAll,lgdStr)
         
-
-
+        
+        
     case 'update'
         
         %% Reposition and hide/show axes
         ShowPlots = [TaskParameters.GUI.ShowPsycAud,TaskParameters.GUI.ShowVevaiometric,...
             TaskParameters.GUI.ShowTrialRate,TaskParameters.GUI.ShowFix,TaskParameters.GUI.ShowST,TaskParameters.GUI.ShowFeedback];
         PlotNames={'PsycAud','Vevaiometric','TrialRate','Fix','ST','Feedback'};
-           
-
+        
+        
         NoPlots = sum(ShowPlots);
         NPlot = cumsum(ShowPlots);
-        for n=NPlot            
+        for n=NPlot
             if ShowPlots(n)
                 newPos= ['[' num2str(n*.05+0.005 + (n-1)*1/(1.65*NoPlots)) ',.7,'   num2str(1/(1.65*NoPlots)) ',0.25]'];
                 eval(['BpodSystem.GUIHandles.OutcomePlot.Handle' PlotNames{n} '.Position ='  newPos ';'])
@@ -131,7 +132,7 @@ switch Action
             end
         end
         set(get(BpodSystem.GUIHandles.OutcomePlot.HandleStaircase,'Children'),'Visible','on')
-
+        
         
         
         %% Outcome main plot
@@ -144,7 +145,7 @@ switch Action
         
         %past trials
         indxToPlot = mn:iTrial;
-  
+        
         %reward
         RewardReceivedTotal = sum(BpodSystem.Data.Custom.RewardReceivedTotal);
         set(BpodSystem.GUIHandles.OutcomePlot.CumRwd, 'position', [iTrial+1 1], 'string', ...
@@ -183,13 +184,13 @@ switch Action
         Xdata = indxToPlot(ndxEarly);
         Ydata = (BpodSystem.Data.Custom.EmbedSignal(indxToPlot)-.5)*2; Ydata=Ydata(ndxEarly);
         set(BpodSystem.GUIHandles.OutcomePlot.EarlyWithdrawal, 'xdata', Xdata, 'ydata', Ydata);
-       
+        
         %Plot missed choice trials
         ndxMiss = isnan(BpodSystem.Data.Custom.ResponseCorrect(indxToPlot))&~ndxBroke&~ndxEarly;
         Xdata = indxToPlot(ndxMiss);
         Ydata = BpodSystem.Data.Custom.NoiseVolumeRescaled(indxToPlot); Ydata = Ydata(ndxMiss);
         set(BpodSystem.GUIHandles.OutcomePlot.NoResponse, 'xdata', Xdata, 'ydata', Ydata);
-       
+        
         %Plot NoFeedback trials
         ndxNoFeedback = (BpodSystem.Data.Custom.RewardReceivedCorrect(indxToPlot)+BpodSystem.Data.Custom.RewardReceivedError(indxToPlot))==0;
         Xdata = indxToPlot(ndxNoFeedback&~ndxMiss);
@@ -203,45 +204,55 @@ switch Action
         %         Ydata = BpodSystem.Data.Custom.SignalVolume(indxToPlot); Ydata = Ydata(ndxCatch&~ndxMiss);
         %         set(BpodSystem.GUIHandles.OutcomePlot.Catch, 'xdata', Xdata, 'ydata', Ydata);
         
-                    %BpodSystem.GUIHandles.OutcomePlot.HandleStaircase
-                    
-                    %% Staircase plot
-                    [~, ~] = rescaleX(AxesHandles.HandleStaircase,1,nTrialsToShow); % recompute xlim
-                    
-                    ndxError=BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==0;
-                    ndxSignal=BpodSystem.Data.Custom.EmbedSignal(indxToPlot)==1;
-                    ndxNan=isnan(BpodSystem.Data.Custom.ResponseCorrect(indxToPlot));
-                    Y=BpodSystem.Data.Custom.NoiseVolume(indxToPlot);
-                    for t=1:numel(TaskParameters.GUI.NoiseVolumeAdaptive.Target)
-                        ndxTarget=BpodSystem.Data.Custom.TargetPerformance(indxToPlot)==TaskParameters.GUI.NoiseVolumeAdaptive.Target(t);
-                        XDataAllIndex=find(ndxTarget&ndxSignal&~ndxNan);
-                        XDataErrorIndex=find(ismember(find(ndxTarget&ndxSignal&~ndxNan),find(ndxError&ndxTarget&ndxSignal&~ndxNan)));
-                        BpodSystem.GUIHandles.OutcomePlot.StaircaseAll(t).XData=1:length(XDataAllIndex);
-                        BpodSystem.GUIHandles.OutcomePlot.StaircaseAll(t).YData = Y(ndxTarget&ndxSignal&~ndxNan);
-                        BpodSystem.GUIHandles.OutcomePlot.StaircaseError(t).XData=XDataErrorIndex;
-                        BpodSystem.GUIHandles.OutcomePlot.StaircaseError(t).YData = Y(ndxError&ndxTarget&ndxSignal&~ndxNan);
-                    end
-                    
-                    BpodSystem.GUIHandles.OutcomePlot.StaircaseLowerBound.XData=[0 nTrialsToShow];
-                    BpodSystem.GUIHandles.OutcomePlot.StaircaseUpperBound.XData=[0 nTrialsToShow];
-                    
+        %BpodSystem.GUIHandles.OutcomePlot.HandleStaircase
+        
+        %% Staircase plot
+        [~, ~] = rescaleX(AxesHandles.HandleStaircase,1,nTrialsToShow); % recompute xlim
+        
+        ndxError=BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==0;
+        ndxSignal=BpodSystem.Data.Custom.EmbedSignal(indxToPlot)==1;
+        ndxNan=isnan(BpodSystem.Data.Custom.ResponseCorrect(indxToPlot));
+        Y=BpodSystem.Data.Custom.NoiseVolume(indxToPlot);
+        for t=1:numel(TaskParameters.GUI.NoiseVolumeAdaptive.Target)
+            ndxTarget=BpodSystem.Data.Custom.TargetPerformance(indxToPlot)==TaskParameters.GUI.NoiseVolumeAdaptive.Target(t);
+            XDataAllIndex=find(ndxTarget&ndxSignal&~ndxNan);
+            XDataErrorIndex=find(ismember(find(ndxTarget&ndxSignal&~ndxNan),find(ndxError&ndxTarget&ndxSignal&~ndxNan)));
+            BpodSystem.GUIHandles.OutcomePlot.StaircaseAll(t).XData=1:length(XDataAllIndex);
+            BpodSystem.GUIHandles.OutcomePlot.StaircaseAll(t).YData = Y(ndxTarget&ndxSignal&~ndxNan);
+            BpodSystem.GUIHandles.OutcomePlot.StaircaseError(t).XData=XDataErrorIndex;
+            BpodSystem.GUIHandles.OutcomePlot.StaircaseError(t).YData = Y(ndxError&ndxTarget&ndxSignal&~ndxNan);
+        end
+        
+        BpodSystem.GUIHandles.OutcomePlot.StaircaseLowerBound.XData=[0 nTrialsToShow];
+        BpodSystem.GUIHandles.OutcomePlot.StaircaseUpperBound.XData=[0 nTrialsToShow];
+        
         %% Psych Aud
         if TaskParameters.GUI.ShowPsycAud
             ndxNan = isnan(BpodSystem.Data.Custom.ResponseLeft);
             if sum(~ndxNan) > 5
+                
+                %binned according to evidence
                 AudDV=BpodSystem.Data.Custom.NoiseVolumeRescaled(1:length(BpodSystem.Data.Custom.ResponseLeft));
                 AudBin = 6;
                 BinIdx = discretize(AudDV,linspace(-1,1,AudBin+1));
                 AudDV = AudDV(1:numel(BpodSystem.Data.Custom.ResponseLeft));
                 PsycY = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan),(BinIdx(~ndxNan)),'mean');
-                PsycX = grpstats(BpodSystem.Data.Custom.NoiseVolumeRescaled(~ndxNan),(BinIdx(~ndxNan)),'mean');               
+                PsycX = grpstats(BpodSystem.Data.Custom.NoiseVolumeRescaled(~ndxNan),(BinIdx(~ndxNan)),'mean');
                 BpodSystem.GUIHandles.OutcomePlot.PsycAud.YData = PsycY;
                 BpodSystem.GUIHandles.OutcomePlot.PsycAud.XData = PsycX;
-
+                
+                %binned according to target performance
+                PerfBinIdx=BpodSystem.Data.Custom.TargetPerformance(~ndxNan).*(BpodSystem.Data.Custom.EmbedSignal(~ndxNan)-.5)*2;
+                PsycYTarget = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan),PerfBinIdx(~ndxNan),'mean');
+                PsycXTarget = grpstats(BpodSystem.Data.Custom.NoiseVolumeRescaled(~ndxNan),PerfBinIdx(~ndxNan),'mean');
+                BpodSystem.GUIHandles.OutcomePlot.PsycAudTarget.YData = PsycYTarget;
+                BpodSystem.GUIHandles.OutcomePlot.PsycAudTarget.XData = PsycXTarget;
+                
+                %fit
                 BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData = linspace(-1,1,100);
                 mdl=fitglm(AudDV,BpodSystem.Data.Custom.ResponseLeft,'exclude',ndxNan,'distribution','binomial');
-                BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.YData = glmval(mdl.Coefficients.Estimate,BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData,'logit');                
-            end            
+                BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.YData = glmval(mdl.Coefficients.Estimate,BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData,'logit');
+            end
         end
         %% Vevaiometric
         if TaskParameters.GUI.ShowVevaiometric
@@ -330,14 +341,14 @@ switch Action
             RightSkip = sum(~ndxReward&~ndxCatch&ndxLeft&~ndxNan)/sum(~ndxCatch&~ndxLeft&~ndxNan);
             cornertext(AxesHandles.HandleFeedback,{sprintf('L=%1.2f',LeftSkip),sprintf('R=%1.2f',RightSkip)})
         end
-               
+        
         %if TaskParameters.GUI.ShowStaircase
+        
+        % end
+        
+end
 
-           % end
-            
-        end
-        
-        
+
 end
 
 

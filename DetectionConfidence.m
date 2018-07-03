@@ -22,20 +22,20 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIPanels.General = {'Ports_LMR','AfterTrialInterval','AfterTrialIntervalJitter','AfterTrialIntervalMin','AfterTrialIntervalMax','LightGuidance'};
     
     %sampling period: events, duration and reinforcement for duration
-    TaskParameters.GUI.NoiseSettings =  2;%how noise is being played
-    TaskParameters.GUIMeta.NoiseSettings.Style = 'popupmenu'; %1-continuous 2-when mouse is in centerport 
-    TaskParameters.GUIMeta.NoiseSettings.String = {'Continuous','Centerport'};% 
+    %TaskParameters.GUI.NoiseSettings =  2;%how noise is being played
+    %TaskParameters.GUIMeta.NoiseSettings.Style = 'popupmenu'; %1-continuous 2-when mouse is in centerport 
+    %TaskParameters.GUIMeta.NoiseSettings.String = {'Continuous','Centerport'};% 
     
-    TaskParameters.GUI.NoiseVolumeMode=2;
-    TaskParameters.GUIMeta.NoiseVolumeMode.Style = 'popupmenu'; %1-continuous 2-when mouse is in centerport
-    TaskParameters.GUIMeta.NoiseVolumeMode.String = {'Constant','Adaptive'};%
+    %TaskParameters.GUI.NoiseVolumeMode=2;
+    %TaskParameters.GUIMeta.NoiseVolumeMode.Style = 'popupmenu'; %1-continuous 2-when mouse is in centerport
+    %TaskParameters.GUIMeta.NoiseVolumeMode.String = {'Constant','Adaptive'};%
 
-    TaskParameters.GUI.NoiseVolumeConstant.SignalTrials = [20:20:60]';
-        TaskParameters.GUI.NoiseVolumeConstant.Prob = ones(size(TaskParameters.GUI.NoiseVolumeConstant.SignalTrials))/numel(TaskParameters.GUI.NoiseVolumeConstant.SignalTrials);
-    TaskParameters.GUI.NoiseVolumeConstant.NoiseTrials = TaskParameters.GUI.NoiseVolumeConstant.SignalTrials;
-    TaskParameters.GUIMeta.NoiseVolumeConstant.Style = 'table';
-    TaskParameters.GUIMeta.NoiseVolumeConstant.String = 'Constant noise volumes';
-    TaskParameters.GUIMeta.NoiseVolumeConstant.ColumnLabel = {'SN (dB)','P','N (dB)'};  
+    %TaskParameters.GUI.NoiseVolumeConstant.SignalTrials = [20:20:60]';
+    %    TaskParameters.GUI.NoiseVolumeConstant.Prob = ones(size(TaskParameters.GUI.NoiseVolumeConstant.SignalTrials))/numel(TaskParameters.GUI.NoiseVolumeConstant.SignalTrials);
+    %TaskParameters.GUI.NoiseVolumeConstant.NoiseTrials = TaskParameters.GUI.NoiseVolumeConstant.SignalTrials;
+    %TaskParameters.GUIMeta.NoiseVolumeConstant.Style = 'table';
+    %TaskParameters.GUIMeta.NoiseVolumeConstant.String = 'Constant noise volumes';
+    %TaskParameters.GUIMeta.NoiseVolumeConstant.ColumnLabel = {'SN (dB)','P','N (dB)'};  
 
     
     %TaskParameters.GUI.NoiseVolumePerformance.TargetPerformance = [100,75,50]';
@@ -47,17 +47,16 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI.NoiseVolumeAdaptive.StartNoiseVolume = [0,20,40]';
 
     TaskParameters.GUIMeta.NoiseVolumeAdaptive.Style = 'table';
-    TaskParameters.GUIMeta.NoiseVolumeAdaptive.String = 'Adaptive noise volumes';
+    TaskParameters.GUIMeta.NoiseVolumeAdaptive.String = 'Noise volumes';
     TaskParameters.GUIMeta.NoiseVolumeAdaptive.ColumnLabel = {'target','rule','deltaR','step','start'};
 
     
 
     TaskParameters.GUI.StimDuration=0.05;
     TaskParameters.GUI.SignalVolume=20;
-    TaskParameters.GUIPanels.Stimulus = {'NoiseSettings',...
-        'SignalVolume','StimDuration'};
-    TaskParameters.GUIPanels.NoiseVolumeMode = {'NoiseVolumeMode'};
-    TaskParameters.GUIPanels.NoiseVolumeConstant ={'NoiseVolumeConstant'};
+    TaskParameters.GUIPanels.Stimulus = {'SignalVolume','StimDuration'};
+    %TaskParameters.GUIPanels.NoiseVolumeMode = {'NoiseVolumeMode'};
+    %TaskParameters.GUIPanels.NoiseVolumeConstant ={'NoiseVolumeConstant'};
     TaskParameters.GUIPanels.NoiseVolumeAdaptive ={'NoiseVolumeAdaptive'};
 
 
@@ -145,7 +144,9 @@ if isempty(fieldnames(TaskParameters))
 
     
     TaskParameters.GUITabs.General = {'General'};
-    TaskParameters.GUITabs.Stimulation = {'Stimulus','NoiseVolumeMode','NoiseVolumeConstant','NoiseVolumeAdaptive','Timing'}; 
+    %TaskParameters.GUITabs.Stimulation = {'Stimulus','NoiseVolumeMode','NoiseVolumeConstant','NoiseVolumeAdaptive','Timing'}; 
+        TaskParameters.GUITabs.Stimulation = {'Stimulus','NoiseVolumeAdaptive','Timing'}; 
+
     TaskParameters.GUITabs.Feedback = {'Sampling','Choice','FeedbackDelay'};
     TaskParameters.GUITabs.Plots = {'ShowPlots'};
 end
