@@ -21,43 +21,28 @@ if isempty(fieldnames(TaskParameters))
     
     TaskParameters.GUIPanels.General = {'Ports_LMR','AfterTrialInterval','AfterTrialIntervalJitter','AfterTrialIntervalMin','AfterTrialIntervalMax','LightGuidance'};
     
-    %sampling period: events, duration and reinforcement for duration
-    %TaskParameters.GUI.NoiseSettings =  2;%how noise is being played
-    %TaskParameters.GUIMeta.NoiseSettings.Style = 'popupmenu'; %1-continuous 2-when mouse is in centerport 
-    %TaskParameters.GUIMeta.NoiseSettings.String = {'Continuous','Centerport'};% 
+    %sampling period: events, duration and reinforcement for duration  
+    TaskParameters.GUI.NoiseVolumeMode = 2;
+    TaskParameters.GUIMeta.NoiseVolumeMode.Style = 'popupmenu';
+    TaskParameters.GUIMeta.NoiseVolumeMode.String ={'adjNoise','adjSNR'};%1-adapt noise volume, keep signal volume constant, 2-adapt signal * noise volume 
     
-    %TaskParameters.GUI.NoiseVolumeMode=2;
-    %TaskParameters.GUIMeta.NoiseVolumeMode.Style = 'popupmenu'; %1-continuous 2-when mouse is in centerport
-    %TaskParameters.GUIMeta.NoiseVolumeMode.String = {'Constant','Adaptive'};%
-
-    %TaskParameters.GUI.NoiseVolumeConstant.SignalTrials = [20:20:60]';
-    %    TaskParameters.GUI.NoiseVolumeConstant.Prob = ones(size(TaskParameters.GUI.NoiseVolumeConstant.SignalTrials))/numel(TaskParameters.GUI.NoiseVolumeConstant.SignalTrials);
-    %TaskParameters.GUI.NoiseVolumeConstant.NoiseTrials = TaskParameters.GUI.NoiseVolumeConstant.SignalTrials;
-    %TaskParameters.GUIMeta.NoiseVolumeConstant.Style = 'table';
-    %TaskParameters.GUIMeta.NoiseVolumeConstant.String = 'Constant noise volumes';
-    %TaskParameters.GUIMeta.NoiseVolumeConstant.ColumnLabel = {'SN (dB)','P','N (dB)'};  
-
-    
-    %TaskParameters.GUI.NoiseVolumePerformance.TargetPerformance = [100,75,50]';
     TaskParameters.GUI.NoiseVolumeAdaptive.Target = [100,75,50]';
     TaskParameters.GUI.NoiseVolumeAdaptive.StaircaseRule = [2,2,2]';
     TaskParameters.GUI.NoiseVolumeAdaptive.DeltaRatio = [0.0203,0.7393,2.8447]';
-    TaskParameters.GUI.NoiseVolumeAdaptive.StepSize = [10,10,10]';%on average 5dB 
-    %TaskParameters.GUI.NoiseVolumeAdaptive.StartSignalVolume = [60,60,60]';
-    TaskParameters.GUI.NoiseVolumeAdaptive.StartNoiseVolume = [0,20,40]';
+    TaskParameters.GUI.NoiseVolumeAdaptive.StepSize = [5,5,5]';%on average 5dB 
+    TaskParameters.GUI.NoiseVolumeAdaptive.StartNoiseVolume = [-20,65,65]';
+    TaskParameters.GUI.NoiseVolumeAdaptive.StartSignalVolume = [40,40,40]';
 
     TaskParameters.GUIMeta.NoiseVolumeAdaptive.Style = 'table';
     TaskParameters.GUIMeta.NoiseVolumeAdaptive.String = 'Noise volumes';
-    TaskParameters.GUIMeta.NoiseVolumeAdaptive.ColumnLabel = {'target','rule','deltaR','step','start'};
+    TaskParameters.GUIMeta.NoiseVolumeAdaptive.ColumnLabel = {'target','rule','deltaR','step','startN','startS'};
 
     
 
     TaskParameters.GUI.StimDuration=0.05;
-    TaskParameters.GUI.SignalVolume=20;
-    TaskParameters.GUIPanels.Stimulus = {'SignalVolume','StimDuration'};
-    %TaskParameters.GUIPanels.NoiseVolumeMode = {'NoiseVolumeMode'};
-    %TaskParameters.GUIPanels.NoiseVolumeConstant ={'NoiseVolumeConstant'};
-    TaskParameters.GUIPanels.NoiseVolumeAdaptive ={'NoiseVolumeAdaptive'};
+    %TaskParameters.GUI.SignalVolume=20;
+    TaskParameters.GUIPanels.Stimulus = {'StimDuration'};
+    TaskParameters.GUIPanels.NoiseVolumeAdaptive ={'NoiseVolumeAdaptive','NoiseVolumeMode'};
 
 
     
@@ -168,9 +153,10 @@ BpodSystem.Data.Custom = orderfields(BpodSystem.Data.Custom);
 
 %% Initialize plots
 BpodSystem.ProtocolFigures.SideOutcomePlotFig = figure('Position', TaskParameters.Figures.OutcomePlot.Position,'name','Outcome plot','numbertitle','off', 'MenuBar', 'none', 'Resize', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandleStaircase = axes('Position',    [0.05 0.1 0.9 .15]);
-
-BpodSystem.GUIHandles.OutcomePlot.HandleOutcome = axes('Position',    [  .05  0.32 0.9 .25]);
+for t=1:3
+    BpodSystem.GUIHandles.OutcomePlot.HandleStaircase(t) = axes('Position',    [t*0.05+(t-1)*0.27 0.1 0.27 .15]);
+end
+    BpodSystem.GUIHandles.OutcomePlot.HandleOutcome = axes('Position',    [  .05  0.32 0.9 .25]);
 BpodSystem.GUIHandles.OutcomePlot.HandlePsycAud = axes('Position',    [2*.05 + 1*.08   .62  .1  .3], 'Visible', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleTrialRate = axes('Position',  [3*.05 + 2*.08   .62  .1  .3], 'Visible', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleFix = axes('Position',        [4*.05 + 3*.08   .62  .1  .3], 'Visible', 'off');
@@ -189,24 +175,9 @@ iTrial = 1;
 
 while RunSession
     TaskParameters = BpodParameterGUI('sync', TaskParameters);   
-    try
-        display('193\n')
     sma = stateMatrix(iTrial);
-    catch SM
-        rethrow(SM)
-    end
-    try
-                display('199\n')
     SendStateMatrix(sma);
-    catch SS
-        rethrow(SS)
-    end
-    try
-                     display('205\n')
     RawEvents = RunStateMatrix;
-    catch ME
-        rethrow(ME)
-    end
     if ~isempty(fieldnames(RawEvents))
         BpodSystem.Data = AddTrialEvents(BpodSystem.Data,RawEvents);
         SaveBpodSessionData;
