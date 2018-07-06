@@ -27,15 +27,15 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.NoiseVolumeMode.String ={'adjNoise','adjSNR'};%1-adapt noise volume, keep signal volume constant, 2-adapt signal * noise volume 
     
     TaskParameters.GUI.NoiseVolumeAdaptive.Target = [100,75,50]';
-    TaskParameters.GUI.NoiseVolumeAdaptive.StaircaseRule = [2,2,2]';
-    TaskParameters.GUI.NoiseVolumeAdaptive.DeltaRatio = [0.0203,0.7393,2.8447]';
-    TaskParameters.GUI.NoiseVolumeAdaptive.StepSize = [5,5,5]';%on average 5dB 
-    TaskParameters.GUI.NoiseVolumeAdaptive.StartNoiseVolume = [-20,65,65]';
+    TaskParameters.GUI.NoiseVolumeAdaptive.History = [10,10,10]';
+    TaskParameters.GUI.NoiseVolumeAdaptive.StepUp = [1,1,1]';%[0.0203,0.7393,2.8447]';
+    TaskParameters.GUI.NoiseVolumeAdaptive.StepDown = [1,1,1]';%on average 5dB 
+    TaskParameters.GUI.NoiseVolumeAdaptive.StartNoiseVolume = [20,40,60]';
     TaskParameters.GUI.NoiseVolumeAdaptive.StartSignalVolume = [40,40,40]';
 
     TaskParameters.GUIMeta.NoiseVolumeAdaptive.Style = 'table';
     TaskParameters.GUIMeta.NoiseVolumeAdaptive.String = 'Noise volumes';
-    TaskParameters.GUIMeta.NoiseVolumeAdaptive.ColumnLabel = {'target','rule','deltaR','step','startN','startS'};
+    TaskParameters.GUIMeta.NoiseVolumeAdaptive.ColumnLabel = {'target','hist','stepUp','stepDown','startN','startS'};
 
     
 

@@ -19,49 +19,34 @@ StimulusSettings.SignalDuration=TaskParameters.GUI.StimDuration;
 StimulusSettings.EmbedSignal=EmbedSignal;
 
 %% determine noise volume for next trial
-% if strcmp(TaskParameters.GUIMeta.NoiseVolumeMode.String{TaskParameters.GUI.NoiseVolumeMode},'Constant')
-%   %sample value from NoiseVolumeConstant Table
-%     if EmbedSignal
-%         values=TaskParameters.GUI.NoiseVolumeConstant.SignalTrials;
-%         index=randsample(length(TaskParameters.GUI.NoiseVolumeConstant.SignalTrials),1,true,TaskParameters.GUI.NoiseVolumeConstant.Prob);
-%     else
-%         values=TaskParameters.GUI.NoiseVolumeConstant.NoiseTrials;
-%         index=randsample(length(TaskParameters.GUI.NoiseVolumeConstant.NoiseTrials),1,true,TaskParameters.GUI.NoiseVolumeConstant.Prob);
-%     end
-%     StimulusSettings.NoiseVolume=values(index);
-%     StimulusSettings.SignalVolume=TaskParameters.GUI.SignalVolume;
-%     TargetPerformance=nan;
-%     
-% elseif strcmp(TaskParameters.GUIMeta.NoiseVolumeMode.String{TaskParameters.GUI.NoiseVolumeMode},'Adaptive') 
-    %determine according to performance stream (only consider signal trials
-    %for this)
     targetIdx=randsample(1:numel(TaskParameters.GUI.NoiseVolumeAdaptive.Target),1);
-    TargetPerformance=TaskParameters.GUI.NoiseVolumeAdaptive.Target(targetIdx);
-    trialsPerformanceStream=find(BpodSystem.Data.Custom.TargetPerformance==TargetPerformance&...       
+    targetPerformance=TaskParameters.GUI.NoiseVolumeAdaptive.Target(targetIdx);
+    trialsPerformanceStream=find(BpodSystem.Data.Custom.TargetPerformance==targetPerformance&...       
         ~isnan(BpodSystem.Data.Custom.ResponseCorrect)&...
         BpodSystem.Data.Custom.EmbedSignal==1);
    
-    if length(trialsPerformanceStream)<3 %start with easy trials per stream
+    if length(trialsPerformanceStream)<5 %start with easy trials per stream
         StimulusSettings.NoiseVolume=TaskParameters.GUI.NoiseVolumeAdaptive.StartNoiseVolume(targetIdx);
         StimulusSettings.SignalVolume=TaskParameters.GUI.NoiseVolumeAdaptive.StartSignalVolume(targetIdx);
             
     else %adapt according to performance in current performance stream
-        trialsToConsider=numel(trialsPerformanceStream)-TaskParameters.GUI.NoiseVolumeAdaptive.StaircaseRule(targetIdx)+1;
-        trialsIdx=trialsPerformanceStream(trialsToConsider:end);
+        trialsToConsider=max(numel(trialsPerformanceStream)-TaskParameters.GUI.NoiseVolumeAdaptive.History(targetIdx),0)+1;
+        trialsIdx=trialsPerformanceStream(trialsToConsider:end);        
+        considerPerformance=mean(BpodSystem.Data.Custom.ResponseCorrect(trialsIdx)==1)*100;
 
         sameNoiseVolume=BpodSystem.Data.Custom.NoiseVolume(trialsIdx(end));
         diffNoiseVolume=BpodSystem.Data.Custom.NoiseVolume(trialsIdx(end))+...%last volume
-            TaskParameters.GUI.NoiseVolumeAdaptive.StepSize(targetIdx)*TaskParameters.GUI.NoiseVolumeAdaptive.DeltaRatio(targetIdx);%step down
+            TaskParameters.GUI.NoiseVolumeAdaptive.StepDown(targetIdx);%evidence step down
         easyNoiseVolume=BpodSystem.Data.Custom.NoiseVolume(trialsIdx(end))-...%last volume
-            TaskParameters.GUI.NoiseVolumeAdaptive.StepSize(targetIdx);%evidence step up
+            TaskParameters.GUI.NoiseVolumeAdaptive.StepUp(targetIdx);%evidence step up
         sameSignalVolume=BpodSystem.Data.Custom.SignalVolume(trialsIdx(end));
         diffSignalVolume=BpodSystem.Data.Custom.SignalVolume(trialsIdx(end))-...%last signal volume
-            TaskParameters.GUI.NoiseVolumeAdaptive.StepSize(targetIdx)*TaskParameters.GUI.NoiseVolumeAdaptive.DeltaRatio(targetIdx);%step down
+            TaskParameters.GUI.NoiseVolumeAdaptive.StepDown(targetIdx);%step down
         easySignalVolume=BpodSystem.Data.Custom.SignalVolume(trialsIdx(end))+...%last signal volume
-            TaskParameters.GUI.NoiseVolumeAdaptive.StepSize(targetIdx);%evidence step up
+            TaskParameters.GUI.NoiseVolumeAdaptive.StepUp(targetIdx);%evidence step up
         
-        %case 1: nback correct -> evidence step down - increase noise volume or decrease signal volume
-        if sum(BpodSystem.Data.Custom.ResponseCorrect(trialsIdx))==length(trialsIdx)&&...
+        %case 1: performance > target performance in +5 
+        if considerPerformance>=targetPerformance+5&&...
                 StimulusSettings.EmbedSignal==1 %only adapt according to hits/misses
                 
             %first try to adapt SNR by increasing noise level
@@ -77,7 +62,7 @@ StimulusSettings.EmbedSignal=EmbedSignal;
                 StimulusSettings.SignalVolume=diffSignalVolume;
             end
             
-        elseif BpodSystem.Data.Custom.ResponseCorrect(trialsIdx(end))==0&&...
+        elseif considerPerformance<targetPerformance-5&&...
                 StimulusSettings.EmbedSignal==1%case 2: 1back error -> evidence step up - decrease noise volume
             
             %first try to adapt SNR by decreasing noise level
@@ -122,5 +107,5 @@ BpodSystem.Data.Custom.SignalDuration(iTrial+1) = StimulusSettings.SignalDuratio
 BpodSystem.Data.Custom.SignalVolume(iTrial+1) = StimulusSettings.SignalVolume;
 BpodSystem.Data.Custom.NoiseVolume(iTrial+1) = StimulusSettings.NoiseVolume;
 BpodSystem.Data.Custom.NoiseVolumePlot(iTrial+1) = StimulusSettings.NoiseVolume*(StimulusSettings.EmbedSignal/.5-1);
-BpodSystem.Data.Custom.TargetPerformance(iTrial+1)=TargetPerformance;
+BpodSystem.Data.Custom.TargetPerformance(iTrial+1)=targetPerformance;
 
