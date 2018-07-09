@@ -21,28 +21,19 @@ if isempty(fieldnames(TaskParameters))
     
     TaskParameters.GUIPanels.General = {'Ports_LMR','AfterTrialInterval','AfterTrialIntervalJitter','AfterTrialIntervalMin','AfterTrialIntervalMax','LightGuidance'};
     
-    %sampling period: events, duration and reinforcement for duration  
-    TaskParameters.GUI.NoiseVolumeMode = 2;
-    TaskParameters.GUIMeta.NoiseVolumeMode.Style = 'popupmenu';
-    TaskParameters.GUIMeta.NoiseVolumeMode.String ={'adjNoise','adjSNR'};%1-adapt noise volume, keep signal volume constant, 2-adapt signal * noise volume 
+    %sampling period: events, duration and reinforcement for duration
+    TaskParameters.GUI.NoiseVolumeTable.NoiseVolume=[20 40 60]';
+    TaskParameters.GUI.NoiseVolumeTable.SignalVolume=[50 45 40]';
+    TaskParameters.GUI.NoiseVolumeTable.Prob=[1 1 1]';
     
-    TaskParameters.GUI.NoiseVolumeAdaptive.Target = [100,75,50]';
-    TaskParameters.GUI.NoiseVolumeAdaptive.History = [10,10,10]';
-    TaskParameters.GUI.NoiseVolumeAdaptive.StepUp = [1,1,1]';%[0.0203,0.7393,2.8447]';
-    TaskParameters.GUI.NoiseVolumeAdaptive.StepDown = [1,1,1]';%on average 5dB 
-    TaskParameters.GUI.NoiseVolumeAdaptive.StartNoiseVolume = [20,40,60]';
-    TaskParameters.GUI.NoiseVolumeAdaptive.StartSignalVolume = [40,40,40]';
+    TaskParameters.GUIMeta.NoiseVolumeTable.Style = 'table';
+    TaskParameters.GUIMeta.NoiseVolumeTable.String = 'Noise volumes';
+    TaskParameters.GUIMeta.NoiseVolumeTable.ColumnLabel = {'noise','signal','probabilty'};
 
-    TaskParameters.GUIMeta.NoiseVolumeAdaptive.Style = 'table';
-    TaskParameters.GUIMeta.NoiseVolumeAdaptive.String = 'Noise volumes';
-    TaskParameters.GUIMeta.NoiseVolumeAdaptive.ColumnLabel = {'target','hist','stepUp','stepDown','startN','startS'};
-
-    
-
+    TaskParameters.GUI.EasyTrials=20;
     TaskParameters.GUI.StimDuration=0.05;
-    %TaskParameters.GUI.SignalVolume=20;
     TaskParameters.GUIPanels.Stimulus = {'StimDuration'};
-    TaskParameters.GUIPanels.NoiseVolumeAdaptive ={'NoiseVolumeAdaptive','NoiseVolumeMode'};
+    TaskParameters.GUIPanels.NoiseVolumeTable ={'NoiseVolumeTable','EasyTrials'};
 
 
     
@@ -80,7 +71,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI.BiasCorrection = 3;
     TaskParameters.GUIMeta.BiasCorrection.Style = 'popupmenu';
     TaskParameters.GUIMeta.BiasCorrection.String = {'None','BruteForce','Soft'};%BruteForce: presents the same stimulus until a correct choice is made, then resumes stimulus sequence; Soft: calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
-    TaskParameters.GUI.RewardAmountCorrect = 3;%reward amount lateral ports (marion 5)
+    TaskParameters.GUI.RewardAmountCorrect = 5;%reward amount lateral ports (marion 5)
     TaskParameters.GUI.RewardAmountError = 0;%reward amount lateral ports (marion 5)
     TaskParameters.GUI.ErrorTimeout = 0;%time out for errors     
     TaskParameters.GUIPanels.Choice = {'ChoiceDeadline','BiasCorrection','RewardAmountCorrect','RewardAmountError','ErrorTimeout'};%,'Deplete','DepleteRate','Jackpot','JackpotMin','JackpotTime'};
@@ -119,18 +110,15 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.ShowST.Style = 'checkbox';
     TaskParameters.GUI.ShowFeedback = 1;
     TaskParameters.GUIMeta.ShowFeedback.Style = 'checkbox';
-    TaskParameters.GUI.ShowStaircase = 1;
-    TaskParameters.GUIMeta.ShowStaircase.Style = 'checkbox';
 
-    TaskParameters.GUIPanels.ShowPlots = {'ShowPsycAud','ShowVevaiometric','ShowTrialRate','ShowFix','ShowST','ShowFeedback','ShowStaircase'};
+    TaskParameters.GUIPanels.ShowPlots = {'ShowPsycAud','ShowVevaiometric','ShowTrialRate','ShowFix','ShowST','ShowFeedback'};
 
     TaskParameters.GUI = orderfields(TaskParameters.GUI);
-    TaskParameters.Figures.OutcomePlot.Position = [0, 0, 1000, 600];
+    TaskParameters.Figures.OutcomePlot.Position = [0, 400, 1000, 400];
 
     
     TaskParameters.GUITabs.General = {'General'};
-    %TaskParameters.GUITabs.Stimulation = {'Stimulus','NoiseVolumeMode','NoiseVolumeConstant','NoiseVolumeAdaptive','Timing'}; 
-        TaskParameters.GUITabs.Stimulation = {'Stimulus','NoiseVolumeAdaptive','Timing'}; 
+        TaskParameters.GUITabs.Stimulation = {'Stimulus','NoiseVolumeTable','Timing'}; 
 
     TaskParameters.GUITabs.Feedback = {'Sampling','Choice','FeedbackDelay'};
     TaskParameters.GUITabs.Plots = {'ShowPlots'};
@@ -153,17 +141,13 @@ BpodSystem.Data.Custom = orderfields(BpodSystem.Data.Custom);
 
 %% Initialize plots
 BpodSystem.ProtocolFigures.SideOutcomePlotFig = figure('Position', TaskParameters.Figures.OutcomePlot.Position,'name','Outcome plot','numbertitle','off', 'MenuBar', 'none', 'Resize', 'off');
-for t=1:3
-    BpodSystem.GUIHandles.OutcomePlot.HandleStaircase(t) = axes('Position',    [t*0.05+(t-1)*0.27 0.1 0.27 .15]);
-end
-    BpodSystem.GUIHandles.OutcomePlot.HandleOutcome = axes('Position',    [  .05  0.32 0.9 .25]);
+BpodSystem.GUIHandles.OutcomePlot.HandleOutcome = axes('Position',    [  .05  0.08 0.9 .5]);
 BpodSystem.GUIHandles.OutcomePlot.HandlePsycAud = axes('Position',    [2*.05 + 1*.08   .62  .1  .3], 'Visible', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleTrialRate = axes('Position',  [3*.05 + 2*.08   .62  .1  .3], 'Visible', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleFix = axes('Position',        [4*.05 + 3*.08   .62  .1  .3], 'Visible', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleST = axes('Position',         [5*.05 + 4*.08   .62  .1  .3], 'Visible', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleFeedback = axes('Position',   [6*.05 + 5*.08   .62  .1  .3], 'Visible', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleVevaiometric = axes('Position',   [7*.05 + 6*.08   .62  .1  .3], 'Visible', 'off');
-%BpodSystem.GUIHandles.OutcomePlot.HandleLightGuidance = axes('Position',   [8*.05 + 7*.08   .6  .1  .3], 'Visible', 'off');
 
 MainPlot(BpodSystem.GUIHandles.OutcomePlot,'init');
 %BpodSystem.ProtocolFigures.ParameterGUI.Position = TaskParameters.Figures.ParameterGUI.Position;

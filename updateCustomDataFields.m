@@ -259,7 +259,6 @@ else
     BpodSystem.Data.Custom.RewardReceivedTotal = [];
 
     BpodSystem.Data.Custom.PsychtoolboxStartup=false;
-    BpodSystem.Data.Custom.TargetPerformance=[];
     BpodSystem.Data.Custom.EmbedSignal=[];
 
 end

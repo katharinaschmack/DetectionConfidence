@@ -4,8 +4,7 @@ global BpodSystem
 global TaskParameters
 
 
-BpodSystem.Data.Custom.NoiseVolumeRescaled=rescaleNoise(BpodSystem.Data.Custom.NoiseVolume);
-colororder=get(gca,'ColorOrder');
+BpodSystem.Data.Custom.NoiseVolumeRescaled=rescaleNoise(BpodSystem.Data.Custom.NoiseVolume,BpodSystem.Data.Custom.EmbedSignal);
 
 switch Action
     case 'init'
@@ -43,14 +42,19 @@ switch Action
         
         %% Psyc Auditory
         BpodSystem.GUIHandles.OutcomePlot.PsycAud = line(AxesHandles.HandlePsycAud,[-1 1],[.5 .5], 'LineStyle','none','Marker','o','MarkerEdge','k','MarkerFace','k', 'MarkerSize',6,'Visible','off');
-        BpodSystem.GUIHandles.OutcomePlot.PsycAudTarget = line(AxesHandles.HandlePsycAud,[-1 1],[.5 .5], 'LineStyle','none','Marker','.','MarkerEdge','r','MarkerFace','r', 'MarkerSize',6,'Visible','off');               
         BpodSystem.GUIHandles.OutcomePlot.PsycAudFit = line(AxesHandles.HandlePsycAud,[-1. 1.],[.5 .5],'color','k','Visible','off');
         AxesHandles.HandlePsycAud.YLim = [-.05 1.05];
         AxesHandles.HandlePsycAud.XLim = [-1.05 1.05];
-        %AxesHandles.HandlePsycAud.XTickLabel = num2str(bins);
-        AxesHandles.HandlePsycAud.XLabel.String = 'Signal evidence'; %adapt here if you want to show dB
-        AxesHandles.HandlePsycAud.YLabel.String = '% Signal port';
-        AxesHandles.HandlePsycAud.Title.String = 'Psychometric Aud';
+        AxesHandles.HandlePsycAud.XTick = [-1:.5:1];
+        n=[TaskParameters.GUI.NoiseVolumeTable.NoiseVolume(1:end-1); fliplr(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)];
+        s=[zeros(length(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)-1,1); fliplr(TaskParameters.GUI.NoiseVolumeTable.SignalVolume)];
+        for k=1:length(n)
+           xticklabel{k}=sprintf('%d-%d',s(k),n(k));
+        end
+        AxesHandles.HandlePsycAud.XTickLabel=xticklabel;
+        AxesHandles.HandlePsycAud.XLabel.String = {'signal - noise level (dB)'}; %adapt here if you want to show dB
+        AxesHandles.HandlePsycAud.YLabel.String = '% Signal responses';
+        AxesHandles.HandlePsycAud.Title.String = 'Psychometric';
         
         %% Vevaiometric curve
         hold(AxesHandles.HandleVevaiometric,'on')
@@ -89,29 +93,6 @@ switch Action
         AxesHandles.HandleFeedback.YLabel.String = 'trial counts';
         AxesHandles.HandleFeedback.Title.String = 'Feedback delay';
         
-        %% Staircase
-        %hold(AxesHandles.HandleStaircase,'on')
-        for t=1:numel(TaskParameters.GUI.NoiseVolumeAdaptive.Target)
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseSNR(t) = line(AxesHandles.HandleStaircase(t),...
-                [0 1],[0 1],'Color',colororder(t,:),'MarkerFaceColor',colororder(t,:),...
-                'Marker','s','MarkerSize',10,'LineStyle','none','Visible','off');
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseSNRError(t) = line(AxesHandles.HandleStaircase(t),...
-                [0 1],[0 1],'MarkerFaceColor','w','MarkerEdgeColor','none',...
-                'Marker','s','MarkerSize',5,'LineStyle','none','Visible','off');
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseNoise(t) = line(AxesHandles.HandleStaircase(t),[0 1],[0 1],'Color',colororder(t,:),...
-                'Marker','.','MarkerSize',8,'LineStyle','-','Visible','off');
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseSignal(t) = line(AxesHandles.HandleStaircase(t),[0 1],[0 1],'Color',colororder(t,:),...
-                'Marker','*','MarkerSize',5,'LineStyle','-','Visible','off');
-            
-            AxesHandles.HandleStaircase(t).XLabel.String = 'signal trials'; % FIGURE OUT UNIT
-            AxesHandles.HandleStaircase(t).YLabel.String = 'noise intensity (dB)';
-            AxesHandles.HandleStaircase(t).Title.String = sprintf('Target %d%s',TaskParameters.GUI.NoiseVolumeAdaptive.Target(t),'%');
-            %plot bounds
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseLowerBound(t)=line(AxesHandles.HandleStaircase(t),[0 1],[BpodSystem.Data.Custom.MinVolume(end) BpodSystem.Data.Custom.MinVolume(end)],'LineWidth',.5,'Color','k');
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseUpperBound(t)=line(AxesHandles.HandleStaircase(t),[0 1],[BpodSystem.Data.Custom.MaxVolume(end) BpodSystem.Data.Custom.MaxVolume(end)],'LineWidth',.5,'Color','k');
-        end
-        
-        
         
     case 'update'
         
@@ -134,9 +115,6 @@ switch Action
                 eval(['set(get(BpodSystem.GUIHandles.OutcomePlot.Handle' PlotNames{n} ',''Children''),''Visible'',''off'');'])
             end
         end
-        for t=1:3
-        set(get(BpodSystem.GUIHandles.OutcomePlot.HandleStaircase(t),'Children'),'Visible','on')
-        end
         
         
         %% Outcome main plot
@@ -152,7 +130,7 @@ switch Action
         
         %reward
         RewardReceivedTotal = sum(BpodSystem.Data.Custom.RewardReceivedTotal);
-        set(BpodSystem.GUIHandles.OutcomePlot.CumRwd, 'position', [iTrial+1 1], 'string', ...
+        set(BpodSystem.GUIHandles.OutcomePlot.CumRwd, 'position', [iTrial+1 -.8], 'string', ...
             [num2str(RewardReceivedTotal/1000) ' mL']);
         
         %write signal volume
@@ -207,35 +185,7 @@ switch Action
         %         Xdata = indxToPlot(ndxCatch&~ndxMiss);
         %         Ydata = BpodSystem.Data.Custom.SignalVolume(indxToPlot); Ydata = Ydata(ndxCatch&~ndxMiss);
         %         set(BpodSystem.GUIHandles.OutcomePlot.Catch, 'xdata', Xdata, 'ydata', Ydata);
-        
-        %BpodSystem.GUIHandles.OutcomePlot.HandleStaircase
-        
-        %% Staircase plot             
-        ndxError=BpodSystem.Data.Custom.ResponseCorrect(1:iTrial)==0;
-        ndxSignal=BpodSystem.Data.Custom.EmbedSignal(1:iTrial)==1;
-        ndxNan=isnan(BpodSystem.Data.Custom.ResponseCorrect(1:iTrial));
-        S=BpodSystem.Data.Custom.SignalVolume(1:iTrial);
-        N=BpodSystem.Data.Custom.NoiseVolume(1:iTrial);
-        SNR=S-N;
-        for t=1:numel(TaskParameters.GUI.NoiseVolumeAdaptive.Target)
-            ndxTarget=BpodSystem.Data.Custom.TargetPerformance(1:iTrial)==TaskParameters.GUI.NoiseVolumeAdaptive.Target(t);
-            XDataAllIndex=find(ndxTarget&ndxSignal&~ndxNan);
-            XDataErrorIndex=find(ismember(find(ndxTarget&ndxSignal&~ndxNan),find(ndxError&ndxTarget&ndxSignal&~ndxNan)));
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseSNR(t).XData=1:length(XDataAllIndex);
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseSNR(t).YData = SNR(ndxTarget&ndxSignal&~ndxNan);
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseSNRError(t).XData=XDataErrorIndex;
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseSNRError(t).YData = SNR(ndxError&ndxTarget&ndxSignal&~ndxNan);
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseNoise(t).XData=1:length(XDataAllIndex);
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseNoise(t).YData = N(ndxTarget&ndxSignal&~ndxNan);
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseSignal(t).XData=1:length(XDataAllIndex);
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseSignal(t).YData = S(ndxTarget&ndxSignal&~ndxNan);
-            
-            RightXLimStaircase=max(nTrialsToShow/3,length(XDataAllIndex));
-            LeftXLimStaircase=RightXLimStaircase-nTrialsToShow/3;
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseLowerBound(t).XData=[LeftXLimStaircase,RightXLimStaircase];
-            BpodSystem.GUIHandles.OutcomePlot.StaircaseUpperBound(t).XData=[LeftXLimStaircase,RightXLimStaircase];
-            AxesHandles.HandleStaircase(t).XLim=[LeftXLimStaircase,RightXLimStaircase];
-        end
+              
 
         
         %% Psych Aud
@@ -245,21 +195,14 @@ switch Action
                 
                 %binned according to evidence
                 AudDV=BpodSystem.Data.Custom.NoiseVolumeRescaled(1:length(BpodSystem.Data.Custom.ResponseLeft));
-                AudBin = 6;
-                BinIdx = discretize(AudDV,linspace(-1,1,AudBin+1));
+                AudBins = 6;
+                BinIdx = discretize(AudDV,linspace(-1,1,AudBins+1)*1.01);%unelegant! revise!
                 AudDV = AudDV(1:numel(BpodSystem.Data.Custom.ResponseLeft));
                 PsycY = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan),(BinIdx(~ndxNan)),'mean');
                 PsycX = grpstats(BpodSystem.Data.Custom.NoiseVolumeRescaled(~ndxNan),(BinIdx(~ndxNan)),'mean');
                 BpodSystem.GUIHandles.OutcomePlot.PsycAud.YData = PsycY;
                 BpodSystem.GUIHandles.OutcomePlot.PsycAud.XData = PsycX;
                 
-                %binned according to target performance
-                PerfBinIdx=BpodSystem.Data.Custom.TargetPerformance(1:length(BpodSystem.Data.Custom.ResponseLeft)).*...
-                    (BpodSystem.Data.Custom.EmbedSignal(1:length(BpodSystem.Data.Custom.ResponseLeft))-.5)*2;
-                PsycYTarget = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan),PerfBinIdx(~ndxNan),'mean');
-                PsycXTarget = grpstats(BpodSystem.Data.Custom.NoiseVolumeRescaled(~ndxNan),PerfBinIdx(~ndxNan),'mean');
-                BpodSystem.GUIHandles.OutcomePlot.PsycAudTarget.YData = PsycYTarget;
-                BpodSystem.GUIHandles.OutcomePlot.PsycAudTarget.XData = PsycXTarget;
                 
                 %fit
                 BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData = linspace(-1,1,100);
@@ -387,31 +330,31 @@ end
 set(h,'Units',unit);
 end
 
-function y=rescaleNoise(x)
+function y=rescaleNoise(x,s)
+global TaskParameters
 global BpodSystem
 
-noiseClipped=max(min(x,BpodSystem.Data.Custom.MaxVolume),BpodSystem.Data.Custom.MinVolume);
+signalVec=((s)-.5)*(-2);%1 when signal, -1 when  no signal
+noiseMax=max(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
+noiseRange=max(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)-min(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
 
-signalVec=((BpodSystem.Data.Custom.EmbedSignal)-.5)*(-2);%1 when signal, -1 when  no signal
-noiseMax=max(BpodSystem.Data.Custom.MaxVolume);
-noiseRange=max(BpodSystem.Data.Custom.MaxVolume)-min(BpodSystem.Data.Custom.MinVolume);
-
-y=(noiseClipped-noiseMax)./noiseRange.*signalVec;
+y=(x-noiseMax)./noiseRange.*signalVec;
 ndxZero=y==0;
 ndxSignal=BpodSystem.Data.Custom.EmbedSignal==1;
-y(ndxZero&ndxSignal)=0.01;
-y(ndxZero&~ndxSignal)=-0.01;
+y(ndxZero&ndxSignal)=0.1;
+y(ndxZero&~ndxSignal)=-0.1;
 
 
 end
 
 function y=inverseRescaleNoise(x)
+global TaskParameters
 global BpodSystem
 
-noiseMax=max(BpodSystem.Data.Custom.MaxVolume);
-noiseRange=max(BpodSystem.Data.Custom.MaxVolume)-min(BpodSystem.Data.Custom.MinVolume);
-
+noiseMax=max(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
+noiseRange=max(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)-min(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
 y=(-abs(x)*noiseRange+noiseMax);
+
 end
 
 
