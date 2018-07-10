@@ -346,26 +346,8 @@ else
     BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = TaskParameters.GUI.AfterTrialInterval;
 end
 
-%% determine whether signal or no signal trial is shown next 
-% repeat stimulus in case of BruteForce bias correction
-if TaskParameters.GUI.BiasCorrection==2 && iTrial > 5
-    RepeatStimulus=BpodSystem.Data.Custom.ResponseCorrect(iTrial)~=1;
-else
-    RepeatStimulus=false;
-end
-
-%show non-prefered stimulus with p=1-bias (max .9) in case of Soft bias
-%correction
-if TaskParameters.GUI.BiasCorrection==3 && iTrial > 5
-    CurrentBias=min(.9,max(.1,nansum(BpodSystem.Data.Custom.ResponseLeft)./sum(~isnan(BpodSystem.Data.Custom.ResponseLeft))));
-else 
-    CurrentBias=.5;
-end
-EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);
-
-if ~RepeatStimulus
-    PrepareStimulus(EmbedSignal,iTrial);
-end
+%create new stimulus
+PrepareStimulus(iTrial);
 
 %reward depletion %UPDATE HERE IF BIAS CORRECTION IS NEEDED
 BpodSystem.Data.Custom.RewardAmountCorrect(iTrial+1)=TaskParameters.GUI.RewardAmountCorrect;

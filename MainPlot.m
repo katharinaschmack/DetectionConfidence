@@ -18,6 +18,7 @@ switch Action
         axes(AxesHandles.HandleOutcome);
         
         %plot in specified axes
+        BpodSystem.GUIHandles.OutcomePlot.BrokeFix = line(-1,0, 'LineStyle','none','Marker','d','MarkerEdge','none','MarkerFace','b', 'MarkerSize',8);
         BpodSystem.GUIHandles.OutcomePlot.Aud = line(-1,0, 'LineStyle','none','Marker','o','MarkerEdge',[.5,.5,.5],'MarkerFace',[.7,.7,.7], 'MarkerSize',8);
         BpodSystem.GUIHandles.OutcomePlot.DV = line(1,0, 'LineStyle','none','Marker','o','MarkerEdge','b','MarkerFace','b', 'MarkerSize',6);
         BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCircle = line(1,0, 'LineStyle','none','Marker','o','MarkerEdge','k','MarkerFace',[1 1 1], 'MarkerSize',6);
@@ -25,7 +26,6 @@ switch Action
         BpodSystem.GUIHandles.OutcomePlot.CumRwd = text(0,0,'0mL','verticalalignment','bottom','horizontalalignment','center');
         BpodSystem.GUIHandles.OutcomePlot.Correct = line(-1,0, 'LineStyle','none','Marker','o','MarkerEdge','g','MarkerFace','g', 'MarkerSize',6);
         BpodSystem.GUIHandles.OutcomePlot.Incorrect = line(-1,0, 'LineStyle','none','Marker','o','MarkerEdge','r','MarkerFace','r', 'MarkerSize',6);
-        BpodSystem.GUIHandles.OutcomePlot.BrokeFix = line(-1,0, 'LineStyle','none','Marker','d','MarkerEdge','none','MarkerFace','b', 'MarkerSize',6);
         BpodSystem.GUIHandles.OutcomePlot.EarlyWithdrawal = line(-1,0, 'LineStyle','none','Marker','d','MarkerEdge','b','MarkerFace','none', 'MarkerSize',6);
         BpodSystem.GUIHandles.OutcomePlot.NoFeedback = line(-1,0, 'LineStyle','none','Marker','o','MarkerEdge','none','MarkerFace','w', 'MarkerSize',5);
         BpodSystem.GUIHandles.OutcomePlot.NoResponse = line(-1,0, 'LineStyle','none','Marker','x','MarkerEdge','b','MarkerFace','none', 'MarkerSize',6);
@@ -33,10 +33,10 @@ switch Action
         
         %BpodSystem.GUIHandles.OutcomePlot.Catch = line(-1,[0 1], 'LineStyle','none','Marker','o','MarkerEdge',[0,0,0],'MarkerFace',[0,0,0], 'MarkerSize',4);
         %set(AxesHandles.HandleOutcome,'TickDir', 'out','XLim',[0, nTrialsToShow], 'YTick', [0:20:60],'YTickLabel', {' 0dB','20dB','40dB','60dB'}, 'FontSize', 13);
-        ytick=linspace(-1,1,9);
+        ytick=linspace(-1,1,5);
         ytickLabel=inverseRescaleNoise(ytick);
         ytickLabelStr=cellfun(@num2str,num2cell(ytickLabel),'uni',0);
-        set(AxesHandles.HandleOutcome,'TickDir', 'out','XLim',[0, nTrialsToShow], 'YTick',ytick,'YTickLabel', ytickLabelStr,'FontSize', 13);
+        set(AxesHandles.HandleOutcome,'TickDir', 'out','XLim',[0, nTrialsToShow],'YLim',[-1.25 1.25],'YTick',ytick,'YTickLabel', ytickLabelStr,'FontSize', 13);
         %xlabel(AxesHandles.HandleOutcome, 'Trial#', 'FontSize', 14);
         hold(AxesHandles.HandleOutcome, 'on');
         
@@ -55,6 +55,7 @@ switch Action
         AxesHandles.HandlePsycAud.XLabel.String = {'signal - noise level (dB)'}; %adapt here if you want to show dB
         AxesHandles.HandlePsycAud.YLabel.String = '% Signal responses';
         AxesHandles.HandlePsycAud.Title.String = 'Psychometric';
+        AxesHandles.HandlePsycAud.FontSize=8;
         
         %% Vevaiometric curve
         hold(AxesHandles.HandleVevaiometric,'on')
@@ -139,7 +140,7 @@ switch Action
             ~logical(BpodSystem.Data.Custom.EarlyWithdrawal(indxToPlot));
         
         Xdata = indxToPlot(ndxSignalPlayed);
-        signalBinned=1-BpodSystem.Data.Custom.SignalVolume./(BpodSystem.Data.Custom.MaxVolume-BpodSystem.Data.Custom.MinVolume);
+        signalBinned=rescaleNoise(BpodSystem.Data.Custom.SignalVolume,BpodSystem.Data.Custom.EmbedSignal);
         Ydata = signalBinned(indxToPlot); Ydata = Ydata(ndxSignalPlayed);
         set(BpodSystem.GUIHandles.OutcomePlot.SignalVolume,'xdata',Xdata, 'ydata',Ydata);
         
@@ -158,13 +159,13 @@ switch Action
         %Plot Broken Fixation
         ndxBroke = logical(BpodSystem.Data.Custom.BrokeFixation(indxToPlot));
         Xdata = indxToPlot(ndxBroke);
-        Ydata = (BpodSystem.Data.Custom.EmbedSignal(indxToPlot)-.5)*2; Ydata=Ydata(ndxBroke);
+        Ydata = BpodSystem.Data.Custom.NoiseVolumeRescaled(indxToPlot);  Ydata=Ydata(ndxBroke);
         set(BpodSystem.GUIHandles.OutcomePlot.BrokeFix, 'xdata', Xdata, 'ydata', Ydata);
         
         %Plot Early Withdrawal
         ndxEarly = logical(BpodSystem.Data.Custom.EarlyWithdrawal(indxToPlot));
         Xdata = indxToPlot(ndxEarly);
-        Ydata = (BpodSystem.Data.Custom.EmbedSignal(indxToPlot)-.5)*2; Ydata=Ydata(ndxEarly);
+        Ydata = BpodSystem.Data.Custom.NoiseVolumeRescaled(indxToPlot);  Ydata=Ydata(ndxEarly);
         set(BpodSystem.GUIHandles.OutcomePlot.EarlyWithdrawal, 'xdata', Xdata, 'ydata', Ydata);
         
         %Plot missed choice trials
@@ -175,8 +176,8 @@ switch Action
         
         %Plot NoFeedback trials
         ndxNoFeedback = (BpodSystem.Data.Custom.RewardReceivedCorrect(indxToPlot)+BpodSystem.Data.Custom.RewardReceivedError(indxToPlot))==0;
-        Xdata = indxToPlot(ndxNoFeedback&~ndxMiss);
-        Ydata = BpodSystem.Data.Custom.NoiseVolumeRescaled(indxToPlot); Ydata = Ydata(ndxNoFeedback&~ndxMiss);
+        Xdata = indxToPlot(ndxNoFeedback&~ndxMiss&~ndxEarly);
+        Ydata = BpodSystem.Data.Custom.NoiseVolumeRescaled(indxToPlot); Ydata = Ydata(ndxNoFeedback&~ndxMiss&~ndxEarly);
         set(BpodSystem.GUIHandles.OutcomePlot.NoFeedback, 'xdata', Xdata, 'ydata', Ydata);
         
         

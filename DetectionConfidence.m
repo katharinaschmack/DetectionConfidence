@@ -16,7 +16,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI.AfterTrialIntervalMin = .1;%Minimum for jitter
     TaskParameters.GUI.AfterTrialIntervalMax = 2.5;%Maximum for jitter
     TaskParameters.GUIMeta.AfterTrialIntervalJitter.Style = 'checkbox';
-    TaskParameters.GUI.LightGuidance = false;%LED ports indicate active ports
+    TaskParameters.GUI.LightGuidance = true;%LED ports indicate active ports
     TaskParameters.GUIMeta.LightGuidance.Style = 'checkbox';
     
     TaskParameters.GUIPanels.General = {'Ports_LMR','AfterTrialInterval','AfterTrialIntervalJitter','AfterTrialIntervalMin','AfterTrialIntervalMax','LightGuidance'};
@@ -56,7 +56,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.RewardAmountCenterSelection.String = {'Fix','Decrease'};
     TaskParameters.GUI.RewardAmountCenterEasyTrials = 50;
 
-    TaskParameters.GUI.AllowBreakFixation = 1;
+    TaskParameters.GUI.AllowBreakFixation = 0;
     TaskParameters.GUIMeta.AllowBreakFixation.Style = 'checkbox';
 
     TaskParameters.GUI.CoutEarlyTimeout = 0;%time out for early withdrawal (marion 1s)
@@ -141,7 +141,7 @@ BpodSystem.Data.Custom = orderfields(BpodSystem.Data.Custom);
 
 %% Initialize plots
 BpodSystem.ProtocolFigures.SideOutcomePlotFig = figure('Position', TaskParameters.Figures.OutcomePlot.Position,'name','Outcome plot','numbertitle','off', 'MenuBar', 'none', 'Resize', 'off');
-BpodSystem.GUIHandles.OutcomePlot.HandleOutcome = axes('Position',    [  .05  0.08 0.9 .5]);
+BpodSystem.GUIHandles.OutcomePlot.HandleOutcome = axes('Position',    [  .05  0.08 0.9 .45]);
 BpodSystem.GUIHandles.OutcomePlot.HandlePsycAud = axes('Position',    [2*.05 + 1*.08   .62  .1  .3], 'Visible', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleTrialRate = axes('Position',  [3*.05 + 2*.08   .62  .1  .3], 'Visible', 'off');
 BpodSystem.GUIHandles.OutcomePlot.HandleFix = axes('Position',        [4*.05 + 3*.08   .62  .1  .3], 'Visible', 'off');
