@@ -87,11 +87,13 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI.FeedbackDelayTau = 0.05;
     TaskParameters.GUI.FeedbackDelayGrace = 0;
     TaskParameters.GUI.PercentCatch = 0;
+    TaskParameters.GUI.CatchError = false;
+    TaskParameters.GUIMeta.CatchError.Style = 'checkbox';
     TaskParameters.GUI.FeedbackDelay = TaskParameters.GUI.FeedbackDelayMin;
     TaskParameters.GUIMeta.FeedbackDelay.Style = 'text';    
-    TaskParameters.GUI.StartEasyTrials = 0;
+    TaskParameters.GUI.StartNoDelayTrials = 0;
 
-    TaskParameters.GUIPanels.FeedbackDelay = {'FeedbackDelay','FeedbackDelaySelection','FeedbackDelayMin','FeedbackDelayMax','FeedbackDelayIncr','FeedbackDelayDecr','FeedbackDelayTau','FeedbackDelayGrace','PercentCatch','StartEasyTrials'};
+    TaskParameters.GUIPanels.FeedbackDelay = {'FeedbackDelay','FeedbackDelaySelection','FeedbackDelayMin','FeedbackDelayMax','FeedbackDelayIncr','FeedbackDelayDecr','FeedbackDelayTau','FeedbackDelayGrace','PercentCatch','CatchError','StartNoDelayTrials'};
     
     %Plot
     TaskParameters.GUI.ShowPsycAud = 1;

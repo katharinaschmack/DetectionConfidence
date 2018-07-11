@@ -46,11 +46,11 @@ if iTrial>0
     %mark whether animal withdraw too early from center port
     if TaskParameters.GUI.AllowBreakFixation==0&&any(strcmp('Cout_Early',statesThisTrial))
         if ~any(strcmp('Cin_Stim',statesThisTrial))
-            BrokeFixation = true;
-            EarlyWithdrawal = false;
-        elseif any(strcmp('Cin_Stim',statesThisTrial))
             BrokeFixation = false;
             EarlyWithdrawal = true;
+        elseif any(strcmp('Cin_Stim',statesThisTrial))
+            BrokeFixation = true;
+            EarlyWithdrawal = false;
         end
         CoutEarly = true;
     elseif TaskParameters.GUI.AllowBreakFixation==1&&any(strcmp('Cout_Early',statesThisTrial))
@@ -301,19 +301,29 @@ TaskParameters.GUI.PreStimDuration = BpodSystem.Data.Custom.PreStimDuration(iTri
 BpodSystem.Data.Custom.StimDuration(iTrial+1) = TaskParameters.GUI.StimDuration;
 BpodSystem.Data.Custom.PostStimDuration(iTrial+1) = 0;
 
-%update confidence waiting time EDIT HERE FOR TRAINING STAGE 4
-%feedback delay
+
+
+
+%update confidence waiting time
+%update catch trial 
+if iTrial > TaskParameters.GUI.StartNoDelayTrials
+    BpodSystem.Data.Custom.CatchTrial(iTrial+1) = logical(randsample([1 0],1,1,[TaskParameters.GUI.PercentCatch 1-TaskParameters.GUI.PercentCatch]));
+else
+    BpodSystem.Data.Custom.CatchTrial(iTrial+1) = false;
+end
+
+%feedback delay correct answers
 switch TaskParameters.GUIMeta.FeedbackDelaySelection.String{TaskParameters.GUI.FeedbackDelaySelection}
-    case 'AutoIncr' %increase if correct and reward on last trial 
+    case 'AutoIncr' %increase if correct and reward on last trial
         if iTrial>0
-        if BpodSystem.Data.Custom.ResponseCorrect(iTrial)==1&&BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial)     
-           RampedFeedbackDelay= BpodSystem.Data.Custom.FeedbackDelay(iTrial)+TaskParameters.GUI.FeedbackDelayIncr;
-        elseif BpodSystem.Data.Custom.ResponseCorrect(iTrial)==1&&~BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial) %decrease if correct and no reward on last trial
-            RampedFeedbackDelay=BpodSystem.Data.Custom.FeedbackDelay(iTrial)-TaskParameters.GUI.FeedbackDelayDecr;
-        else 
-            RampedFeedbackDelay=BpodSystem.Data.Custom.FeedbackDelay(iTrial);
-        end
-        TaskParameters.GUI.FeedbackDelay = min(TaskParameters.GUI.FeedbackDelayMax,...
+            if BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial)>0
+                RampedFeedbackDelay= BpodSystem.Data.Custom.FeedbackDelay(iTrial)+TaskParameters.GUI.FeedbackDelayIncr;
+            elseif BpodSystem.Data.Custom.ResponseCorrect(iTrial)==1&&~BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial) %decrease if correct and no reward on last trial
+                RampedFeedbackDelay=BpodSystem.Data.Custom.FeedbackDelay(iTrial)-TaskParameters.GUI.FeedbackDelayDecr;
+            else
+                RampedFeedbackDelay=BpodSystem.Data.Custom.FeedbackDelay(iTrial);
+            end
+            TaskParameters.GUI.FeedbackDelay = min(TaskParameters.GUI.FeedbackDelayMax,...
                 max(TaskParameters.GUI.FeedbackDelayMin,RampedFeedbackDelay));
         else
             TaskParameters.GUI.FeedbackDelay=TaskParameters.GUI.FeedbackDelayMax;
@@ -322,19 +332,18 @@ switch TaskParameters.GUIMeta.FeedbackDelaySelection.String{TaskParameters.GUI.F
         TaskParameters.GUI.FeedbackDelay = TruncatedExponential(TaskParameters.GUI.FeedbackDelayMin,...
             TaskParameters.GUI.FeedbackDelayMax,TaskParameters.GUI.FeedbackDelayTau);
     case 'Fix'
-        %     ATTEMPT TO GRAY OUT FIELDS
-        %     if ~strcmp('edit',TaskParameters.GUIMeta.FeedbackDelay.Style)
-        %         TaskParameters.GUIMeta.FeedbackDelay.Style = 'edit';
-        %     end
         TaskParameters.GUI.FeedbackDelay = TaskParameters.GUI.FeedbackDelayMax;
 end
-BpodSystem.Data.Custom.FeedbackDelay(iTrial+1) = TaskParameters.GUI.FeedbackDelay;
-
-%update catch trial 
-if iTrial > TaskParameters.GUI.StartEasyTrials
-    BpodSystem.Data.Custom.CatchTrial(iTrial+1) = rand(1,1) < TaskParameters.GUI.PercentCatch;
+if ~BpodSystem.Data.Custom.CatchTrial(iTrial+1)
+    BpodSystem.Data.Custom.FeedbackDelay(iTrial+1) = TaskParameters.GUI.FeedbackDelay;%no catch trial
 else
-    BpodSystem.Data.Custom.CatchTrial(iTrial+1) = false;
+    BpodSystem.Data.Custom.FeedbackDelay(iTrial+1)=60;%set to 60s on catch trials
+end
+%feedback delay error answers
+if ~TaskParameters.GUI.CatchError&&~BpodSystem.Data.Custom.CatchTrial(iTrial+1)
+    BpodSystem.Data.Custom.FeedbackDelayError(iTrial+1) = TaskParameters.GUI.FeedbackDelay; %no catch trial
+else
+    BpodSystem.Data.Custom.FeedbackDelayError(iTrial+1) = 60;%set to 60s on catch trials
 end
 
 
@@ -367,11 +376,5 @@ end
 %Light Guidance
 BpodSystem.Data.Custom.LightGuidance(iTrial+1) = TaskParameters.GUI.LightGuidance;
 
-% %%send bpod status to server
-% try
-% script = 'receivebpodstatus.php';
-% SendTrialStatusToServer(script,BpodSystem.Data.Custom.Rig,outcome,BpodSystem.Data.Custom.Subject,BpodSystem.CurrentProtocolName);
-% catch
-% end
 
 end
