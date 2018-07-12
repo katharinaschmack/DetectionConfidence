@@ -46,21 +46,21 @@ if iTrial>0
     %mark whether animal withdraw too early from center port
     if TaskParameters.GUI.AllowBreakFixation==0&&any(strcmp('Cout_Early',statesThisTrial))
         if ~any(strcmp('Cin_Stim',statesThisTrial))
-            BrokeFixation = false;
-            EarlyWithdrawal = true;
-        elseif any(strcmp('Cin_Stim',statesThisTrial))
             BrokeFixation = true;
             EarlyWithdrawal = false;
+        elseif any(strcmp('Cin_Stim',statesThisTrial))
+            BrokeFixation = false;
+            EarlyWithdrawal = true;
         end
         CoutEarly = true;
     elseif TaskParameters.GUI.AllowBreakFixation==1&&any(strcmp('Cout_Early',statesThisTrial))
         CoutEarly = true;
-        EarlyWithdrawal = true;
-        BrokeFixation = false;
-    elseif TaskParameters.GUI.AllowBreakFixation==1&&any(strcmp('Cout_Stim',statesThisTrial))
-        CoutEarly = true;
         EarlyWithdrawal = false;
         BrokeFixation = true;
+    elseif TaskParameters.GUI.AllowBreakFixation==1&&any(strcmp('Cout_Stim',statesThisTrial))
+        CoutEarly = true;
+        EarlyWithdrawal = true;
+        BrokeFixation = false;
     else
         CoutEarly = false;
         EarlyWithdrawal = false;
@@ -109,6 +109,38 @@ if iTrial>0
         ResponseCorrect = nan;
     end
     
+    %mark whether animal gave correct or incorrect response on valid and invalid
+    %trials
+    if any(strcmp(CenterPortOut,eventsThisTrial))
+        firstCenterPortOut=min(eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut ]));%take first withdrawal from center port as a reference point
+    else
+        firstCenterPortOut=nan;
+    end
+    if any(strcmp(CorrectPortIn,eventsThisTrial))
+        correctPortInTime=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CorrectPortIn ]);
+        orderIdx=(correctPortInTime-firstCenterPortOut)>0;
+        correctPortInTime=min(correctPortInTime(orderIdx));%select first correct Port Entry after first Center Port OUt
+        if isempty(correctPortInTime); correctPortInTime=Inf; end
+    else
+        correctPortInTime=Inf;
+    end
+    if any(strcmp(ErrorPortIn,eventsThisTrial))
+        errorPortInTime=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' ErrorPortIn ]);
+        orderIdx=(errorPortInTime-firstCenterPortOut)>0;
+        errorPortInTime=min(errorPortInTime(orderIdx));%select first Error Port Entry after first Center Port OUt
+        if isempty(errorPortInTime); errorPortInTime=Inf; end
+    else
+        errorPortInTime=Inf;
+    end
+    
+    if correctPortInTime<errorPortInTime%find correct Port In after first Center Port Out but before errorPortIn
+        InvalidResponseCorrect=1;
+    elseif errorPortInTime<correctPortInTime
+        InvalidResponseCorrect=0;
+    else
+        InvalidResponseCorrect=nan;
+    end
+    
     %mark whether animal went left or right
     SignalPresent=(BpodSystem.Data.Custom.EmbedSignal(iTrial))>0;
     if (ResponseCorrect==1 && SignalPresent) || ...%correct on signal trials -> left port
@@ -120,12 +152,32 @@ if iTrial>0
     else
         ResponseLeft = nan;
     end
+        
+    if (InvalidResponseCorrect==1 && SignalPresent) || ...%correct on signal trials -> left port
+            (InvalidResponseCorrect==0 && ~SignalPresent) %incorrect on noise trials -> left port
+        InvalidResponseLeft = 1;
+    elseif (InvalidResponseCorrect==1 && ~SignalPresent) || ...%correct on noise trials -> right port
+            (InvalidResponseCorrect==0 && SignalPresent) %incorrect on signal trials -> right port
+        InvalidResponseLeft = 0;
+    else
+        InvalidResponseLeft = nan;
+    end
+
     
     if ~isnan(ResponseLeft)
         ResponsePortNumber=ports(abs(ResponseLeft-1)*2+1);
         if  ~any(strcmp(strcat('Port',ResponsePortNumber,'In'),eventsThisTrial))
             error('No event corresponding to calculated response recorded. Check your code!')
         end
+    end
+    
+    %compute time animal needed to give a response (nan if a valid or no response is made)
+    if InvalidResponseCorrect==1
+        InvalidResponseTime=correctPortInTime-firstCenterPortOut;        
+    elseif InvalidResponseCorrect==0
+        InvalidResponseTime=errorPortInTime-firstCenterPortOut;                
+    else
+        InvalidResponseTime = nan;
     end
     
     %compute time animal needed to give a response (nan if no response is made)
@@ -142,6 +194,7 @@ if iTrial>0
     else
         ResponseTime = nan;
     end
+
     
     %determine whether animal withdraw before set confidence waiting time was
     %over (correct trials only) ADAPT HERE FOR CATCH TRIALS
@@ -231,6 +284,10 @@ if iTrial>0
     BpodSystem.Data.Custom.ResponseCorrect(iTrial)=ResponseCorrect;
     BpodSystem.Data.Custom.ResponseLeft(iTrial) = ResponseLeft;
     BpodSystem.Data.Custom.ResponseTime(iTrial) = ResponseTime;
+    BpodSystem.Data.Custom.InvalidResponseCorrect(iTrial)=InvalidResponseCorrect;
+    BpodSystem.Data.Custom.InvalidResponseLeft(iTrial) = InvalidResponseLeft;
+    BpodSystem.Data.Custom.InvalidResponseTime(iTrial) = InvalidResponseTime;
+
     BpodSystem.Data.Custom.LoutEarly(iTrial) = LoutEarly;
     BpodSystem.Data.Custom.WaitingTime(iTrial) = WaitingTime;
     BpodSystem.Data.Custom.GracePeriodDuration(iTrial) = GracePeriodDuration;
@@ -249,6 +306,10 @@ else
     BpodSystem.Data.Custom.ResponseCorrect=[];
     BpodSystem.Data.Custom.ResponseLeft = [];
     BpodSystem.Data.Custom.ResponseTime = [];
+        BpodSystem.Data.Custom.InvalidResponseCorrect=[];
+    BpodSystem.Data.Custom.InvalidResponseLeft = [];
+    BpodSystem.Data.Custom.InvalidResponseTime = [];
+
     BpodSystem.Data.Custom.LoutEarly = [];
     BpodSystem.Data.Custom.WaitingTime = [];
     BpodSystem.Data.Custom.GracePeriodDuration = [];
@@ -275,7 +336,7 @@ switch TaskParameters.GUIMeta.PreStimDurationSelection.String{TaskParameters.GUI
             if TaskParameters.GUI.AllowBreakFixation==0
                 ConsiderPerformance = sum(~BpodSystem.Data.Custom.CoutEarly(ConsiderTrials))/length(ConsiderTrials);
             elseif TaskParameters.GUI.AllowBreakFixation==1
-                ConsiderPerformance = sum(~BpodSystem.Data.Custom.EarlyWithdrawal(ConsiderTrials))/length(ConsiderTrials);
+                ConsiderPerformance = sum(~BpodSystem.Data.Custom.BrokeFixation(ConsiderTrials))/length(ConsiderTrials);
             end
             
             if  ConsiderPerformance > Crit && ~CoutEarly %if success over all trials AND on last trial: increase
