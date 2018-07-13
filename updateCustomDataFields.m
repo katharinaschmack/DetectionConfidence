@@ -111,8 +111,16 @@ if iTrial>0
     
     %mark whether animal gave correct or incorrect response on valid and invalid
     %trials
+    if any(strcmp(CenterPortIn,eventsThisTrial))
+        firstCenterPortIn=min(eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn]));%to consider trials where animal was in cneter at trialstart\
+    else
+        firstCenterPortIn=nan;
+    end
+
     if any(strcmp(CenterPortOut,eventsThisTrial))
-        firstCenterPortOut=min(eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut ]));%take first withdrawal from center port as a reference point
+        allCenterPortOut=(eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut ]));%get all withdrawals from cneter port
+        orderIdx=((allCenterPortOut-firstCenterPortIn)>0);%discard withdrawals if animal was at center at trial start
+        firstCenterPortOut=min(allCenterPortOut(orderIdx));%take first withdrawal from center port as a reference point
     else
         firstCenterPortOut=nan;
     end

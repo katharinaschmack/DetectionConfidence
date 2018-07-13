@@ -47,7 +47,7 @@ switch Action
         AxesHandles.HandlePsycAud.XLim = [-1.05 1.05];
         AxesHandles.HandlePsycAud.XTick = [-1:.5:1];
         n=[TaskParameters.GUI.NoiseVolumeTable.NoiseVolume(1:end-1); flipud(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)];
-        s=[zeros(length(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)-1,1); fliplr(TaskParameters.GUI.NoiseVolumeTable.SignalVolume)];
+        s=[zeros(length(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)-1,1); flipud(TaskParameters.GUI.NoiseVolumeTable.SignalVolume)];
         for k=1:length(n)
            xticklabel{k}=sprintf('%d-%d',n(k),s(k));
         end
@@ -216,19 +216,20 @@ switch Action
         if TaskParameters.GUI.ShowVevaiometric
             ndxError = BpodSystem.Data.Custom.ResponseCorrect(1:iTrial) == 0 ; %all (completed) error trials (including catch errors)
             ndxCorrectCatch = BpodSystem.Data.Custom.CatchTrial(1:iTrial) & BpodSystem.Data.Custom.ResponseCorrect(1:iTrial) == 1; %only correct catch trials
-            ndxMinWT = BpodSystem.Data.Custom.WaitingTime > 2;%TaskParameters.GUI.VevaiometricMinWT;
-            DV = BpodSystem.Data.Custom.SignalVolume(1:iTrial);
-            DVNBin = 6;%TaskParameters.GUI.VevaiometricNBin;
-            BinIdx = discretize(DV,linspace(0,60,DVNBin+1));
+            ndxMinWT = BpodSystem.Data.Custom.WaitingTime > 0;%TaskParameters.GUI.VevaiometricMinWT;
+            AudDV=BpodSystem.Data.Custom.NoiseVolumeRescaled(1:length(BpodSystem.Data.Custom.ResponseLeft));
+            AudBins = 6;
+            BinIdx = discretize(AudDV,linspace(-1,1,AudBins+1)*1.01);%unelegant! revise!
             WTerr = grpstats(BpodSystem.Data.Custom.WaitingTime(ndxError&ndxMinWT),BinIdx(ndxError&ndxMinWT),'mean')';
             WTcatch = grpstats(BpodSystem.Data.Custom.WaitingTime(ndxCorrectCatch&ndxMinWT),BinIdx(ndxCorrectCatch&ndxMinWT),'mean')';
-            Xerr = unique(BinIdx(ndxError&ndxMinWT))/DVNBin*60;
-            Xcatch = unique(BinIdx(ndxCorrectCatch&ndxMinWT))/DVNBin*60;
+            Xerr = grpstats(BpodSystem.Data.Custom.NoiseVolumeRescaled(ndxError&ndxMinWT),(BinIdx(ndxError&ndxMinWT)),'mean');
+            Xerr = grpstats(BpodSystem.Data.Custom.NoiseVolumeRescaled(ndxCorrectCatch&ndxMinWT),(BinIdx(ndxCorrectCatch&ndxMinWT)),'mean');
             BpodSystem.GUIHandles.OutcomePlot.VevaiometricErr.YData = WTerr;
             BpodSystem.GUIHandles.OutcomePlot.VevaiometricErr.XData = Xerr;
             BpodSystem.GUIHandles.OutcomePlot.VevaiometricCatch.YData = WTcatch;
             BpodSystem.GUIHandles.OutcomePlot.VevaiometricCatch.XData = Xcatch;
-            %if TaskParameters.GUI.VevaiometricShowPoints
+            
+            %if TaskParameters.GUI.VevaiometricShowPoints          
             BpodSystem.GUIHandles.OutcomePlot.VevaiometricPointsErr.YData = BpodSystem.Data.Custom.WaitingTime(ndxError&ndxMinWT);
             BpodSystem.GUIHandles.OutcomePlot.VevaiometricPointsErr.XData = DV(ndxError&ndxMinWT);
             BpodSystem.GUIHandles.OutcomePlot.VevaiometricPointsCatch.YData = BpodSystem.Data.Custom.WaitingTime(ndxCorrectCatch&ndxMinWT);
