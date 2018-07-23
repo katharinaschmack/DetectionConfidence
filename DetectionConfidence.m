@@ -134,6 +134,13 @@ BpodParameterGUI('init', TaskParameters);
 [~,BpodSystem.Data.Custom.Subject] = fileparts(fileparts(fileparts(fileparts(BpodSystem.DataPath))));
 BpodSystem.SoftCodeHandlerFunction = 'SoftCodeHandler';
 
+%start
+[filepath,filename,~]=fileparts(BpodSystem.DataPath);
+BpodSystem.Data.Custom.StimulusPath=strrep(filepath,'Session Data','Session Stimuli');
+if ~exist(BpodSystem.Data.Custom.StimulusPath,'dir')
+    mkdir(BpodSystem.Data.Custom.StimulusPath)
+end
+
 %initialize values and put into BpodSystem.Data.Custom
 updateCustomDataFields(0)
 
@@ -153,6 +160,7 @@ BpodSystem.GUIHandles.OutcomePlot.HandleVevaiometric = axes('Position',   [7*.05
 
 MainPlot(BpodSystem.GUIHandles.OutcomePlot,'init');
 %BpodSystem.ProtocolFigures.ParameterGUI.Position = TaskParameters.Figures.ParameterGUI.Position;
+
 
 
 %% Main loop
