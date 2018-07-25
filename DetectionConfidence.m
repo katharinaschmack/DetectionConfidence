@@ -136,7 +136,7 @@ BpodSystem.SoftCodeHandlerFunction = 'SoftCodeHandler';
 
 %start
 [filepath,filename,~]=fileparts(BpodSystem.DataPath);
-BpodSystem.Data.Custom.StimulusPath=strrep(filepath,'Session Data','Session Stimuli');
+BpodSystem.Data.Custom.StimulusPath=fullfile(strrep(filepath,'Session Data','Session Stimuli'),filename);
 if ~exist(BpodSystem.Data.Custom.StimulusPath,'dir')
     mkdir(BpodSystem.Data.Custom.StimulusPath)
 end

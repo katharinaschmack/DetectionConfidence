@@ -118,7 +118,7 @@ if iTrial>0
     end
 
     if any(strcmp(CenterPortOut,eventsThisTrial))
-        allCenterPortOut=(eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut ]));%get all withdrawals from cneter port
+        allCenterPortOut=(eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut ]));%get all withdrawals from center port
         orderIdx=((allCenterPortOut-firstCenterPortIn)>0);%discard withdrawals if animal was at center at trial start
         firstCenterPortOut=min(allCenterPortOut(orderIdx));%take first withdrawal from center port as a reference point
     else
