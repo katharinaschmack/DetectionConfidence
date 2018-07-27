@@ -51,15 +51,15 @@ else
     StimulusSettings.SignalVolume=TaskParameters.GUI.NoiseVolumeTable.SignalVolume(StimulusSettings.NoiseVolume==TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
 end
 
+%% set random numbers based on current time 
+StimulusSettings.RandomStream=rng('shuffle');
+
 %generate stimuli EDIT HERE TO SAVE THEM
 NoiseStream = GenerateNoise(StimulusSettings);
 SignalStream = GenerateSignal(StimulusSettings).*StimulusSettings.EmbedSignal;
 
-%noiseName = fullfile(BpodSystem.Data.Custom.StimulusPath,sprintf('noise%04.0f.mat',iTrial+1));
-%allNoise(iTrial+1,:)=NoiseStream(1,:);
-%save(BpodSystem.Data.Custom.StimulusPath,'allNoise');
-%noiseName = fullfile(BpodSystem.Custom.StimulusPath,sprintf('noise%04.0f.mat',iTrial));
-%save(noiseName,'NoiseStream');
+stimulusName = fullfile(BpodSystem.Data.Custom.StimulusPath,sprintf('StimulusSettings_%04.0f.mat',iTrial+1));
+save(stimulusName,'StimulusSettings');
 
 %prepare Psychotoolbox if necessary
 if  ~BpodSystem.Data.Custom.PsychtoolboxStartup

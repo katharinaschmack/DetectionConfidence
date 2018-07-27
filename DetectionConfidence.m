@@ -136,9 +136,9 @@ BpodSystem.SoftCodeHandlerFunction = 'SoftCodeHandler';
 
 %start
 [filepath,filename,~]=fileparts(BpodSystem.DataPath);
-BpodSystem.Data.Custom.StimulusPath=fullfile(strrep(filepath,'Session Data','Session Stimuli'),sprintf('noise_%s.mat',filename));
-if ~exist(fileparts(BpodSystem.Data.Custom.StimulusPath),'dir')
-    mkdir(fileparts(BpodSystem.Data.Custom.StimulusPath))
+BpodSystem.Data.Custom.StimulusPath=fullfile(strrep(filepath,'Session Data','Session Stimuli'),filename);
+if ~exist(BpodSystem.Data.Custom.StimulusPath,'dir')
+    mkdir(BpodSystem.Data.Custom.StimulusPath)
 end
 
 %initialize values and put into BpodSystem.Data.Custom

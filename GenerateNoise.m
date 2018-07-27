@@ -9,14 +9,12 @@ NoiseDuration=StimulusSettings.NoiseDuration;
 NoiseVolume=max(min(StimulusSettings.NoiseVolume,StimulusSettings.MaxVolume),StimulusSettings.MinVolume);%clip noise volume to Min and Max
 SignalMinFreq=StimulusSettings.SignalMinFreq;
 SignalMaxFreq=StimulusSettings.SignalMaxFreq;
-% randomNumberStream=StimulusSettings.r
+RandomStream=StimulusSettings.RandomStream;
 
 %% generate noise
-%set randstream
-% if nargin<2
-% randomNumberStream=rng('shuffle');
-% end
-% rng(randomNumberStream);
+%set random number generator to given state and seed (to ensure
+%reproducibility)
+rng(RandomStream);
 
 %generate noise vector
 samplenum=round(SamplingRate * NoiseDuration);
