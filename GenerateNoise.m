@@ -1,4 +1,4 @@
-function noise=GenerateNoise(StimulusSettings)
+function [noise] =GenerateNoise(StimulusSettings)
 global BpodSystem %we need this for volume adjustment
 
 %% abbreviate variable names and clip impossible values for better handling
@@ -9,8 +9,15 @@ NoiseDuration=StimulusSettings.NoiseDuration;
 NoiseVolume=max(min(StimulusSettings.NoiseVolume,StimulusSettings.MaxVolume),StimulusSettings.MinVolume);%clip noise volume to Min and Max
 SignalMinFreq=StimulusSettings.SignalMinFreq;
 SignalMaxFreq=StimulusSettings.SignalMaxFreq;
+% randomNumberStream=StimulusSettings.r
 
 %% generate noise
+%set randstream
+% if nargin<2
+% randomNumberStream=rng('shuffle');
+% end
+% rng(randomNumberStream);
+
 %generate noise vector
 samplenum=round(SamplingRate * NoiseDuration);
 switch NoiseColor

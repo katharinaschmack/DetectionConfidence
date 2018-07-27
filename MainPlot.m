@@ -196,10 +196,9 @@ switch Action
             if sum(~ndxNan) > 5
                 
                 %binned according to evidence
-                AudDV=BpodSystem.Data.Custom.NoiseVolumeRescaled(1:length(BpodSystem.Data.Custom.ResponseLeft));
-                AudBins = 6;
-                BinIdx = discretize(AudDV,linspace(-1,1,AudBins+1)*1.01);%unelegant! revise!
-                AudDV = AudDV(1:numel(BpodSystem.Data.Custom.ResponseLeft));
+                AudDV=BpodSystem.Data.Custom.NoiseVolumeRescaled(1:numel(BpodSystem.Data.Custom.ResponseLeft));
+                %AudBins = 6;
+                BinIdx = AudDV;%discretize(AudDV,linspace(-1,1,AudBins+1)*1.01);%unelegant! revise!
                 PsycY = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan),(BinIdx(~ndxNan)),'mean');
                 PsycX = grpstats(BpodSystem.Data.Custom.NoiseVolumeRescaled(~ndxNan),(BinIdx(~ndxNan)),'mean');
                 BpodSystem.GUIHandles.OutcomePlot.PsycAud.YData = PsycY;

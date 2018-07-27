@@ -55,8 +55,8 @@ end
 NoiseStream = GenerateNoise(StimulusSettings);
 SignalStream = GenerateSignal(StimulusSettings).*StimulusSettings.EmbedSignal;
 
-noiseName = fullfile(BpodSystem.Data.Custom.StimulusPath,sprintf('noise%04.0f.mat',iTrial+1));
-save(noiseName,'NoiseStream');
+%noiseName = fullfile(BpodSystem.Data.Custom.StimulusPath,sprintf('noise%04.0f.mat',iTrial+1));
+%save(noiseName,'NoiseStream');
 %noiseName = fullfile(BpodSystem.Custom.StimulusPath,sprintf('noise%04.0f.mat',iTrial));
 
 %prepare Psychotoolbox if necessary
