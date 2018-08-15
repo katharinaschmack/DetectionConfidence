@@ -19,6 +19,8 @@ switch Action
         
         %plot in specified axes
         BpodSystem.GUIHandles.OutcomePlot.EarlyWithdrawal = line(-1,0, 'LineStyle','none','Marker','d','MarkerEdge','none','MarkerFace','b', 'MarkerSize',8);
+        BpodSystem.GUIHandles.OutcomePlot.SkippedFeedback = line(-1,0, 'LineStyle','none','Marker','h','MarkerFace',[.5 .5 .5],'MarkerEdge','none', 'MarkerSize',11);
+
         BpodSystem.GUIHandles.OutcomePlot.Aud = line(-1,0, 'LineStyle','none','Marker','o','MarkerEdge',[.5,.5,.5],'MarkerFace',[.7,.7,.7], 'MarkerSize',8);
         %BpodSystem.GUIHandles.OutcomePlot.DV = line(1,0, 'LineStyle','none','Marker','o','MarkerEdge','b','MarkerFace','b', 'MarkerSize',6);
         BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCircle = line(1,0, 'LineStyle','none','Marker','o','MarkerEdge','k','MarkerFace',[1 1 1], 'MarkerSize',6);
@@ -64,7 +66,7 @@ switch Action
         BpodSystem.GUIHandles.OutcomePlot.VevaiometricPointsErr = line(AxesHandles.HandleVevaiometric,-2,-1, 'LineStyle','none','Color','r','Marker','o','MarkerFaceColor','r', 'MarkerSize',2,'Visible','off','MarkerEdgeColor','r');
         BpodSystem.GUIHandles.OutcomePlot.VevaiometricPointsCatch = line(AxesHandles.HandleVevaiometric,-2,-1, 'LineStyle','none','Color','g','Marker','o','MarkerFaceColor','g', 'MarkerSize',2,'Visible','off','MarkerEdgeColor','g');
         AxesHandles.HandleVevaiometric.YLim = [-.5 5];
-        AxesHandles.HandleVevaiometric.XLim = [-1 0];
+        AxesHandles.HandlePsycAud.XLim = [-1.05 1.05];
         AxesHandles.HandleVevaiometric.XLabel.String = 'Signal evidence';
         AxesHandles.HandleVevaiometric.YLabel.String = 'WT (s)';
         AxesHandles.HandleVevaiometric.Title.String = 'Vevaiometric';
@@ -144,6 +146,7 @@ switch Action
         Ydata = signalBinned(indxToPlot); Ydata = Ydata(ndxSignalPlayed);
         set(BpodSystem.GUIHandles.OutcomePlot.SignalVolume,'xdata',Xdata, 'ydata',Ydata);
         
+            
         %Plot Correct
         ndxCor = BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==1|BpodSystem.Data.Custom.InvalidResponseCorrect(indxToPlot)==1;
         Xdata = indxToPlot(ndxCor);
@@ -186,6 +189,18 @@ switch Action
         Ydata = BpodSystem.Data.Custom.NoiseVolumeRescaled(indxToPlot); Ydata = Ydata(ndxCatch&~ndxMiss&~ndxEarly);
         set(BpodSystem.GUIHandles.OutcomePlot.Catch, 'xdata', Xdata, 'ydata', Ydata);
 
+        
+        %Plot Skipped
+        ndxSkippedCorrect=BpodSystem.Data.Custom.ResponseCorrect==1&(BpodSystem.Data.Custom.WaitingTime<BpodSystem.Data.Custom.FeedbackDelay(1:iTrial))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
+        if TaskParameters.GUI.CatchError
+            ndxSkippedError=false(1,iTrial);
+        else
+            ndxSkippedError=BpodSystem.Data.Custom.ResponseCorrect==0&(BpodSystem.Data.Custom.WaitingTime<BpodSystem.Data.Custom.FeedbackDelayError(1:iTrial))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
+        end
+        ndxSkipped=ndxSkippedCorrect|ndxSkippedError;
+        Xdata = indxToPlot(ndxSkipped&~ndxMiss&~ndxEarly);
+        Ydata = BpodSystem.Data.Custom.NoiseVolumeRescaled(indxToPlot); Ydata = Ydata(ndxSkipped&~ndxMiss&~ndxEarly);
+        set(BpodSystem.GUIHandles.OutcomePlot.SkippedFeedback, 'xdata', Xdata, 'ydata', Ydata);
 
               
 
@@ -213,9 +228,13 @@ switch Action
         end
         %% Vevaiometric
         if TaskParameters.GUI.ShowVevaiometric
-            ndxError = BpodSystem.Data.Custom.ResponseCorrect(1:iTrial) == 0 ; %all (completed) error trials (including catch errors)
+            if TaskParameters.GUI.CatchError
+                ndxError = BpodSystem.Data.Custom.ResponseCorrect(1:iTrial) == 0 ; %all (completed) error trials if caught
+            else
+                ndxError = BpodSystem.Data.Custom.CatchTrial(1:iTrial) & BpodSystem.Data.Custom.ResponseCorrect(1:iTrial) == 0;  %all (completed) error trials if caught
+            end
             ndxCorrectCatch = BpodSystem.Data.Custom.CatchTrial(1:iTrial) & BpodSystem.Data.Custom.ResponseCorrect(1:iTrial) == 1; %only correct catch trials
-            ndxMinWT = BpodSystem.Data.Custom.WaitingTime > 0;%TaskParameters.GUI.VevaiometricMinWT;
+            ndxMinWT = BpodSystem.Data.Custom.WaitingTime > 0;
             AudDV=BpodSystem.Data.Custom.NoiseVolumeRescaled(1:length(BpodSystem.Data.Custom.ResponseLeft));
             AudBins = 6;
             BinIdx = discretize(AudDV,linspace(-1,1,AudBins+1)*1.01);%unelegant! revise!
@@ -276,27 +295,33 @@ switch Action
         %% Feedback delay (exclude catch trials and error trials, if set on catch)
         if TaskParameters.GUI.ShowFeedback
             cla(AxesHandles.HandleFeedback)
-            %             if TaskParameters.GUI.CatchError
-            %                 ndxExclude = BpodSystem.Data.Custom.ResponseCorrect(1:iTrial) == 0; %exclude error trials if they are set on catch
-            %             else
-            %                 ndxExclude = false(1,iTrial);
-            %             end
-            ndxReward = BpodSystem.Data.Custom.RewardReceivedCorrect(1:iTrial)>0|BpodSystem.Data.Custom.RewardReceivedError(1:iTrial)>0;
-            ndxCatch = BpodSystem.Data.Custom.CatchTrial(1:iTrial);
+            ndxWaitedCorrect=BpodSystem.Data.Custom.ResponseCorrect==1&(BpodSystem.Data.Custom.WaitingTime>BpodSystem.Data.Custom.FeedbackDelay(1:iTrial))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
+            ndxSkippedCorrect=BpodSystem.Data.Custom.ResponseCorrect==1&(BpodSystem.Data.Custom.WaitingTime<BpodSystem.Data.Custom.FeedbackDelay(1:iTrial))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
+            if TaskParameters.GUI.CatchError
+               ndxWaitedError=false(1,iTrial);
+               ndxSkippedError=false(1,iTrial);
+            else
+                ndxWaitedError=BpodSystem.Data.Custom.ResponseCorrect==0&(BpodSystem.Data.Custom.WaitingTime>BpodSystem.Data.Custom.FeedbackDelayError(1:iTrial))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
+                ndxSkippedError=BpodSystem.Data.Custom.ResponseCorrect==0&(BpodSystem.Data.Custom.WaitingTime<BpodSystem.Data.Custom.FeedbackDelayError(1:iTrial))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
+            end
+            ndxSkipped=ndxSkippedCorrect|ndxSkippedError;
+            ndxWaited=ndxWaitedCorrect|ndxWaitedError;
+
             ndxLeft = BpodSystem.Data.Custom.ResponseLeft(1:iTrial)==1;
-            ndxNan = isnan(BpodSystem.Data.Custom.ResponseLeft);
-            BpodSystem.GUIHandles.OutcomePlot.HistNoFeed = histogram(AxesHandles.HandleFeedback,BpodSystem.Data.Custom.WaitingTime(~ndxReward&~ndxCatch&~ndxNan)*1000);
+            ndxRight = BpodSystem.Data.Custom.ResponseLeft(1:iTrial)==0;
+
+            BpodSystem.GUIHandles.OutcomePlot.HistNoFeed = histogram(AxesHandles.HandleFeedback,BpodSystem.Data.Custom.WaitingTime(ndxSkipped)*1000);
             BpodSystem.GUIHandles.OutcomePlot.HistNoFeed.BinWidth = 50;
             BpodSystem.GUIHandles.OutcomePlot.HistNoFeed.EdgeColor = 'none';
             BpodSystem.GUIHandles.OutcomePlot.HistNoFeed.FaceColor = 'r';
             %BpodSystem.GUIHandles.OutcomePlot.HistNoFeed.Normalization = 'probability';
-            BpodSystem.GUIHandles.OutcomePlot.HistFeed = histogram(AxesHandles.HandleFeedback,BpodSystem.Data.Custom.WaitingTime(ndxReward&~ndxCatch&~ndxNan)*1000);
+            BpodSystem.GUIHandles.OutcomePlot.HistFeed = histogram(AxesHandles.HandleFeedback,BpodSystem.Data.Custom.WaitingTime(ndxWaited)*1000);
             BpodSystem.GUIHandles.OutcomePlot.HistFeed.BinWidth = 50;
             BpodSystem.GUIHandles.OutcomePlot.HistFeed.EdgeColor = 'none';
             BpodSystem.GUIHandles.OutcomePlot.HistFeed.FaceColor = 'b';
             %BpodSystem.GUIHandles.OutcomePlot.HistFeed.Normalization = 'probability';
-            LeftSkip = sum(~ndxReward&~ndxCatch&ndxLeft&~ndxNan)/sum(~ndxCatch&ndxLeft&~ndxNan);
-            RightSkip = sum(~ndxReward&~ndxCatch&ndxLeft&~ndxNan)/sum(~ndxCatch&~ndxLeft&~ndxNan);
+            LeftSkip = sum(ndxSkipped(ndxLeft))/sum(ndxSkipped(ndxLeft)+ndxWaited(ndxLeft));
+            RightSkip = sum(ndxSkipped(ndxRight))/sum(ndxSkipped(ndxRight)+ndxWaited(ndxRight));
             cornertext(AxesHandles.HandleFeedback,{sprintf('L=%1.2f',LeftSkip),sprintf('R=%1.2f',RightSkip)})
         end
         
