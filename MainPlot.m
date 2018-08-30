@@ -190,17 +190,18 @@ switch Action
         set(BpodSystem.GUIHandles.OutcomePlot.Catch, 'xdata', Xdata, 'ydata', Ydata);
 
         
-%         %Plot Skipped
-%         ndxSkippedCorrect=BpodSystem.Data.Custom.ResponseCorrect==1&(BpodSystem.Data.Custom.WaitingTime<BpodSystem.Data.Custom.FeedbackDelay(1:iTrial))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
-%         if TaskParameters.GUI.CatchError
-%             ndxSkippedError=false(1,iTrial);
-%         else
-%             ndxSkippedError=BpodSystem.Data.Custom.ResponseCorrect==0&(BpodSystem.Data.Custom.WaitingTime<BpodSystem.Data.Custom.FeedbackDelayError(1:iTrial))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
-%         end
-%         ndxSkipped=ndxSkippedCorrect|ndxSkippedError;
-%         Xdata = indxToPlot(ndxSkipped&~ndxMiss&~ndxEarly);
-%         Ydata = BpodSystem.Data.Custom.NoiseVolumeRescaled(indxToPlot); Ydata = Ydata(ndxSkipped&~ndxMiss&~ndxEarly);
-%         set(BpodSystem.GUIHandles.OutcomePlot.SkippedFeedback, 'xdata', Xdata, 'ydata', Ydata);
+        %Plot Skipped
+        ndxSkippedCorrect=BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==1&(BpodSystem.Data.Custom.WaitingTime(indxToPlot)<BpodSystem.Data.Custom.FeedbackDelay(indxToPlot))&~BpodSystem.Data.Custom.CatchTrial(indxToPlot);
+        if TaskParameters.GUI.CatchError
+            ndxSkippedError=false(1,length(indxToPlot));
+        else
+            ndxSkippedError=BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==0&(BpodSystem.Data.Custom.WaitingTime(indxToPlot)<BpodSystem.Data.Custom.FeedbackDelayError((indxToPlot)))&~BpodSystem.Data.Custom.CatchTrial((indxToPlot));
+        end
+        ndxSkipped=ndxSkippedCorrect|ndxSkippedError;
+        Xdata = indxToPlot(ndxSkipped&~ndxMiss&~ndxEarly);
+        Ydata = BpodSystem.Data.Custom.NoiseVolumeRescaled(indxToPlot); Ydata = Ydata(ndxSkipped&~ndxMiss&~ndxEarly);
+        set(BpodSystem.GUIHandles.OutcomePlot.SkippedFeedback, 'xdata', Xdata, 'ydata', Ydata);
+
 
               
 
@@ -320,8 +321,8 @@ switch Action
             BpodSystem.GUIHandles.OutcomePlot.HistFeed.EdgeColor = 'none';
             BpodSystem.GUIHandles.OutcomePlot.HistFeed.FaceColor = 'b';
             %BpodSystem.GUIHandles.OutcomePlot.HistFeed.Normalization = 'probability';
-            LeftSkip = sum(ndxSkipped(ndxLeft))/sum(ndxSkipped(ndxLeft)+ndxWaited(ndxLeft));
-            RightSkip = sum(ndxSkipped(ndxRight))/sum(ndxSkipped(ndxRight)+ndxWaited(ndxRight));
+            LeftSkip = sum(ndxSkippedCorrect&ndxLeft)/sum((ndxSkippedCorrect|ndxWaitedCorrect)&ndxLeft);
+            RightSkip = sum(ndxSkippedCorrect&ndxRight)/sum((ndxSkippedCorrect|ndxWaitedCorrect)&ndxRight);
             cornertext(AxesHandles.HandleFeedback,{sprintf('L=%1.2f',LeftSkip),sprintf('R=%1.2f',RightSkip)})
         end
         

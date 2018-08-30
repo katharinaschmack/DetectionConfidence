@@ -35,7 +35,7 @@ end
 % Create Analysis Figure and Data
 [~,TitleString] = fileparts(BpodSystem.DataPath);
 if BpodSystem.Data.nTrials>1
-    [AnalyzedData, FigureHandle]=CheckBehaviorOnline(SessionData,TitleString);
+   [FigureHandle,infostring]=AnalysisFigureOnline(trialTab,sessionTab,TitleString);
     
     expression = '\w\w\w\d\d_2018*';
     matchStr = regexp(FigureName,expression,'match');
@@ -54,12 +54,13 @@ if BpodSystem.Data.nTrials>1
         MailAddress = MailSettings.MailTo; % 'bosc274.b4f75e1@m.evernote.com';
         
         % Note informations:
-        infostrings=strsplit(TitleString,'_');
-        note = sprintf('%s %s %s:\n',infostrings{3},infostrings{4},infostrings{5});%date year session
-        note = sprintf('%sTrials (completed) %d (%d)\tTrainTime %d min\tReward %2.3fml\t',note,AnalyzedData.nTrials,AnalyzedData.nComTrials,AnalyzedData.TrainTime,AnalyzedData.TotalRew);
-        note = sprintf('%sAccuracy %2.0f%s\t Bias %2.0f%s CoutEarly %2.0f%s\n\n',note,AnalyzedData.Acc,'%',AnalyzedData.Bias,'%',AnalyzedData.CoutEarly,'%');
+        titstr=strsplit(TitleString,'_');
+        note = sprintf('\n%s %s %s:\n',titstr{3},titstr{4},titstr{5});%date year session
+        for k=1:length(infostring)
+        note = sprintf('%s\n%s',note,infostring{k});
+        end
         
-        Subject = strcat(infostrings{1}, ' @ ', infostrings{2}, ' +');%subject protocol
+        Subject = strcat(titstr{1}, ' @ ', titstr{2}, ' +');%subject protocol
         Body = note;
         
         sent = SendMyMail(MailSettings,MailSettings.MailTo,Subject,Body); % (MailSettings,MailAddress,Subject,Body,Attachment);

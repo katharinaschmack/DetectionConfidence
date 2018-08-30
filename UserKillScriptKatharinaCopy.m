@@ -36,7 +36,7 @@ end
 [~,TitleString] = fileparts(BpodSystem.DataPath);
 if BpodSystem.Data.nTrials>10
     [AnalyzedData, FigureHandle]=CheckBehaviorOnline(SessionData,TitleString);
-    %[trialTab sessionTab]=retrieveDataOnline(SessionData);
+    [trialTab sessionTab]=retrieveDataOnline(SessionData);
     %try
     %    plotPsychometricOnline(trialTab,sessionTab,TitleString);
     %catch

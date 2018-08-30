@@ -117,7 +117,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIPanels.ShowPlots = {'ShowPsycAud','ShowVevaiometric','ShowTrialRate','ShowFix','ShowST','ShowFeedback'};
 
     TaskParameters.GUI = orderfields(TaskParameters.GUI);
-    TaskParameters.Figures.OutcomePlot.Position = [0, 400, 1000, 400];
+    TaskParameters.Figures.OutcomePlot.Position = [0, 600, 1000, 400];
 
     
     TaskParameters.GUITabs.General = {'General'};
