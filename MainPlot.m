@@ -190,17 +190,17 @@ switch Action
         set(BpodSystem.GUIHandles.OutcomePlot.Catch, 'xdata', Xdata, 'ydata', Ydata);
 
         
-        %Plot Skipped
-        ndxSkippedCorrect=BpodSystem.Data.Custom.ResponseCorrect==1&(BpodSystem.Data.Custom.WaitingTime<BpodSystem.Data.Custom.FeedbackDelay(1:iTrial))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
-        if TaskParameters.GUI.CatchError
-            ndxSkippedError=false(1,iTrial);
-        else
-            ndxSkippedError=BpodSystem.Data.Custom.ResponseCorrect==0&(BpodSystem.Data.Custom.WaitingTime<BpodSystem.Data.Custom.FeedbackDelayError(1:iTrial))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
-        end
-        ndxSkipped=ndxSkippedCorrect|ndxSkippedError;
-        Xdata = indxToPlot(ndxSkipped&~ndxMiss&~ndxEarly);
-        Ydata = BpodSystem.Data.Custom.NoiseVolumeRescaled(indxToPlot); Ydata = Ydata(ndxSkipped&~ndxMiss&~ndxEarly);
-        set(BpodSystem.GUIHandles.OutcomePlot.SkippedFeedback, 'xdata', Xdata, 'ydata', Ydata);
+%         %Plot Skipped
+%         ndxSkippedCorrect=BpodSystem.Data.Custom.ResponseCorrect==1&(BpodSystem.Data.Custom.WaitingTime<BpodSystem.Data.Custom.FeedbackDelay(1:iTrial))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
+%         if TaskParameters.GUI.CatchError
+%             ndxSkippedError=false(1,iTrial);
+%         else
+%             ndxSkippedError=BpodSystem.Data.Custom.ResponseCorrect==0&(BpodSystem.Data.Custom.WaitingTime<BpodSystem.Data.Custom.FeedbackDelayError(1:iTrial))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
+%         end
+%         ndxSkipped=ndxSkippedCorrect|ndxSkippedError;
+%         Xdata = indxToPlot(ndxSkipped&~ndxMiss&~ndxEarly);
+%         Ydata = BpodSystem.Data.Custom.NoiseVolumeRescaled(indxToPlot); Ydata = Ydata(ndxSkipped&~ndxMiss&~ndxEarly);
+%         set(BpodSystem.GUIHandles.OutcomePlot.SkippedFeedback, 'xdata', Xdata, 'ydata', Ydata);
 
               
 
