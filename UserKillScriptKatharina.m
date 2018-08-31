@@ -35,6 +35,7 @@ end
 % Create Analysis Figure and Data
 [~,TitleString] = fileparts(BpodSystem.DataPath);
 if BpodSystem.Data.nTrials>1
+     [trialTab sessionTab]=retrieveDataOnline(SessionData);
    [FigureHandle,infostring]=AnalysisFigureOnline(trialTab,sessionTab,TitleString);
     
     expression = '\w\w\w\d\d_2018*';
@@ -100,6 +101,8 @@ if BpodSystem.Data.nTrials>1
             copyfile(fullfile(FigureFolder,[FigureName '.png']),fullfile(remotepath,'Session Figures',[FigureName '.png']));
             copyfile(fullfile(FigureFolder,[FigureName02 '.png']),fullfile(remotepath,'Session Figures',[FigureName02 '.png']));
             copyfile(BpodSystem.Data.Custom.StimulusPath,fullfile(remotepath,'Session Stimuli',FigureName));
+                        fprintf('Files successfully copied to server!\n');
+
         catch
             fprintf('Error copying data to server. Files not copied!\n');
         end
