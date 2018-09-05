@@ -16,7 +16,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI.AfterTrialIntervalMin = .1;%Minimum for jitter
     TaskParameters.GUI.AfterTrialIntervalMax = 2.5;%Maximum for jitter
     TaskParameters.GUIMeta.AfterTrialIntervalJitter.Style = 'checkbox';
-    TaskParameters.GUI.LightGuidance = true;%LED ports indicate active ports
+    TaskParameters.GUI.LightGuidance = true;%LED ports indicate active ports, if false LED ports remain on when active
     TaskParameters.GUIMeta.LightGuidance.Style = 'checkbox';
     
     TaskParameters.GUIPanels.General = {'Ports_LMR','AfterTrialInterval','AfterTrialIntervalJitter','AfterTrialIntervalMin','AfterTrialIntervalMax','LightGuidance'};
