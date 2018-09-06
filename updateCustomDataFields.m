@@ -283,6 +283,8 @@ if iTrial>0
     RewardReceivedTotal = RewardReceivedCenter + RewardReceivedCorrect + RewardReceivedError;
     
     %assemble output
+        BpodSystem.Data.Custom.BeforeTrialInterval(iTrial) = BpodSystem.Data.Custom.AfterTrialInterval(iTrial);
+
     BpodSystem.Data.Custom.CoutEarly(iTrial) = CoutEarly;
     BpodSystem.Data.Custom.EarlyWithdrawal(iTrial) = EarlyWithdrawal;
     BpodSystem.Data.Custom.BrokeFixation(iTrial) = BrokeFixation;
@@ -305,6 +307,7 @@ if iTrial>0
     BpodSystem.Data.Custom.RewardReceivedError(iTrial) = RewardReceivedError;
     BpodSystem.Data.Custom.RewardReceivedTotal(iTrial) = RewardReceivedTotal;
 else 
+    BpodSystem.Data.Custom.BeforeTrialInterval = [];
     BpodSystem.Data.Custom.CoutEarly = [];
     BpodSystem.Data.Custom.EarlyWithdrawal = [];
     BpodSystem.Data.Custom.BrokeFixation = [];
