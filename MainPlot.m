@@ -148,13 +148,13 @@ switch Action
         
             
         %Plot Correct
-        ndxCor = BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==1|BpodSystem.Data.Custom.InvalidResponseCorrect(indxToPlot)==1;
+        ndxCor = BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==1|(BpodSystem.Data.Custom.InvalidResponseCorrect(indxToPlot)==1&BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)~=0);
         Xdata = indxToPlot(ndxCor);
         Ydata = BpodSystem.Data.Custom.NoiseVolumeRescaled(indxToPlot); Ydata = Ydata(ndxCor);
         set(BpodSystem.GUIHandles.OutcomePlot.Correct, 'xdata', Xdata, 'ydata', Ydata);
         
         %Plot Incorrect
-        ndxInc = BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==0|BpodSystem.Data.Custom.InvalidResponseCorrect(indxToPlot)==0;
+        ndxInc = BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==0|(BpodSystem.Data.Custom.InvalidResponseCorrect(indxToPlot)==0&BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)~=1);
         Xdata = indxToPlot(ndxInc);
         Ydata = BpodSystem.Data.Custom.NoiseVolumeRescaled(indxToPlot); Ydata = Ydata(ndxInc);
         set(BpodSystem.GUIHandles.OutcomePlot.Incorrect, 'xdata', Xdata, 'ydata', Ydata);
