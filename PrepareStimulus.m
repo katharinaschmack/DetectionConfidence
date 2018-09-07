@@ -5,7 +5,7 @@ global TaskParameters
 
 %invariant Settings
 StimulusSettings.SamplingRate=192000;%sampling rate of sound card
-StimulusSettings.Ramp=.02;%duration (s) of ramping at on and offset of noise used to avoid clicking sounds
+StimulusSettings.Ramp=.1;%duration (s) of ramping at on and offset of noise used to avoid clicking sounds
 StimulusSettings.NoiseDuration=10;%length of noise stream (s) that will be looped
 StimulusSettings.NoiseColor='WhiteGaussian';
 StimulusSettings.MaxVolume=70;
