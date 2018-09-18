@@ -65,12 +65,15 @@ switch Action
         BpodSystem.GUIHandles.OutcomePlot.VevaiometricErr = line(AxesHandles.HandleVevaiometric,-2,-1, 'LineStyle','-','Color','r','Visible','off','LineWidth',2);
         BpodSystem.GUIHandles.OutcomePlot.VevaiometricPointsErr = line(AxesHandles.HandleVevaiometric,-2,-1, 'LineStyle','none','Color','r','Marker','o','MarkerFaceColor','r', 'MarkerSize',2,'Visible','off','MarkerEdgeColor','r');
         BpodSystem.GUIHandles.OutcomePlot.VevaiometricPointsCatch = line(AxesHandles.HandleVevaiometric,-2,-1, 'LineStyle','none','Color','g','Marker','o','MarkerFaceColor','g', 'MarkerSize',2,'Visible','off','MarkerEdgeColor','g');
-        AxesHandles.HandleVevaiometric.YLim = [-.5 5];
-        AxesHandles.HandlePsycAud.XLim = [-1.05 1.05];
-        AxesHandles.HandleVevaiometric.XLabel.String = 'Signal evidence';
+        %AxesHandles.HandleVevaiometric.YLim = [-.5 5];
+        AxesHandles.HandleVevaiometric.XLim = [-1.05 1.05];
+        AxesHandles.HandleVevaiometric.XTick = AxesHandles.HandlePsycAud.XTick;
+        AxesHandles.HandleVevaiometric.XTickLabel=AxesHandles.HandlePsycAud.XTickLabel;
+        AxesHandles.HandleVevaiometric.XLabel.String = AxesHandles.HandlePsycAud.XLabel.String;
         AxesHandles.HandleVevaiometric.YLabel.String = 'WT (s)';
         AxesHandles.HandleVevaiometric.Title.String = 'Vevaiometric';
-        
+                AxesHandles.HandleVevaiometric.FontSize=AxesHandles.HandlePsycAud.FontSize;
+
         %% Trial rate
         hold(AxesHandles.HandleTrialRate,'on')
         BpodSystem.GUIHandles.OutcomePlot.TrialRate = line(AxesHandles.HandleTrialRate,[0],[0], 'LineStyle','-','Color','k','Visible','off'); %#ok<NBRAK>
@@ -298,6 +301,7 @@ switch Action
             cla(AxesHandles.HandleFeedback)
             ndxWaitedCorrect=BpodSystem.Data.Custom.ResponseCorrect==1&(BpodSystem.Data.Custom.WaitingTime>BpodSystem.Data.Custom.FeedbackDelay(1:iTrial))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
             ndxSkippedCorrect=BpodSystem.Data.Custom.ResponseCorrect==1&(BpodSystem.Data.Custom.WaitingTime<BpodSystem.Data.Custom.FeedbackDelay(1:iTrial))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
+
             if TaskParameters.GUI.CatchError
                ndxWaitedError=false(1,iTrial);
                ndxSkippedError=false(1,iTrial);
