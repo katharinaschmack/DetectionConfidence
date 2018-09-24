@@ -68,9 +68,9 @@ if isempty(fieldnames(TaskParameters))
     
     %Choice 
     TaskParameters.GUI.ChoiceDeadline = 5; %Maximal Interval for choice after stimulus presentAfterTrialIntervalon    
-    TaskParameters.GUI.BiasCorrection = 3;
+    TaskParameters.GUI.BiasCorrection = 4;
     TaskParameters.GUIMeta.BiasCorrection.Style = 'popupmenu';
-    TaskParameters.GUIMeta.BiasCorrection.String = {'None','BruteForce','Soft'};%BruteForce: presents the same stimulus until a correct choice is made, then resumes stimulus sequence; Soft: calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
+    TaskParameters.GUIMeta.BiasCorrection.String = {'None','BruteForce','Soft','PerLevel'};%BruteForce: presents the same stimulus until a correct choice is made, then resumes stimulus sequence; Soft: calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
     TaskParameters.GUI.RewardAmountCorrect = 5;%reward amount lateral ports (marion 5)
     TaskParameters.GUI.RewardAmountError = 0;%reward amount lateral ports (marion 5)
     TaskParameters.GUI.ErrorTimeout = 0;%time out for errors     
@@ -91,7 +91,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.CatchError.Style = 'checkbox';
     TaskParameters.GUI.FeedbackDelay = TaskParameters.GUI.FeedbackDelayMin;
     TaskParameters.GUIMeta.FeedbackDelay.Style = 'text';    
-    TaskParameters.GUI.StartNoDelayTrials = 0;
+    TaskParameters.GUI.StartNoCatchTrials = 20;
     TaskParameters.GUI.VevaiometricMinWT=0;
     TaskParameters.GUIPanels.FeedbackDelay = {'FeedbackDelay','FeedbackDelaySelection','FeedbackDelayMin','FeedbackDelayMax','FeedbackDelayIncr','FeedbackDelayDecr','FeedbackDelayTau',...
         'FeedbackDelayGrace','PercentCatch','CatchError','StartNoDelayTrials','VevaiometricMinWT'};

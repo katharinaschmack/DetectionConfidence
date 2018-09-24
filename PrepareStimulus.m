@@ -17,21 +17,6 @@ StimulusSettings.SignalMaxFreq=15E3;
 StimulusSettings.SignalDuration=TaskParameters.GUI.StimDuration;
 
 
-%% determine whether signal or no signal trial is shown next 
-if TaskParameters.GUI.BiasCorrection==2 && iTrial > 5 && BpodSystem.Data.Custom.ResponseCorrect(iTrial)~=1
-    % repeat stimulus in case of BruteForce bias correction
-    StimulusSettings.EmbedSignal=BpodSystem.Data.Custom.EmbedSignal(iTrial);
-    
-elseif TaskParameters.GUI.BiasCorrection==3 && iTrial > 5
-    %show non-prefered stimulus with p=1-bias (max .9) in case of Soft bias
-    %correction
-    CurrentBias=min(.9,max(.1,nansum(BpodSystem.Data.Custom.ResponseLeft)./sum(~isnan(BpodSystem.Data.Custom.ResponseLeft))));
-    StimulusSettings.EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);
-    
-else
-    %draw randomly in all aother cases
-    StimulusSettings.EmbedSignal=randsample(0:1,1,1,[.5 .5]);
-end
 
 
 %% determine noise and signal volume for next trial
@@ -49,6 +34,27 @@ else
     
     %match signal level
     StimulusSettings.SignalVolume=TaskParameters.GUI.NoiseVolumeTable.SignalVolume(StimulusSettings.NoiseVolume==TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
+end
+
+%% determine whether signal or no signal trial is shown next 
+if TaskParameters.GUI.BiasCorrection==2 && iTrial > 5 && BpodSystem.Data.Custom.ResponseCorrect(iTrial)~=1
+    % repeat stimulus in case of BruteForce bias correction
+    StimulusSettings.EmbedSignal=BpodSystem.Data.Custom.EmbedSignal(iTrial);
+    
+elseif TaskParameters.GUI.BiasCorrection==3 && iTrial > 5
+    %show non-prefered stimulus with p=1-bias (max .9) in case of Soft bias
+    %correction
+    CurrentBias=min(.9,max(.1,nansum(BpodSystem.Data.Custom.ResponseLeft)./sum(~isnan(BpodSystem.Data.Custom.ResponseLeft))));
+    StimulusSettings.EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);
+
+elseif TaskParameters.GUI.BiasCorrection==4 && iTrial>5 && sum(BpodSystem.Data.Custom.NoiseVolume==StimulusSettings.NoiseVolume) > 5
+    noiseIdx=BpodSystem.Data.Custom.NoiseVolume==StimulusSettings.NoiseVolume;
+    CurrentBias=min(.9,max(.1,nansum(BpodSystem.Data.Custom.ResponseLeft(noiseIdx))./sum(~isnan(BpodSystem.Data.Custom.ResponseLeft(noiseIdx)))));
+    StimulusSettings.EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);
+
+else
+    %draw randomly in all aother cases
+    StimulusSettings.EmbedSignal=randsample(0:1,1,1,[.5 .5]);
 end
 
 %% set random numbers based on current time 

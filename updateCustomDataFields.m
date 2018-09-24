@@ -378,7 +378,7 @@ BpodSystem.Data.Custom.PostStimDuration(iTrial+1) = 0;
 
 %update confidence waiting time
 %update catch trial 
-if iTrial > TaskParameters.GUI.StartNoDelayTrials
+if iTrial > TaskParameters.GUI.StartNoCatchTrials
     BpodSystem.Data.Custom.CatchTrial(iTrial+1) = logical(randsample([1 0],1,1,[TaskParameters.GUI.PercentCatch 1-TaskParameters.GUI.PercentCatch]));
 else
     BpodSystem.Data.Custom.CatchTrial(iTrial+1) = false;
