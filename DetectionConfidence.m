@@ -94,7 +94,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI.StartNoCatchTrials = 20;
     TaskParameters.GUI.VevaiometricMinWT=0;
     TaskParameters.GUIPanels.FeedbackDelay = {'FeedbackDelay','FeedbackDelaySelection','FeedbackDelayMin','FeedbackDelayMax','FeedbackDelayIncr','FeedbackDelayDecr','FeedbackDelayTau',...
-        'FeedbackDelayGrace','PercentCatch','CatchError','StartNoDelayTrials','VevaiometricMinWT'};
+        'FeedbackDelayGrace','PercentCatch','CatchError','StartNoCatchTrials','VevaiometricMinWT'};
     
     %Plot
     TaskParameters.GUI.ShowPsycAud = 1;

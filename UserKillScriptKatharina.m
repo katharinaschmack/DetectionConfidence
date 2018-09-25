@@ -56,10 +56,11 @@ if BpodSystem.Data.nTrials>1
         
         % Note informations:
         titstr=strsplit(TitleString,'_');
-        note = sprintf('\n%s %s %s:\n',titstr{3},titstr{4},titstr{5});%date year session
+        note = sprintf('%s %s %s:',titstr{3},titstr{4},titstr{5});%date year session
         for k=1:length(infostring)
         note = sprintf('%s\n%s',note,infostring{k});
         end
+        note = sprintf('%s\n\n',note);
         
         Subject = strcat(titstr{1}, ' @ ', titstr{2}, ' +');%subject protocol
         Body = note;
