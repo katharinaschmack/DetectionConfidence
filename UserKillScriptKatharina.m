@@ -108,7 +108,7 @@ if copydata
         %examples: user = 'homes\torben'; % user name on server
         %          user = 'confidence';   % shared folder
         [~,subject] = fileparts(fileparts(fileparts(fileparts(BpodSystem.DataPath))));
-        remotepath = fullfile('Z:','BpodData',subject,BpodSystem.CurrentProtocolName);
+        remotepath = fullfile('Z:','BpodData',subject,'DetectionConfidence');%CHANGE HERE FOR NEW PROTOCOL!
         
         if ~isdir(fullfile(remotepath,'Session Data'))
             mkdir(fullfile(remotepath,'Session Data'));
@@ -127,7 +127,7 @@ if copydata
         [~,filename,~]=fileparts(BpodSystem.SettingsPath);
         newfilename=[filename '_' datestr(now,'yyyy-mm-dd') '.mat'];
         copyfile(BpodSystem.SettingsPath,fullfile(remotepath,'Session Settings',newfilename));
-        copyfile(fullfile(FigureFolder,[FigureName '.png']),fullfile(remotepath,'Session Figures',[FigureName '.png']));
+        %copyfile(fullfile(FigureFolder,[FigureName '.png']),fullfile(remotepath,'Session Figures',[FigureName '.png']));
         copyfile(fullfile(FigureFolder,[FigureName02 '.png']),fullfile(remotepath,'Session Figures',[FigureName02 '.png']));
         copyfile(BpodSystem.Data.Custom.StimulusPath,fullfile(remotepath,'Session Stimuli',FigureName));
         fprintf('Files successfully copied to server!\n');
