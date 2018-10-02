@@ -38,6 +38,7 @@ try
 
     [trialTab,sessionTab]=retrieveDataOnline(SessionData);
     metadata=defineMetadata();
+    metadata.binning.noise=[-20 prctile(trialTab.NoiseVolume,[33 66 100])];
     metadata.titlestring=TitleString;
     metadata.pooled=true;
     metadata.history='correct';
