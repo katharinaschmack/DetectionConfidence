@@ -22,6 +22,12 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIPanels.General = {'Ports_LMR','AfterTrialInterval','AfterTrialIntervalJitter','AfterTrialIntervalMin','AfterTrialIntervalMax','LightGuidance'};
     
     %sampling period: events, duration and reinforcement for duration
+    TaskParameters.GUI.DecisionVariable=2;
+    TaskParameters.GUIMeta.DecisionVariable.Style = 'popupmenu';
+    TaskParameters.GUIMeta.DecisionVariable.String = {'discrete','continuous'};
+
+    TaskParameters.GUI.BetaParam=0.1;
+
     TaskParameters.GUI.NoiseVolumeTable.NoiseVolume=[20 40 60]';
     TaskParameters.GUI.NoiseVolumeTable.SignalVolume=[50 45 40]';
     TaskParameters.GUI.NoiseVolumeTable.Prob=[1 1 1]';
@@ -29,13 +35,20 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.NoiseVolumeTable.Style = 'table';
     TaskParameters.GUIMeta.NoiseVolumeTable.String = 'Noise volumes';
     TaskParameters.GUIMeta.NoiseVolumeTable.ColumnLabel = {'noise','signal','probabilty'};
+    
+    TaskParameters.GUI.ContinuousTable.NoiseLimits=[35 50]';
+    TaskParameters.GUI.ContinuousTable.SignalLimits=[45 30]';
+    
+    TaskParameters.GUIMeta.ContinuousTable.Style = 'table';
+    TaskParameters.GUIMeta.ContinuousTable.String = 'Decision variable';
+    TaskParameters.GUIMeta.ContinuousTable.ColumnLabel = {'noiseLims','signalLims'};
+
 
     TaskParameters.GUI.EasyTrials=20;
-    TaskParameters.GUI.StimDuration=0.05;
-    TaskParameters.GUIPanels.Stimulus = {'StimDuration'};
-    TaskParameters.GUIPanels.NoiseVolumeTable ={'NoiseVolumeTable','EasyTrials'};
-
-
+    TaskParameters.GUI.StimDuration=0.1;
+    TaskParameters.GUIPanels.Stimulus = {'DecisionVariable','BetaParam','EasyTrials','StimDuration'};
+    TaskParameters.GUIPanels.NoiseVolumeTable ={'NoiseVolumeTable'};
+    TaskParameters.GUIPanels.ContinuousTable ={'ContinuousTable'};
     
     TaskParameters.GUI.PreStimDurationSelection = 3;
     TaskParameters.GUIMeta.PreStimDurationSelection.Style = 'popupmenu';
@@ -56,14 +69,12 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.RewardAmountCenterSelection.String = {'Fix','Decrease'};
     TaskParameters.GUI.RewardAmountCenterEasyTrials = 50;
 
-    TaskParameters.GUI.AllowBreakFixation = 0;
-    TaskParameters.GUIMeta.AllowBreakFixation.Style = 'checkbox';
 
     TaskParameters.GUI.CoutEarlyTimeout = 0;%time out for early withdrawal (marion 1s)
     TaskParameters.GUIPanels.Timing = {'PreStimDuration',...
         'PreStimDurationSelection','PreStimDurationMin','PreStimDurationMax','PreStimDurationRampUp','PreStimDurationRampDown','PreStimDurationTau'};
     
-    TaskParameters.GUIPanels.Sampling = {'RewardAmountCenter','AllowBreakFixation'...
+    TaskParameters.GUIPanels.Sampling = {'RewardAmountCenter',...
         'RewardAmountCenterSelection','RewardAmountCenterEasyTrials','CoutEarlyTimeout'};
     
     %Choice 
@@ -92,9 +103,8 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI.FeedbackDelay = TaskParameters.GUI.FeedbackDelayMin;
     TaskParameters.GUIMeta.FeedbackDelay.Style = 'text';    
     TaskParameters.GUI.StartNoCatchTrials = 20;
-    TaskParameters.GUI.VevaiometricMinWT=0;
     TaskParameters.GUIPanels.FeedbackDelay = {'FeedbackDelay','FeedbackDelaySelection','FeedbackDelayMin','FeedbackDelayMax','FeedbackDelayIncr','FeedbackDelayDecr','FeedbackDelayTau',...
-        'FeedbackDelayGrace','PercentCatch','CatchError','StartNoCatchTrials','VevaiometricMinWT'};
+        'FeedbackDelayGrace','PercentCatch','CatchError','StartNoCatchTrials'};
     
     %Plot
     TaskParameters.GUI.ShowPsycAud = 1;
@@ -113,18 +123,18 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.ShowST.Style = 'checkbox';
     TaskParameters.GUI.ShowFeedback = 1;
     TaskParameters.GUIMeta.ShowFeedback.Style = 'checkbox';
-
+    
     TaskParameters.GUIPanels.ShowPlots = {'ShowPsycAud','ShowVevaiometric','ShowTrialRate','ShowFix','ShowST','ShowFeedback'};
-
-    TaskParameters.GUI = orderfields(TaskParameters.GUI);
+    
     TaskParameters.Figures.OutcomePlot.Position = [0, 600, 1000, 400];
-
     
     TaskParameters.GUITabs.General = {'General'};
-        TaskParameters.GUITabs.Stimulation = {'Stimulus','NoiseVolumeTable','Timing'}; 
-
+    TaskParameters.GUITabs.Stimulation = {'Stimulus','NoiseVolumeTable','ContinuousTable','Timing'};
+    
     TaskParameters.GUITabs.Feedback = {'Sampling','Choice','FeedbackDelay'};
     TaskParameters.GUITabs.Plots = {'ShowPlots'};
+    TaskParameters.GUI = orderfields(TaskParameters.GUI);
+
 end
 
 

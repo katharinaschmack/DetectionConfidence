@@ -4,7 +4,6 @@ global BpodSystem
 global TaskParameters
 
 
-BpodSystem.Data.Custom.NoiseVolumeRescaled=rescaleNoise(BpodSystem.Data.Custom.NoiseVolume,BpodSystem.Data.Custom.EmbedSignal);
 
 switch Action
     case 'init'
@@ -41,17 +40,24 @@ switch Action
         set(AxesHandles.HandleOutcome,'TickDir', 'out','XLim',[0, nTrialsToShow],'YLim',[-1.25 1.25],'YTick',ytick,'YTickLabel', ytickLabelStr,'FontSize', 13);
         %xlabel(AxesHandles.HandleOutcome, 'Trial#', 'FontSize', 14);
         hold(AxesHandles.HandleOutcome, 'on');
-        
-        %% Psyc Auditory
         BpodSystem.GUIHandles.OutcomePlot.PsycAud = line(AxesHandles.HandlePsycAud,[-1 1],[.5 .5], 'LineStyle','none','Marker','o','MarkerEdge','k','MarkerFace','k', 'MarkerSize',6,'Visible','off');
         BpodSystem.GUIHandles.OutcomePlot.PsycAudFit = line(AxesHandles.HandlePsycAud,[-1. 1.],[.5 .5],'color','k','Visible','off');
         AxesHandles.HandlePsycAud.YLim = [-.05 1.05];
         AxesHandles.HandlePsycAud.XLim = [-1.05 1.05];
-        AxesHandles.HandlePsycAud.XTick = [-1:.5:1];
+
+        switch TaskParameters.GUIMeta.DecisionVariable.String{TaskParameters.GUI.DecisionVariable}
+            case 'discrete'
+                        AxesHandles.HandlePsycAud.XTick = [-1:.5:1];
         n=[TaskParameters.GUI.NoiseVolumeTable.NoiseVolume(1:end-1); flipud(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)];
         s=[zeros(length(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)-1,1); flipud(TaskParameters.GUI.NoiseVolumeTable.SignalVolume)];
+            case 'continuous'
+                AxesHandles.HandlePsycAud.XTick = [-1:1:1];
+
+                n=[min(TaskParameters.GUI.ContinuousTable.NoiseLimits) max(TaskParameters.GUI.ContinuousTable.NoiseLimits) min(TaskParameters.GUI.ContinuousTable.NoiseLimits)];
+                s=[0 max(TaskParameters.GUI.ContinuousTable.SignalLimits) min(TaskParameters.GUI.ContinuousTable.SignalLimits)];
+        end
         for k=1:length(n)
-           xticklabel{k}=sprintf('%d-%d',n(k),s(k));
+            xticklabel{k}=sprintf('%d-%d',n(k),s(k));
         end
         AxesHandles.HandlePsycAud.XTickLabel=xticklabel;
         AxesHandles.HandlePsycAud.XLabel.String = {'signal - noise level (dB)'}; %adapt here if you want to show dB
@@ -72,7 +78,7 @@ switch Action
         AxesHandles.HandleVevaiometric.XLabel.String = AxesHandles.HandlePsycAud.XLabel.String;
         AxesHandles.HandleVevaiometric.YLabel.String = 'WT (s)';
         AxesHandles.HandleVevaiometric.Title.String = 'Vevaiometric';
-                AxesHandles.HandleVevaiometric.FontSize=AxesHandles.HandlePsycAud.FontSize;
+        AxesHandles.HandleVevaiometric.FontSize=AxesHandles.HandlePsycAud.FontSize;
 
         %% Trial rate
         hold(AxesHandles.HandleTrialRate,'on')
@@ -216,8 +222,8 @@ switch Action
                 
                 %binned according to evidence
                 AudDV=BpodSystem.Data.Custom.NoiseVolumeRescaled(1:numel(BpodSystem.Data.Custom.ResponseLeft));
-                %AudBins = 6;
-                BinIdx = AudDV;%discretize(AudDV,linspace(-1,1,AudBins+1)*1.01);%unelegant! revise!
+                AudBins=6;
+                BinIdx = discretize(AudDV,linspace(-1,1,AudBins+1)*1.01);%unelegant! revise!
                 PsycY = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan),(BinIdx(~ndxNan)),'mean');
                 PsycX = grpstats(BpodSystem.Data.Custom.NoiseVolumeRescaled(~ndxNan),(BinIdx(~ndxNan)),'mean');
                 BpodSystem.GUIHandles.OutcomePlot.PsycAud.YData = PsycY;
@@ -362,31 +368,6 @@ end
 set(h,'Units',unit);
 end
 
-function y=rescaleNoise(x,s)
-global TaskParameters
-global BpodSystem
 
-signalVec=((s)-.5)*(-2);%1 when signal, -1 when  no signal
-noiseMax=max(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
-noiseRange=max(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)-min(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
-
-y=(x-noiseMax)./noiseRange.*signalVec;
-ndxZero=y==0;
-ndxSignal=BpodSystem.Data.Custom.EmbedSignal==1;
-y(ndxZero&ndxSignal)=0.1;
-y(ndxZero&~ndxSignal)=-0.1;
-
-
-end
-
-function y=inverseRescaleNoise(x)
-global TaskParameters
-global BpodSystem
-
-noiseMax=max(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
-noiseRange=max(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)-min(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
-y=(-abs(x)*noiseRange+noiseMax);
-
-end
 
 

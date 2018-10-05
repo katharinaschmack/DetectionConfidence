@@ -8,305 +8,325 @@ if iTrial>0
     statesThisTrial = BpodSystem.Data.RawData.OriginalStateNamesByNumber{iTrial}(BpodSystem.Data.RawData.OriginalStateData{iTrial});
     if isfield(BpodSystem.Data.RawEvents.Trial{iTrial},'Events') %not sure why this is necessary: why can there be trials without events if CenterPortIn is always necessary to proceed?
         eventsThisTrial = fieldnames(BpodSystem.Data.RawEvents.Trial{iTrial}.Events)';
-    else
-    end
-    
-    
-    %get port IDs
-    ports=num2str(TaskParameters.GUI.Ports_LMR);
-    if (BpodSystem.Data.Custom.EmbedSignal(iTrial))>0%signal embedded
-        CorrectPort = str2num(ports(1));
-        CenterPort = str2num(ports(2));
-        ErrorPort = str2num(ports(3));
-    elseif (BpodSystem.Data.Custom.EmbedSignal(iTrial))==0 %no signal embedded
-        CorrectPort = str2num(ports(3));
-        CenterPort = str2num(ports(2));
-        ErrorPort = str2num(ports(1));
-    else error('Cannot determine which port is the Error one. Check your code!')
-    end
-    
-    
-    
-    CorrectPortOut = strcat('Port',num2str(CorrectPort),'Out');
-    CenterPortOut = strcat('Port',num2str(CenterPort),'Out');
-    ErrorPortOut = strcat('Port',num2str(ErrorPort),'Out');
-    
-    CorrectPortIn = strcat('Port',num2str(CorrectPort),'In');
-    CenterPortIn = strcat('Port',num2str(CenterPort),'In');
-    ErrorPortIn = strcat('Port',num2str(ErrorPort),'In');
-    
-    CorrectValve = 2^(CorrectPort-1);
-    CenterValve = 2^(CenterPort-1);
-    ErrorValve = 2^(ErrorPort-1);
-    
-    CorrectValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCorrect(iTrial), CorrectPort);
-    CenterValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCenter(iTrial), CenterPort);
-    ErrorValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountError(iTrial), ErrorPort);
-    
-    %mark whether animal withdraw too early from center port
-    if TaskParameters.GUI.AllowBreakFixation==0&&any(strcmp('Cout_Early',statesThisTrial))
-        if ~any(strcmp('Cin_Stim',statesThisTrial))
-            BrokeFixation = true;
-            EarlyWithdrawal = false;
-        elseif any(strcmp('Cin_Stim',statesThisTrial))
-            BrokeFixation = false;
-            EarlyWithdrawal = true;
+        
+        
+        %get port IDs
+        ports=num2str(TaskParameters.GUI.Ports_LMR);
+        if (BpodSystem.Data.Custom.EmbedSignal(iTrial))>0%signal embedded
+            CorrectPort = str2num(ports(1));
+            CenterPort = str2num(ports(2));
+            ErrorPort = str2num(ports(3));
+        elseif (BpodSystem.Data.Custom.EmbedSignal(iTrial))==0 %no signal embedded
+            CorrectPort = str2num(ports(3));
+            CenterPort = str2num(ports(2));
+            ErrorPort = str2num(ports(1));
+        else error('Cannot determine which port is the Error one. Check your code!')
         end
-        CoutEarly = true;
-    elseif TaskParameters.GUI.AllowBreakFixation==1&&any(strcmp('Cout_Early',statesThisTrial))
-        CoutEarly = true;
-        EarlyWithdrawal = false;
-        BrokeFixation = true;
-    elseif TaskParameters.GUI.AllowBreakFixation==1&&any(strcmp('Cout_Stim',statesThisTrial))
-        CoutEarly = true;
-        EarlyWithdrawal = true;
-        BrokeFixation = false;
-    else
-        CoutEarly = false;
-        EarlyWithdrawal = false;
-        BrokeFixation = false;
-    end
-    
-    %compute time animal spent at center port after first entry (nan on trials without center port entry)
-    if any(strcmp(CenterPortIn,eventsThisTrial)) && any(strcmp(CenterPortOut,eventsThisTrial))
-        CinDuration=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut '(1)']) - ...
-            eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn '(1)']);
-        if CinDuration<0 %for case that animal was in center port at trial start cc
-            cin=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn]);
-            cout=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut ]);
-            if length(cout)>1 %and got out, in and out again
-                CinDuration=cout(2)-cin(1);
-            else %and got out, in and stayed until choice deadline over
-                CinDuration=BpodSystem.Data.RawEvents.Trial{iTrial}.States.EndOfTrial(2) - cin(1);
+        
+        
+        
+        CorrectPortOut = strcat('Port',num2str(CorrectPort),'Out');
+        CenterPortOut = strcat('Port',num2str(CenterPort),'Out');
+        ErrorPortOut = strcat('Port',num2str(ErrorPort),'Out');
+        
+        CorrectPortIn = strcat('Port',num2str(CorrectPort),'In');
+        CenterPortIn = strcat('Port',num2str(CenterPort),'In');
+        ErrorPortIn = strcat('Port',num2str(ErrorPort),'In');
+        
+        CorrectValve = 2^(CorrectPort-1);
+        CenterValve = 2^(CenterPort-1);
+        ErrorValve = 2^(ErrorPort-1);
+        
+        CorrectValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCorrect(iTrial), CorrectPort);
+        CenterValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCenter(iTrial), CenterPort);
+        ErrorValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountError(iTrial), ErrorPort);
+        
+        %mark whether animal withdraw too early from center port
+        %     if TaskParameters.GUI.AllowBreakFixation==0&&any(strcmp('Cout_Early',statesThisTrial))
+        if any(strcmp('Cout_Early',statesThisTrial))
+            if ~any(strcmp('Cin_Stim',statesThisTrial))
+                BrokeFixation = true;
+                EarlyWithdrawal = false;
+            elseif any(strcmp('Cin_Stim',statesThisTrial))
+                BrokeFixation = false;
+                EarlyWithdrawal = true;
+            end
+            CoutEarly = true;
+        else
+            CoutEarly = false;
+            EarlyWithdrawal = false;
+            BrokeFixation = false;
+        end
+        
+        %compute time animal spent at center port after first entry (nan on trials without center port entry)
+        if any(strcmp(CenterPortIn,eventsThisTrial)) && any(strcmp(CenterPortOut,eventsThisTrial))
+            CinDuration=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut '(1)']) - ...
+                eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn '(1)']);
+            if CinDuration<0 %for case that animal was in center port at trial start cc
+                cin=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn]);
+                cout=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut ]);
+                if length(cout)>1 %and got out, in and out again
+                    CinDuration=cout(2)-cin(1);
+                else %and got out, in and stayed until choice deadline over
+                    CinDuration=BpodSystem.Data.RawEvents.Trial{iTrial}.States.EndOfTrial(2) - cin(1);
+                end
+                
+            end
+        else
+            CinDuration=nan;
+        end
+        
+        %compute time animal spent at center during prestimulus interval
+        if any(strcmp('Cin_PreStim',statesThisTrial))
+            FixDur=BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_PreStim(1,2) - BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_PreStim(1,1);
+        else
+            FixDur=nan;
+        end
+        
+        %compute time animal spent at center during stimulus interval
+        if any(strcmp('Cin_Stim',statesThisTrial))
+            ST=BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Stim(1,2) - BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Stim(1,1);
+        else
+            ST=nan;
+        end
+        
+        
+        %mark whether animal gave correct or incorrect or no response (nan)
+        if any(strcmp('LinCorrect_GraceStart',statesThisTrial))
+            ResponseCorrect = 1;
+        elseif any(strcmp('LinError_GraceStart',statesThisTrial))
+            ResponseCorrect = 0;
+        else
+            ResponseCorrect = nan;
+        end
+        
+        %mark whether animal gave correct or incorrect response on valid and invalid
+        %trials
+        if any(strcmp(CenterPortIn,eventsThisTrial))
+            firstCenterPortIn=min(eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn]));%to consider trials where animal was in cneter at trialstart\
+        else
+            firstCenterPortIn=nan;
+        end
+        
+        if any(strcmp(CenterPortOut,eventsThisTrial))
+            allCenterPortOut=(eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut ]));%get all withdrawals from center port
+            orderIdx=((allCenterPortOut-firstCenterPortIn)>0);%discard withdrawals if animal was at center at trial start
+            firstCenterPortOut=min(allCenterPortOut(orderIdx));%take first withdrawal from center port as a reference point
+        else
+            firstCenterPortOut=nan;
+        end
+        if any(strcmp(CorrectPortIn,eventsThisTrial))
+            correctPortInTime=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CorrectPortIn ]);
+            orderIdx=(correctPortInTime-firstCenterPortOut)>0;
+            correctPortInTime=min(correctPortInTime(orderIdx));%select first correct Port Entry after first Center Port OUt
+            if isempty(correctPortInTime); correctPortInTime=Inf; end
+        else
+            correctPortInTime=Inf;
+        end
+        if any(strcmp(ErrorPortIn,eventsThisTrial))
+            errorPortInTime=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' ErrorPortIn ]);
+            orderIdx=(errorPortInTime-firstCenterPortOut)>0;
+            errorPortInTime=min(errorPortInTime(orderIdx));%select first Error Port Entry after first Center Port OUt
+            if isempty(errorPortInTime); errorPortInTime=Inf; end
+        else
+            errorPortInTime=Inf;
+        end
+        
+        if correctPortInTime<errorPortInTime%find correct Port In after first Center Port Out but before errorPortIn
+            InvalidResponseCorrect=1;
+        elseif errorPortInTime<correctPortInTime
+            InvalidResponseCorrect=0;
+        else
+            InvalidResponseCorrect=nan;
+        end
+        
+        %mark whether animal went left or right
+        SignalPresent=(BpodSystem.Data.Custom.EmbedSignal(iTrial))>0;
+        if (ResponseCorrect==1 && SignalPresent) || ...%correct on signal trials -> left port
+                (ResponseCorrect==0 && ~SignalPresent) %incorrect on noise trials -> left port
+            ResponseLeft = 1;
+        elseif (ResponseCorrect==1 && ~SignalPresent) || ...%correct on noise trials -> right port
+                (ResponseCorrect==0 && SignalPresent) %incorrect on signal trials -> right port
+            ResponseLeft = 0;
+        else
+            ResponseLeft = nan;
+        end
+        
+        if (InvalidResponseCorrect==1 && SignalPresent) || ...%correct on signal trials -> left port
+                (InvalidResponseCorrect==0 && ~SignalPresent) %incorrect on noise trials -> left port
+            InvalidResponseLeft = 1;
+        elseif (InvalidResponseCorrect==1 && ~SignalPresent) || ...%correct on noise trials -> right port
+                (InvalidResponseCorrect==0 && SignalPresent) %incorrect on signal trials -> right port
+            InvalidResponseLeft = 0;
+        else
+            InvalidResponseLeft = nan;
+        end
+        
+        
+        if ~isnan(ResponseLeft)
+            ResponsePortNumber=ports(abs(ResponseLeft-1)*2+1);
+            if  ~any(strcmp(strcat('Port',ResponsePortNumber,'In'),eventsThisTrial))
+                error('No event corresponding to calculated response recorded. Check your code!')
+            end
+        end
+        
+        %compute time animal needed to give a response (nan if a valid or no response is made)
+        if InvalidResponseCorrect==1
+            InvalidResponseTime=correctPortInTime-firstCenterPortOut;
+        elseif InvalidResponseCorrect==0
+            InvalidResponseTime=errorPortInTime-firstCenterPortOut;
+        else
+            InvalidResponseTime = nan;
+        end
+        
+        %compute time animal needed to give a response (nan if no response is made)
+        if ResponseCorrect==1
+            rt=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CorrectPortIn]);
+            ResponseTime=rt-BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Stim(1);
+            ResponseTime=min(ResponseTime(ResponseTime>0));%to not count lateral port entries prior to stimulus start and after first entry
+            
+        elseif ResponseCorrect==0
+            rt=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' ErrorPortIn]);
+            ResponseTime=rt-BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Stim(1);
+            ResponseTime=min(ResponseTime(ResponseTime>0));%to not count lateral port entries prior to stimulus start and after first entry
+            
+        else
+            ResponseTime = nan;
+        end
+        
+        
+        %determine whether animal withdraw before set confidence waiting time was
+        %over (correct trials only) ADAPT HERE FOR CATCH TRIALS
+        if any(strcmp('LinCorrect_PreFb',statesThisTrial))&&~any(strcmp('LinCorrect_Fb',statesThisTrial))
+            LoutEarly = true;
+        else
+            LoutEarly = false;
+        end
+        
+        
+        %compute time animal waited after response for a reward (nan if no response is made)
+        if ResponseCorrect==1
+            if any(strcmp('LinCorrect_Fb',statesThisTrial))%correct trials with reward: take beginning Feedback
+                WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_Fb(1,1) - ...
+                    BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GraceStart(1,1);
+            elseif ~any(strcmp('LinCorrect_Fb',statesThisTrial)) %correct trials without reward: take end last Grace Period to include all grace periods (like in correct trials with reward)
+                WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod(end,2) - ...
+                    BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GraceStart(1,1);
             end
             
-        end
-    else
-        CinDuration=nan;
-    end
-    
-    %compute time animal spent at center during prestimulus interval
-    if any(strcmp('Cin_PreStim',statesThisTrial))
-        FixDur=BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_PreStim(1,2) - BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_PreStim(1,1);
-    else
-        FixDur=nan;
-    end
-    
-    %compute time animal spent at center during stimulus interval
-    if any(strcmp('Cin_Stim',statesThisTrial))
-        ST=BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Stim(1,2) - BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Stim(1,1);
-    else
-        ST=nan;
-    end
-    
-    
-    %mark whether animal gave correct or incorrect or no response (nan)
-    if any(strcmp('LinCorrect_GraceStart',statesThisTrial))
-        ResponseCorrect = 1;
-    elseif any(strcmp('LinError_GraceStart',statesThisTrial))
-        ResponseCorrect = 0;
-    else
-        ResponseCorrect = nan;
-    end
-    
-    %mark whether animal gave correct or incorrect response on valid and invalid
-    %trials
-    if any(strcmp(CenterPortIn,eventsThisTrial))
-        firstCenterPortIn=min(eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortIn]));%to consider trials where animal was in cneter at trialstart\
-    else
-        firstCenterPortIn=nan;
-    end
-
-    if any(strcmp(CenterPortOut,eventsThisTrial))
-        allCenterPortOut=(eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CenterPortOut ]));%get all withdrawals from center port
-        orderIdx=((allCenterPortOut-firstCenterPortIn)>0);%discard withdrawals if animal was at center at trial start
-        firstCenterPortOut=min(allCenterPortOut(orderIdx));%take first withdrawal from center port as a reference point
-    else
-        firstCenterPortOut=nan;
-    end
-    if any(strcmp(CorrectPortIn,eventsThisTrial))
-        correctPortInTime=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CorrectPortIn ]);
-        orderIdx=(correctPortInTime-firstCenterPortOut)>0;
-        correctPortInTime=min(correctPortInTime(orderIdx));%select first correct Port Entry after first Center Port OUt
-        if isempty(correctPortInTime); correctPortInTime=Inf; end
-    else
-        correctPortInTime=Inf;
-    end
-    if any(strcmp(ErrorPortIn,eventsThisTrial))
-        errorPortInTime=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' ErrorPortIn ]);
-        orderIdx=(errorPortInTime-firstCenterPortOut)>0;
-        errorPortInTime=min(errorPortInTime(orderIdx));%select first Error Port Entry after first Center Port OUt
-        if isempty(errorPortInTime); errorPortInTime=Inf; end
-    else
-        errorPortInTime=Inf;
-    end
-    
-    if correctPortInTime<errorPortInTime%find correct Port In after first Center Port Out but before errorPortIn
-        InvalidResponseCorrect=1;
-    elseif errorPortInTime<correctPortInTime
-        InvalidResponseCorrect=0;
-    else
-        InvalidResponseCorrect=nan;
-    end
-    
-    %mark whether animal went left or right
-    SignalPresent=(BpodSystem.Data.Custom.EmbedSignal(iTrial))>0;
-    if (ResponseCorrect==1 && SignalPresent) || ...%correct on signal trials -> left port
-            (ResponseCorrect==0 && ~SignalPresent) %incorrect on noise trials -> left port
-        ResponseLeft = 1;
-    elseif (ResponseCorrect==1 && ~SignalPresent) || ...%correct on noise trials -> right port
-            (ResponseCorrect==0 && SignalPresent) %incorrect on signal trials -> right port
-        ResponseLeft = 0;
-    else
-        ResponseLeft = nan;
-    end
-        
-    if (InvalidResponseCorrect==1 && SignalPresent) || ...%correct on signal trials -> left port
-            (InvalidResponseCorrect==0 && ~SignalPresent) %incorrect on noise trials -> left port
-        InvalidResponseLeft = 1;
-    elseif (InvalidResponseCorrect==1 && ~SignalPresent) || ...%correct on noise trials -> right port
-            (InvalidResponseCorrect==0 && SignalPresent) %incorrect on signal trials -> right port
-        InvalidResponseLeft = 0;
-    else
-        InvalidResponseLeft = nan;
-    end
-
-    
-    if ~isnan(ResponseLeft)
-        ResponsePortNumber=ports(abs(ResponseLeft-1)*2+1);
-        if  ~any(strcmp(strcat('Port',ResponsePortNumber,'In'),eventsThisTrial))
-            error('No event corresponding to calculated response recorded. Check your code!')
-        end
-    end
-    
-    %compute time animal needed to give a response (nan if a valid or no response is made)
-    if InvalidResponseCorrect==1
-        InvalidResponseTime=correctPortInTime-firstCenterPortOut;        
-    elseif InvalidResponseCorrect==0
-        InvalidResponseTime=errorPortInTime-firstCenterPortOut;                
-    else
-        InvalidResponseTime = nan;
-    end
-    
-    %compute time animal needed to give a response (nan if no response is made)
-    if ResponseCorrect==1
-        rt=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' CorrectPortIn]);
-        ResponseTime=rt-BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Stim(1);
-        ResponseTime=min(ResponseTime(ResponseTime>0));%to not count lateral port entries prior to stimulus start and after first entry
-        
-    elseif ResponseCorrect==0
-        rt=eval(['BpodSystem.Data.RawEvents.Trial{iTrial}.Events.' ErrorPortIn]);
-        ResponseTime=rt-BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Stim(1);
-        ResponseTime=min(ResponseTime(ResponseTime>0));%to not count lateral port entries prior to stimulus start and after first entry
-        
-    else
-        ResponseTime = nan;
-    end
-
-    
-    %determine whether animal withdraw before set confidence waiting time was
-    %over (correct trials only) ADAPT HERE FOR CATCH TRIALS
-    if any(strcmp('LinCorrect_PreFb',statesThisTrial))&&~any(strcmp('LinCorrect_Fb',statesThisTrial))
-        LoutEarly = true;
-    else
-        LoutEarly = false;
-    end
-    
-    
-    %compute time animal waited after response for a reward (nan if no response is made)
-    if ResponseCorrect==1
-        if any(strcmp('LinCorrect_Fb',statesThisTrial))%correct trials with reward: take beginning Feedback
-            WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_Fb(1,1) - ...
-                BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GraceStart(1,1);
-        elseif ~any(strcmp('LinCorrect_Fb',statesThisTrial)) %correct trials without reward: take end last Grace Period to include all grace periods (like in correct trials with reward)
-            WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod(end,2) - ...
-                BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_GraceStart(1,1);
-        end
-        
-    elseif ResponseCorrect==0
-        if any(strcmp('LinError_Fb',statesThisTrial))%error trials with (mock) reward: take beginning Feedback
-            WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_Fb(1,1) - ...
-                BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GraceStart(1,1);
-        elseif ~any(strcmp('LinError_Fb',statesThisTrial)) %error trials without (mock) reward: take end last Grace Period to include all grace periods (like in correct trials with reward)
-            WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod(end,2) - ...
-                BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GraceStart(1,1);
-        end
-        
-    else
-        WaitingTime = nan;
-    end
-    
-    %compute time animal spent in grace period during waiting time
-    if ResponseCorrect==1
-        if any(strcmp('LoutCorrect_GracePeriod',statesThisTrial))
-            GracePeriodDuration = sum(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod(:,2) - ...
-                BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod(:,1));
-            GracePeriodNumber = size(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod,1);
+        elseif ResponseCorrect==0
+            if any(strcmp('LinError_Fb',statesThisTrial))%error trials with (mock) reward: take beginning Feedback
+                WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_Fb(1,1) - ...
+                    BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GraceStart(1,1);
+            elseif ~any(strcmp('LinError_Fb',statesThisTrial)) %error trials without (mock) reward: take end last Grace Period to include all grace periods (like in correct trials with reward)
+                WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod(end,2) - ...
+                    BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GraceStart(1,1);
+            end
+            
         else
-            GracePeriodDuration = 0;
-            GracePeriodNumber = 0;
+            WaitingTime = nan;
         end
-    elseif ResponseCorrect==0
-        if any(strcmp('LoutError_GracePeriod',statesThisTrial))
-            GracePeriodDuration = sum(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod(:,2) - ...
-                BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod(:,1));
-            GracePeriodNumber = size(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod,1);
+        
+        %compute time animal spent in grace period during waiting time
+        if ResponseCorrect==1
+            if any(strcmp('LoutCorrect_GracePeriod',statesThisTrial))
+                GracePeriodDuration = sum(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod(:,2) - ...
+                    BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod(:,1));
+                GracePeriodNumber = size(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutCorrect_GracePeriod,1);
+            else
+                GracePeriodDuration = 0;
+                GracePeriodNumber = 0;
+            end
+        elseif ResponseCorrect==0
+            if any(strcmp('LoutError_GracePeriod',statesThisTrial))
+                GracePeriodDuration = sum(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod(:,2) - ...
+                    BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod(:,1));
+                GracePeriodNumber = size(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod,1);
+            else
+                GracePeriodDuration = 0;
+                GracePeriodNumber = 0;
+            end
         else
-            GracePeriodDuration = 0;
-            GracePeriodNumber = 0;
+            GracePeriodDuration = nan;
+            GracePeriodNumber = nan;
         end
-    else
-        GracePeriodDuration = nan;
-        GracePeriodNumber = nan;
-    end
-    
-    
-    %compute rewards the animal got in this trial
-    if any(strcmp('Cin_Reward',statesThisTrial))
-        RewardDuration = diff(BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Reward(1,:));%
-        RewardReceivedCenter = (RewardDuration/CenterValveTime) * BpodSystem.Data.Custom.RewardAmountCenter(iTrial);
-    else
-        RewardReceivedCenter=0;
-    end
-    if any(strcmp('LinCorrect_Fb',statesThisTrial))
-        RewardDuration = diff(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_Fb(1,:));%
-        RewardReceivedCorrect = (RewardDuration/CorrectValveTime) * BpodSystem.Data.Custom.RewardAmountCorrect(iTrial);
-    else
-        RewardReceivedCorrect = 0;
-    end
-    if any(strcmp('LinError_Fb',statesThisTrial))
-        RewardDuration = diff(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_Fb(1,:));%
-        RewardReceivedError = (RewardDuration/ErrorValveTime) * BpodSystem.Data.Custom.RewardAmountError(iTrial);
-    else
-        RewardReceivedError = 0;
-    end
-    RewardReceivedTotal = RewardReceivedCenter + RewardReceivedCorrect + RewardReceivedError;
-    
-    %assemble output
+        
+        
+        %compute rewards the animal got in this trial
+        if any(strcmp('Cin_Reward',statesThisTrial))
+            RewardDuration = diff(BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Reward(1,:));%
+            RewardReceivedCenter = (RewardDuration/CenterValveTime) * BpodSystem.Data.Custom.RewardAmountCenter(iTrial);
+        else
+            RewardReceivedCenter=0;
+        end
+        if any(strcmp('LinCorrect_Fb',statesThisTrial))
+            RewardDuration = diff(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_Fb(1,:));%
+            RewardReceivedCorrect = (RewardDuration/CorrectValveTime) * BpodSystem.Data.Custom.RewardAmountCorrect(iTrial);
+        else
+            RewardReceivedCorrect = 0;
+        end
+        if any(strcmp('LinError_Fb',statesThisTrial))
+            RewardDuration = diff(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_Fb(1,:));%
+            RewardReceivedError = (RewardDuration/ErrorValveTime) * BpodSystem.Data.Custom.RewardAmountError(iTrial);
+        else
+            RewardReceivedError = 0;
+        end
+        RewardReceivedTotal = RewardReceivedCenter + RewardReceivedCorrect + RewardReceivedError;
+        
+        %assemble output
         BpodSystem.Data.Custom.BeforeTrialInterval(iTrial) = BpodSystem.Data.Custom.AfterTrialInterval(iTrial);
-
-    BpodSystem.Data.Custom.CoutEarly(iTrial) = CoutEarly;
-    BpodSystem.Data.Custom.EarlyWithdrawal(iTrial) = EarlyWithdrawal;
-    BpodSystem.Data.Custom.BrokeFixation(iTrial) = BrokeFixation;
-    BpodSystem.Data.Custom.CinDuration(iTrial)=CinDuration;
-    BpodSystem.Data.Custom.FixDur(iTrial)=FixDur;
-    BpodSystem.Data.Custom.ST(iTrial)=ST;
-    BpodSystem.Data.Custom.ResponseCorrect(iTrial)=ResponseCorrect;
-    BpodSystem.Data.Custom.ResponseLeft(iTrial) = ResponseLeft;
-    BpodSystem.Data.Custom.ResponseTime(iTrial) = ResponseTime;
-    BpodSystem.Data.Custom.InvalidResponseCorrect(iTrial)=InvalidResponseCorrect;
-    BpodSystem.Data.Custom.InvalidResponseLeft(iTrial) = InvalidResponseLeft;
-    BpodSystem.Data.Custom.InvalidResponseTime(iTrial) = InvalidResponseTime;
-
-    BpodSystem.Data.Custom.LoutEarly(iTrial) = LoutEarly;
-    BpodSystem.Data.Custom.WaitingTime(iTrial) = WaitingTime;
-    BpodSystem.Data.Custom.GracePeriodDuration(iTrial) = GracePeriodDuration;
-    BpodSystem.Data.Custom.GracePeriodNumber(iTrial) = GracePeriodNumber;
-    BpodSystem.Data.Custom.RewardReceivedCenter(iTrial) = RewardReceivedCenter;
-    BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial) = RewardReceivedCorrect;
-    BpodSystem.Data.Custom.RewardReceivedError(iTrial) = RewardReceivedError;
-    BpodSystem.Data.Custom.RewardReceivedTotal(iTrial) = RewardReceivedTotal;
-else 
+        
+        BpodSystem.Data.Custom.CoutEarly(iTrial) = CoutEarly;
+        BpodSystem.Data.Custom.EarlyWithdrawal(iTrial) = EarlyWithdrawal;
+        BpodSystem.Data.Custom.BrokeFixation(iTrial) = BrokeFixation;
+        BpodSystem.Data.Custom.CinDuration(iTrial)=CinDuration;
+        BpodSystem.Data.Custom.FixDur(iTrial)=FixDur;
+        BpodSystem.Data.Custom.ST(iTrial)=ST;
+        BpodSystem.Data.Custom.ResponseCorrect(iTrial)=ResponseCorrect;
+        BpodSystem.Data.Custom.ResponseLeft(iTrial) = ResponseLeft;
+        BpodSystem.Data.Custom.ResponseTime(iTrial) = ResponseTime;
+        BpodSystem.Data.Custom.InvalidResponseCorrect(iTrial)=InvalidResponseCorrect;
+        BpodSystem.Data.Custom.InvalidResponseLeft(iTrial) = InvalidResponseLeft;
+        BpodSystem.Data.Custom.InvalidResponseTime(iTrial) = InvalidResponseTime;
+        
+        BpodSystem.Data.Custom.LoutEarly(iTrial) = LoutEarly;
+        BpodSystem.Data.Custom.WaitingTime(iTrial) = WaitingTime;
+        BpodSystem.Data.Custom.GracePeriodDuration(iTrial) = GracePeriodDuration;
+        BpodSystem.Data.Custom.GracePeriodNumber(iTrial) = GracePeriodNumber;
+        BpodSystem.Data.Custom.RewardReceivedCenter(iTrial) = RewardReceivedCenter;
+        BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial) = RewardReceivedCorrect;
+        BpodSystem.Data.Custom.RewardReceivedError(iTrial) = RewardReceivedError;
+        BpodSystem.Data.Custom.RewardReceivedTotal(iTrial) = RewardReceivedTotal;
+        
+    else
+        BpodSystem.Data.Custom.BeforeTrialInterval(iTrial)=nan;
+        BpodSystem.Data.Custom.CoutEarly(iTrial)=1;
+        BpodSystem.Data.Custom.EarlyWithdrawal(iTrial)=1;
+        BpodSystem.Data.Custom.BrokeFixation(iTrial)=0;
+        BpodSystem.Data.Custom.CinDuration(iTrial)=nan;
+        BpodSystem.Data.Custom.FixDur(iTrial)=nan;
+        BpodSystem.Data.Custom.ST(iTrial)=nan;
+        BpodSystem.Data.Custom.ResponseCorrect(iTrial)=nan;
+        BpodSystem.Data.Custom.ResponseLeft(iTrial)=nan;
+        BpodSystem.Data.Custom.ResponseTime(iTrial)=nan;
+        BpodSystem.Data.Custom.InvalidResponseCorrect(iTrial)=nan;
+        BpodSystem.Data.Custom.InvalidResponseLeft(iTrial)=nan;
+        BpodSystem.Data.Custom.InvalidResponseTime(iTrial)=nan;
+        
+        BpodSystem.Data.Custom.LoutEarly(iTrial)=nan;
+        BpodSystem.Data.Custom.WaitingTime(iTrial)=nan;
+        BpodSystem.Data.Custom.GracePeriodDuration(iTrial)=0;
+        BpodSystem.Data.Custom.GracePeriodNumber(iTrial)=0;
+        BpodSystem.Data.Custom.RewardReceivedCenter(iTrial)=0;
+        BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial)=0;
+        BpodSystem.Data.Custom.RewardReceivedError(iTrial)=0;
+        BpodSystem.Data.Custom.RewardReceivedTotal(iTrial)=0;
+        
+        BpodSystem.Data.Custom.PsychtoolboxStartup=false;
+        BpodSystem.Data.Custom.EmbedSignal(iTrial)=nan;
+    end
+else
+    
     BpodSystem.Data.Custom.BeforeTrialInterval = [];
     BpodSystem.Data.Custom.CoutEarly = [];
     BpodSystem.Data.Custom.EarlyWithdrawal = [];
@@ -317,10 +337,10 @@ else
     BpodSystem.Data.Custom.ResponseCorrect=[];
     BpodSystem.Data.Custom.ResponseLeft = [];
     BpodSystem.Data.Custom.ResponseTime = [];
-        BpodSystem.Data.Custom.InvalidResponseCorrect=[];
+    BpodSystem.Data.Custom.InvalidResponseCorrect=[];
     BpodSystem.Data.Custom.InvalidResponseLeft = [];
     BpodSystem.Data.Custom.InvalidResponseTime = [];
-
+    
     BpodSystem.Data.Custom.LoutEarly = [];
     BpodSystem.Data.Custom.WaitingTime = [];
     BpodSystem.Data.Custom.GracePeriodDuration = [];
@@ -329,14 +349,14 @@ else
     BpodSystem.Data.Custom.RewardReceivedCorrect = [];
     BpodSystem.Data.Custom.RewardReceivedError = [];
     BpodSystem.Data.Custom.RewardReceivedTotal = [];
-
+    
     BpodSystem.Data.Custom.PsychtoolboxStartup=false;
     BpodSystem.Data.Custom.EmbedSignal=[];
-
+    
 end
 
 %% update times & stimulus
-%update stimulus duration 
+%update stimulus duration
 switch TaskParameters.GUIMeta.PreStimDurationSelection.String{TaskParameters.GUI.PreStimDurationSelection}
     case 'AutoIncr'
         if iTrial>0
@@ -362,7 +382,7 @@ switch TaskParameters.GUIMeta.PreStimDurationSelection.String{TaskParameters.GUI
         else
             BpodSystem.Data.Custom.PreStimDuration(iTrial+1)=TaskParameters.GUI.PreStimDurationMin;
         end
-
+        
     case 'TruncExp'
         BpodSystem.Data.Custom.PreStimDuration(iTrial+1) = TruncatedExponential(TaskParameters.GUI.PreStimDurationMin,...
             TaskParameters.GUI.PreStimDurationMax,TaskParameters.GUI.PreStimDurationTau);
@@ -377,7 +397,7 @@ BpodSystem.Data.Custom.PostStimDuration(iTrial+1) = 0;
 
 
 %update confidence waiting time
-%update catch trial 
+%update catch trial
 if iTrial > TaskParameters.GUI.StartNoCatchTrials
     BpodSystem.Data.Custom.CatchTrial(iTrial+1) = logical(randsample([1 0],1,1,[TaskParameters.GUI.PercentCatch 1-TaskParameters.GUI.PercentCatch]));
 else
@@ -422,7 +442,7 @@ end
 %update afterstimulusinterval
 if TaskParameters.GUI.AfterTrialIntervalJitter
     BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = TruncatedExponential(TaskParameters.GUI.AfterTrialIntervalMin,TaskParameters.GUI.AfterTrialIntervalMax,...
-    TaskParameters.GUI.AfterTrialInterval);
+        TaskParameters.GUI.AfterTrialInterval);
 else
     BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = TaskParameters.GUI.AfterTrialInterval;
 end
@@ -434,15 +454,15 @@ PrepareStimulus(iTrial);
 BpodSystem.Data.Custom.RewardAmountCorrect(iTrial+1)=TaskParameters.GUI.RewardAmountCorrect;
 BpodSystem.Data.Custom.RewardAmountError(iTrial+1)=TaskParameters.GUI.RewardAmountError;
 if TaskParameters.GUI.RewardAmountCenterSelection==1
-BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=TaskParameters.GUI.RewardAmountCenter;
+    BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=TaskParameters.GUI.RewardAmountCenter;
 elseif TaskParameters.GUI.RewardAmountCenterSelection==2
-   %remove Reward if 50 Trials are sucessfully completed
-   if sum(~isnan(BpodSystem.Data.Custom.ResponseCorrect))>TaskParameters.GUI.RewardAmountCenterEasyTrials
-       BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=0;
-   else
-       BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=TaskParameters.GUI.RewardAmountCenter;
-
-   end
+    %remove Reward if 50 Trials are sucessfully completed
+    if sum(~isnan(BpodSystem.Data.Custom.ResponseCorrect))>TaskParameters.GUI.RewardAmountCenterEasyTrials
+        BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=0;
+    else
+        BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=TaskParameters.GUI.RewardAmountCenter;
+        
+    end
 end
 
 %Light Guidance
