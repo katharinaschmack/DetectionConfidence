@@ -24,13 +24,13 @@ ProtocolSettings.GUIPanels.Sampling=[];
 ProtocolSettings.GUIPanels.Sampling={'RewardAmountCenter','RewardAmountCenterSelection','RewardAmountCenterEasyTrials','CoutEarlyTimeout'};
 ProtocolSettings.GUIPanels.FeedbackDelay(end)=[];
 ProtocolSettings.GUITabs.Stimulation=[];
-ProtocolSettings.GUITabs.Stimulation={'Stimulus','NoiseVolumeTable','ContinuousTable','Timing'};
+ProtocolSettings.GUITabs=rmfield(ProtocolSettings.GUITabs,'Stimulation');%={'Stimulus','NoiseVolumeTable','ContinuousTable','Timing'};
 ProtocolSettings.GUI=rmfield(ProtocolSettings.GUI,'AllowBreakFixation');
 ProtocolSettings.GUI=rmfield(ProtocolSettings.GUI,'VevaiometricMinWT');
 ProtocolSettings.GUIMeta=rmfield(ProtocolSettings.GUIMeta,'AllowBreakFixation');
 ProtocolSettings.GUI.BiasCorrection=1;
-TaskParameters.GUITabs.Stimulus = {'Stimulus','NoiseVolumeTable','ContinuousTable'};
-TaskParameters.GUITabs.Timing = {'Timing'};
+ProtocolSettings.GUITabs.Stimulus = {'Stimulus','NoiseVolumeTable','ContinuousTable'};
+ProtocolSettings.GUITabs.Timing = {'Timing'};
 
 
 
@@ -61,7 +61,7 @@ TaskParameters.GUITabs.Timing = {'Timing'};
 % end
 % 
 %save new Settings
-newfilename=files;%strrep(files,'.mat','_new.mat');
+newfilename=strrep(files,'.mat','_new.mat');
 save(fullfile(path,newfilename),'ProtocolSettings');
 
 
