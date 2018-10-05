@@ -9,7 +9,7 @@ load(fullfile(path,files))
 ProtocolSettings.GUI.BetaParam=0.1;
 ProtocolSettings.GUI.ContinuousTable.NoiseLimits=[min(ProtocolSettings.GUI.NoiseVolumeTable.NoiseVolume);max(ProtocolSettings.GUI.NoiseVolumeTable.NoiseVolume)];
 ProtocolSettings.GUI.ContinuousTable.SignalLimits=[max(ProtocolSettings.GUI.NoiseVolumeTable.SignalVolume);min(ProtocolSettings.GUI.NoiseVolumeTable.SignalVolume)];
-ProtocolSettings.GUI.DecisionVariable=2;
+ProtocolSettings.GUI.DecisionVariable=1;
 ProtocolSettings.GUIMeta.DecisionVariable.Style='popupmenu';
 ProtocolSettings.GUIMeta.DecisionVariable.String={'discrete','continuous'};
 ProtocolSettings.GUIPanels.Stimulus=[];
@@ -29,6 +29,10 @@ ProtocolSettings.GUI=rmfield(ProtocolSettings.GUI,'AllowBreakFixation');
 ProtocolSettings.GUI=rmfield(ProtocolSettings.GUI,'VevaiometricMinWT');
 ProtocolSettings.GUIMeta=rmfield(ProtocolSettings.GUIMeta,'AllowBreakFixation');
 ProtocolSettings.GUI.BiasCorrection=1;
+TaskParameters.GUITabs.Stimulus = {'Stimulus','NoiseVolumeTable','ContinuousTable'};
+TaskParameters.GUITabs.Timing = {'Timing'};
+
+
 
 % %compare two settings files to identify the fields that need to be updated
 % OldProtocolSettings=ProtocolSettings;

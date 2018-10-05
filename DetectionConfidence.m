@@ -129,8 +129,8 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.Figures.OutcomePlot.Position = [0, 600, 1000, 400];
     
     TaskParameters.GUITabs.General = {'General'};
-    TaskParameters.GUITabs.Stimulation = {'Stimulus','NoiseVolumeTable','ContinuousTable','Timing'};
-    
+    TaskParameters.GUITabs.Stimulus = {'Stimulus','NoiseVolumeTable','ContinuousTable'};
+    TaskParameters.GUITabs.Timing = {'Timing'};
     TaskParameters.GUITabs.Feedback = {'Sampling','Choice','FeedbackDelay'};
     TaskParameters.GUITabs.Plots = {'ShowPlots'};
     TaskParameters.GUI = orderfields(TaskParameters.GUI);
