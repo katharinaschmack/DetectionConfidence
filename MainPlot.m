@@ -221,7 +221,7 @@ switch Action
                 
                 %binned according to evidence
                 AudDV=BpodSystem.Data.Custom.NoiseVolumeRescaled(1:numel(BpodSystem.Data.Custom.ResponseLeft));
-                AudBins=6;
+                AudBins=8;
                 BinIdx = discretize(AudDV,linspace(-1,1,AudBins+1)*1.01);%unelegant! revise!
                 PsycY = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan),(BinIdx(~ndxNan)),'mean');
                 PsycX = grpstats(BpodSystem.Data.Custom.NoiseVolumeRescaled(~ndxNan),(BinIdx(~ndxNan)),'mean');

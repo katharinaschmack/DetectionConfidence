@@ -4,7 +4,7 @@
 % NewProtocolSettings=ProtocolSettings;
 % load('C:\Users\Katharina\BpodUser\Data\Dummy Subject\DetectionConfidence\Session Settings\K01_confidence.mat')
 
-[files,path] = uigetfile('C:\Users\Katharina\BpodUser\Data\','MultiSelect','off');
+[files,path] = uigetfile('Z:\BpodData\','MultiSelect','off');
 load(fullfile(path,files))
 ProtocolSettings.GUI.BetaParam=0.1;
 ProtocolSettings.GUI.ContinuousTable.NoiseLimits=[min(ProtocolSettings.GUI.NoiseVolumeTable.NoiseVolume);max(ProtocolSettings.GUI.NoiseVolumeTable.NoiseVolume)];
