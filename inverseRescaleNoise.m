@@ -1,7 +1,7 @@
 function y=inverseRescaleNoise(x)
-global TaskParameters
+% global TaskParameters
 global BpodSystem
-noiseMax=max(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
-noiseRange=max(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)-min(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
+noiseMax=60;%max(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
+noiseRange=40;%max(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)-min(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
 y=(-abs(x)*noiseRange+noiseMax);
 end

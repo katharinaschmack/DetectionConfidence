@@ -47,14 +47,13 @@ switch Action
 
         switch TaskParameters.GUIMeta.DecisionVariable.String{TaskParameters.GUI.DecisionVariable}
             case 'discrete'
-                        AxesHandles.HandlePsycAud.XTick = [-1:.5:1];
-        n=[TaskParameters.GUI.NoiseVolumeTable.NoiseVolume(1:end-1); flipud(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)];
-        s=[zeros(length(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume)-1,1); flipud(TaskParameters.GUI.NoiseVolumeTable.SignalVolume)];
+                AxesHandles.HandlePsycAud.XTick = [-1:.5:1];
+                n=[20 40 60 40 20];
+                s=[0 0 min(TaskParameters.GUI.NoiseVolumeTable.SignalVolume) median(TaskParameters.GUI.NoiseVolumeTable.SignalVolume) max(TaskParameters.GUI.NoiseVolumeTable.SignalVolume)];
             case 'continuous'
-                AxesHandles.HandlePsycAud.XTick = [-1:1:1];
-
-                n=[min(TaskParameters.GUI.ContinuousTable.NoiseLimits) max(TaskParameters.GUI.ContinuousTable.NoiseLimits) min(TaskParameters.GUI.ContinuousTable.NoiseLimits)];
-                s=[0 max(TaskParameters.GUI.ContinuousTable.SignalLimits) min(TaskParameters.GUI.ContinuousTable.SignalLimits)];
+                AxesHandles.HandlePsycAud.XTick = [-1:.5:1];
+                n=[20 40 60 40 20];
+                s=[0 0 min(TaskParameters.GUI.ContinuousTable.SignalLimits) mean(TaskParameters.GUI.NoiseVolumeTable.SignalVolume) min(TaskParameters.GUI.ContinuousTable.SignalLimits)];
         end
         for k=1:length(n)
             xticklabel{k}=sprintf('%d-%d',n(k),s(k));

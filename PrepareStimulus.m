@@ -87,7 +87,7 @@ switch TaskParameters.GUIMeta.DecisionVariable.String{TaskParameters.GUI.Decisio
         switch TaskParameters.GUIMeta.BiasCorrection.String{TaskParameters.GUI.BiasCorrection}
             case {'None'}
                 if iTrial<TaskParameters.GUI.EasyTrials %make beta and random embed signal for easy trials
-                    beta=betarnd(alpha/4,alpha/4,1,1)*2-1;%symmetric beta between -1 and 1
+                    beta=betarnd(0.1,0.1,1,1)*2-1;%symmetric beta between -1 and 1
                 else
                     %sample from symmetric beta distribution
                     beta=betarnd(alpha,alpha,1,1)*2-1;%symmetric beta between -1 and 1
@@ -102,7 +102,7 @@ switch TaskParameters.GUIMeta.DecisionVariable.String{TaskParameters.GUI.Decisio
                     beta=BpodSystem.Data.Custom.NoiseVolumeRescaled(iTrial);
                 else
                     if iTrial<TaskParameters.GUI.EasyTrials %make beta and random embed signal for easy trials
-                        beta=betarnd(alpha/4,alpha/4,1,1)*2-1;%symmetric beta between -1 and 1
+                        beta=betarnd(0.14,0.1,1,1)*2-1;%symmetric beta between -1 and 1
                     else
                         %sample from symmetric beta distribution
                         beta=betarnd(alpha,alpha,1,1)*2-1;%symmetric beta between -1 and 1
@@ -126,7 +126,7 @@ switch TaskParameters.GUIMeta.DecisionVariable.String{TaskParameters.GUI.Decisio
                 
             case {'PerLevel'}
                 if iTrial<TaskParameters.GUI.EasyTrials %make beta for easy trials
-                    beta=betarnd(alpha/4,alpha/4,1,1)*2-1;%symmetric between -1 and 1
+                    beta=betarnd(alpha/4,alpha/4,1,1)*2-1%symmetric between -1 and 1
                 else  % make beta distribution according to specified beta
                     CurrentBias=min(.9,max(.1,nansum(BpodSystem.Data.Custom.ResponseLeft)./sum(~isnan(BpodSystem.Data.Custom.ResponseLeft))));
                     BetaRatio = (1 - min(0.9,max(0.1,CurrentBias))) / min(0.9,max(0.1,CurrentBias));
@@ -170,6 +170,12 @@ BpodSystem.Data.Custom.EmbedSignal(iTrial+1) = StimulusSettings.EmbedSignal;
 BpodSystem.Data.Custom.SignalDuration(iTrial+1) = StimulusSettings.SignalDuration;
 BpodSystem.Data.Custom.SignalVolume(iTrial+1) = StimulusSettings.SignalVolume;
 BpodSystem.Data.Custom.NoiseVolume(iTrial+1) = StimulusSettings.NoiseVolume;
-BpodSystem.Data.Custom.NoiseVolumeRescaled(iTrial+1)=beta;
+BpodSystem.Data.Custom.NoiseVolumeRescaled(iTrial+1)=rescaleNoise(StimulusSettings.NoiseVolume,StimulusSettings.EmbedSignal);
+switch TaskParameters.GUIMeta.DecisionVariable.String{TaskParameters.GUI.DecisionVariable}
+    case 'discrete'
+        BpodSystem.Data.Custom.Beta(iTrial+1)=nan;
+    case 'continuous'
+        BpodSystem.Data.Custom.Beta(iTrial+1)=beta;
+end
 
 
