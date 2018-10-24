@@ -103,8 +103,11 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI.FeedbackDelay = TaskParameters.GUI.FeedbackDelayMin;
     TaskParameters.GUIMeta.FeedbackDelay.Style = 'text';    
     TaskParameters.GUI.StartNoCatchTrials = 20;
+    TaskParameters.GUI.SkippedCorrectCorrection = 1;
+    TaskParameters.GUIMeta.SkippedCorrectCorrection.Style = 'popupmenu';
+    TaskParameters.GUIMeta.SkippedCorrectCorrection.String = {'None','RepeatSkipped','RepeatSkippedCatch'};%BruteForce: presents the same stimulus until a correct choice is made, then resumes stimulus sequence; Soft: calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
     TaskParameters.GUIPanels.FeedbackDelay = {'FeedbackDelay','FeedbackDelaySelection','FeedbackDelayMin','FeedbackDelayMax','FeedbackDelayIncr','FeedbackDelayDecr','FeedbackDelayTau',...
-        'FeedbackDelayGrace','PercentCatch','CatchError','StartNoCatchTrials'};
+        'FeedbackDelayGrace','PercentCatch','CatchError','StartNoCatchTrials','SkippedCorrectCorrection'};
     
     %Plot
     TaskParameters.GUI.ShowPsycAud = 1;

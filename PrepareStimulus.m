@@ -141,7 +141,12 @@ switch TaskParameters.GUIMeta.DecisionVariable.String{TaskParameters.GUI.Decisio
         
 end
 
-
+if BpodSystem.Data.Custom.RepeatMode(iTrial+1) %overwrite stimulus difficult and identity if in repeat mode
+    StimulusSettings.EmbedSignal=BpodSystem.Data.Custom.EmbedSignal(iTrial);
+    StimulusSettings.SignalVolume=BpodSystem.Data.Custom.SignalVolume(iTrial);
+    StimulusSettings.NoiseVolume=BpodSystem.Data.Custom.NoiseVolume(iTrial);
+    beta=BpodSystem.Data.Custom.Beta(iTrial);
+end
 
 %% set random numbers based on current time
 StimulusSettings.RandomStream=rng('shuffle');

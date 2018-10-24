@@ -324,6 +324,7 @@ if iTrial>0
         
         BpodSystem.Data.Custom.PsychtoolboxStartup=false;
         BpodSystem.Data.Custom.EmbedSignal(iTrial)=nan;
+        BpodSystem.Data.Custom.RepeatMode(iTrial)=false;
     end
 else
     
@@ -352,6 +353,9 @@ else
     
     BpodSystem.Data.Custom.PsychtoolboxStartup=false;
     BpodSystem.Data.Custom.EmbedSignal=[];
+    BpodSystem.Data.Custom.RepeatMode=[];
+    BpodSystem.Data.Custom.NoiseVolumeRescaled=[];
+    
     
 end
 
@@ -395,10 +399,40 @@ BpodSystem.Data.Custom.PostStimDuration(iTrial+1) = 0;
 
 
 
-
+%test if stimulus should be repeated due to previous catch or skipped fb
+if iTrial>0
+    switch TaskParameters.GUIMeta.SkippedCorrectCorrection.String{TaskParameters.GUI.SkippedCorrectCorrection}
+        case 'None'
+            repeatMode=false;
+        case 'RepeatSkipped'
+            repeatMode=BpodSystem.Data.Custom.RepeatMode(iTrial);
+            lastCorrect=BpodSystem.Data.Custom.ResponseCorrect(iTrial)==1;
+            lastSkippedCorrect=BpodSystem.Data.Custom.ResponseCorrect(iTrial)==1&~BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial)&~BpodSystem.Data.Custom.CatchTrial(iTrial);
+            if ~repeatMode&&lastSkippedCorrect
+                repeatMode=true;
+            elseif repeatMode&&lastCorrect&&~lastSkippedCorrect
+                repeatMode=false;
+            end
+        case 'RepeatSkippedCatch'
+            repeatMode=BpodSystem.Data.Custom.RepeatMode(iTrial);
+            lastCorrect=BpodSystem.Data.Custom.ResponseCorrect(iTrial)==1;
+            lastSkippedCorrect=BpodSystem.Data.Custom.ResponseCorrect(iTrial)==1&~BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial)&~BpodSystem.Data.Custom.CatchTrial(iTrial);
+            lastCatchCorrect=BpodSystem.Data.Custom.ResponseCorrect(iTrial)==1&~BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial)&BpodSystem.Data.Custom.CatchTrial(iTrial);
+            if ~repeatMode&&(lastSkippedCorrect||lastCatchCorrect)
+                repeatMode=true;%but switch off catch
+            elseif repeatMode&&lastCorrect&&~(lastSkippedCorrect||lastCatchCorrect)
+                repeatMode=false;
+            end
+    end
+else
+    repeatMode=false;
+end
+BpodSystem.Data.Custom.RepeatMode(iTrial+1)=repeatMode;
+    
+    
 %update confidence waiting time
 %update catch trial
-if iTrial > TaskParameters.GUI.StartNoCatchTrials
+if iTrial > TaskParameters.GUI.StartNoCatchTrials && ~BpodSystem.Data.Custom.RepeatMode(iTrial+1)
     BpodSystem.Data.Custom.CatchTrial(iTrial+1) = logical(randsample([1 0],1,1,[TaskParameters.GUI.PercentCatch 1-TaskParameters.GUI.PercentCatch]));
 else
     BpodSystem.Data.Custom.CatchTrial(iTrial+1) = false;
@@ -426,18 +460,21 @@ switch TaskParameters.GUIMeta.FeedbackDelaySelection.String{TaskParameters.GUI.F
     case 'Fix'
         TaskParameters.GUI.FeedbackDelay = TaskParameters.GUI.FeedbackDelayMax;
 end
+if BpodSystem.Data.Custom.RepeatMode(iTrial+1)&&BpodSystem.Data.Custom.FeedbackDelay(iTrial)<60
+    TaskParameters.GUI.FeedbackDelay=BpodSystem.Data.Custom.FeedbackDelay(iTrial);
+end
 if ~BpodSystem.Data.Custom.CatchTrial(iTrial+1)
     BpodSystem.Data.Custom.FeedbackDelay(iTrial+1) = TaskParameters.GUI.FeedbackDelay;%no catch trial
 else
     BpodSystem.Data.Custom.FeedbackDelay(iTrial+1)=60;%set to 60s on catch trials
 end
+
 %feedback delay error answers
 if ~TaskParameters.GUI.CatchError&&~BpodSystem.Data.Custom.CatchTrial(iTrial+1)
     BpodSystem.Data.Custom.FeedbackDelayError(iTrial+1) = TaskParameters.GUI.FeedbackDelay; %no catch trial
 else
     BpodSystem.Data.Custom.FeedbackDelayError(iTrial+1) = 60;%set to 60s on catch trials
 end
-
 
 %update afterstimulusinterval
 if TaskParameters.GUI.AfterTrialIntervalJitter
@@ -447,7 +484,10 @@ else
     BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = TaskParameters.GUI.AfterTrialInterval;
 end
 
-%create new stimulus
+
+
+
+%otherwise create new stimulus
 PrepareStimulus(iTrial);
 
 %reward depletion %UPDATE HERE IF BIAS CORRECTION IS NEEDED
@@ -467,6 +507,6 @@ end
 
 %Light Guidance
 BpodSystem.Data.Custom.LightGuidance(iTrial+1) = TaskParameters.GUI.LightGuidance;
-
-
+    
+    
 end
