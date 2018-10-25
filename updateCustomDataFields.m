@@ -461,7 +461,7 @@ switch TaskParameters.GUIMeta.FeedbackDelaySelection.String{TaskParameters.GUI.F
         TaskParameters.GUI.FeedbackDelay = TaskParameters.GUI.FeedbackDelayMax;
 end
 if BpodSystem.Data.Custom.RepeatMode(iTrial+1)&&BpodSystem.Data.Custom.FeedbackDelay(iTrial)<60
-    TaskParameters.GUI.FeedbackDelay=BpodSystem.Data.Custom.FeedbackDelay(iTrial);
+    TaskParameters.GUI.FeedbackDelay=TaskParameters.GUI.FeedbackDelayMin;
 end
 if ~BpodSystem.Data.Custom.CatchTrial(iTrial+1)
     BpodSystem.Data.Custom.FeedbackDelay(iTrial+1) = TaskParameters.GUI.FeedbackDelay;%no catch trial

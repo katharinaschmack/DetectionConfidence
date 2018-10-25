@@ -126,7 +126,7 @@ switch TaskParameters.GUIMeta.DecisionVariable.String{TaskParameters.GUI.Decisio
                 
             case {'PerLevel'}
                 if iTrial<TaskParameters.GUI.EasyTrials %make beta for easy trials
-                    beta=betarnd(alpha/4,alpha/4,1,1)*2-1%symmetric between -1 and 1
+                    beta=betarnd(alpha/4,alpha/4,1,1)*2-1;%symmetric between -1 and 1
                 else  % make beta distribution according to specified beta
                     CurrentBias=min(.9,max(.1,nansum(BpodSystem.Data.Custom.ResponseLeft)./sum(~isnan(BpodSystem.Data.Custom.ResponseLeft))));
                     BetaRatio = (1 - min(0.9,max(0.1,CurrentBias))) / min(0.9,max(0.1,CurrentBias));
