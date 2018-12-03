@@ -25,7 +25,6 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI.DecisionVariable=2;
     TaskParameters.GUIMeta.DecisionVariable.Style = 'popupmenu';
     TaskParameters.GUIMeta.DecisionVariable.String = {'discrete','continuous'};
-
     TaskParameters.GUI.BetaParam=0.1;
 
     TaskParameters.GUI.NoiseVolumeTable.NoiseVolume=[20 40 60]';

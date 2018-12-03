@@ -4,6 +4,7 @@ global TaskParameters
 %% OutcomeRecord (if not before first trial)
 if iTrial>0
     
+
     %get states & events of this trial
     statesThisTrial = BpodSystem.Data.RawData.OriginalStateNamesByNumber{iTrial}(BpodSystem.Data.RawData.OriginalStateData{iTrial});
     if isfield(BpodSystem.Data.RawEvents.Trial{iTrial},'Events') %not sure why this is necessary: why can there be trials without events if CenterPortIn is always necessary to proceed?
@@ -325,6 +326,8 @@ if iTrial>0
         BpodSystem.Data.Custom.PsychtoolboxStartup=false;
         BpodSystem.Data.Custom.EmbedSignal(iTrial)=nan;
         BpodSystem.Data.Custom.RepeatMode(iTrial)=false;
+        
+        
     end
 else
     
@@ -358,6 +361,28 @@ else
     
     
 end
+
+%% update times & stimulus
+%update stimulus selection
+switch TaskParameters.GUIMeta.DecisionVariable.String{TaskParameters.GUI.DecisionVariable}
+    case 'discrete'
+        nv=length(unique(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume));
+        sv=length(unique(TaskParameters.GUI.NoiseVolumeTable.SignalVolume));
+        
+    case 'continuous'
+        nv=length(unique(TaskParameters.GUI.ContinuousTable.NoiseLimits));
+        sv=length(unique(TaskParameters.GUI.ContinuousTable.SignalLimits));
+end
+if nv==1 && sv>1
+    BpodSystem.Data.Custom.Variation='signal';
+elseif nv>1 && sv==1
+    BpodSystem.Data.Custom.Variation='noise';
+elseif nv>1 && sv>1
+    BpodSystem.Data.Custom.Variation='both';
+else
+    BpodSystem.Data.Custom.Variation='none';
+end
+
 
 %% update times & stimulus
 %update stimulus duration

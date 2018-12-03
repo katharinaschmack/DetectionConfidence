@@ -16,23 +16,28 @@ StimulusSettings.SignalMaxFreq=15E3;
 %variable settings
 StimulusSettings.SignalDuration=TaskParameters.GUI.StimDuration;
 
-
-
-
-% %% determine noise and signal volume for next trial
+% determine noise and signal volume for next trial
 % if TaskParameters.GUI.BiasCorrection==2 && iTrial > 5 && BpodSystem.Data.Custom.ResponseCorrect(iTrial)~=1
 % else
 switch TaskParameters.GUIMeta.DecisionVariable.String{TaskParameters.GUI.DecisionVariable}
-    
     case 'discrete'
-        %first get Noise and Signal Volume
-        if iTrial<TaskParameters.GUI.EasyTrials %start with easy trials
-            StimulusSettings.NoiseVolume=min(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
-        else %draw randomly with given probability
-            StimulusSettings.NoiseVolume=randsample(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume,1,1,TaskParameters.GUI.NoiseVolumeTable.Prob);
+        switch BpodSystem.Data.Custom.Variation%% update times & stimulus
+            case {'noise','both','none'}
+                %first find out whether Noise, Signal or both are varied
+                if iTrial<TaskParameters.GUI.EasyTrials %start with easy trials
+                    StimulusSettings.NoiseVolume=min(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
+                else %draw randomly with given probability
+                    StimulusSettings.NoiseVolume=randsample(TaskParameters.GUI.NoiseVolumeTable.NoiseVolume,1,1,TaskParameters.GUI.NoiseVolumeTable.Prob);
+                end
+                StimulusSettings.SignalVolume=TaskParameters.GUI.NoiseVolumeTable.SignalVolume(StimulusSettings.NoiseVolume==TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
+            case {'signal'}
+                if iTrial<TaskParameters.GUI.EasyTrials %start with easy trials
+                    StimulusSettings.SignalVolume=max(TaskParameters.GUI.NoiseVolumeTable.SignalVolume);
+                else
+                    StimulusSettings.SignalVolume=randsample(TaskParameters.GUI.NoiseVolumeTable.SignalVolume,1,1,TaskParameters.GUI.NoiseVolumeTable.Prob);
+                end
+                StimulusSettings.NoiseVolume=TaskParameters.GUI.NoiseVolumeTable.NoiseVolume(StimulusSettings.SignalVolume==TaskParameters.GUI.NoiseVolumeTable.SignalVolume);
         end
-        StimulusSettings.SignalVolume=TaskParameters.GUI.NoiseVolumeTable.SignalVolume(StimulusSettings.NoiseVolume==TaskParameters.GUI.NoiseVolumeTable.NoiseVolume);
-        
         %then decide whether to embed signal depending on Bias
         %Correction
         switch TaskParameters.GUIMeta.BiasCorrection.String{TaskParameters.GUI.BiasCorrection}
@@ -137,8 +142,7 @@ switch TaskParameters.GUIMeta.DecisionVariable.String{TaskParameters.GUI.Decisio
                 StimulusSettings.EmbedSignal=beta>0;
                 StimulusSettings.NoiseVolume=(abs(beta)*noiseRange)+noiseMin;
                 StimulusSettings.SignalVolume=(abs(beta)*signalRange)+signalMin;                
-        end
-        
+        end        
 end
 
 if BpodSystem.Data.Custom.RepeatMode(iTrial+1) %overwrite stimulus difficult and identity if in repeat mode
