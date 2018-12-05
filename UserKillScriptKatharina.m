@@ -1,18 +1,14 @@
-function UserKillScriptKatharina(evernote,copydata)
-if nargin<2
-    copydata=true;
-    if nargin<1
-        evernote=true;
-    end
-end
+function UserKillScriptKatharina()
 global BpodSystem
 global TaskParameters
 
 
 SessionData=BpodSystem.Data;
 SessionData.Settings=TaskParameters;
-[~,TitleString] = fileparts(BpodSystem.DataPath);
+[localpath,TitleString] = fileparts(BpodSystem.DataPath);
 [~,subject] = fileparts(fileparts(fileparts(fileparts(BpodSystem.DataPath))));
+titstr=strsplit(TitleString,'_');%1 animal %2 protocol %3 date %4 year %5 session
+Protocol=titstr{2};
 
 %% Stop noise stream
 try
@@ -22,95 +18,51 @@ catch
     fprintf('Noise stream not stopped.')
 end
 
-
-if copydata
-    try
-        remotepath = fullfile('Z:','BpodData',subject,'DetectionConfidence');%CHANGE HERE FOR NEW PROTOCOL!
-        
-        if ~isdir(fullfile(remotepath,'Session Data'))
-            mkdir(fullfile(remotepath,'Session Data'));
-        end
-        if ~isdir(fullfile(remotepath,'Session Settings'))
-            mkdir(fullfile(remotepath,'Session Settings'));
-        end
-        %         if ~isdir(fullfile(remotepath,'Session Figures'))
-        %             mkdir(fullfile(remotepath,'Session Figures'));
-        %         end
-        if ~isdir(fullfile(remotepath,'Session Stimuli'))
-            mkdir(fullfile(remotepath,'Session Stimuli'));
-        end
-        
-        save(fullfile(remotepath,'Session Data',[TitleString, '.mat']),'SessionData');
-        [~,filename,~]=fileparts(BpodSystem.SettingsPath);
-        newfilename=[filename '_' datestr(now,'yyyy-mm-dd') '.mat'];
-        copyfile(BpodSystem.SettingsPath,fullfile(remotepath,'Session Settings',newfilename));
-        %copyfile(fullfile(FigureFolder,[FigureName '.png']),fullfile(remotepath,'Session Figures',[FigureName '.png']));
-        %         copyfile(fullfile(FigureFolder,[FigureName02 '.png']),fullfile(remotepath,'Session Figures',[FigureName02 '.png']));
-        copyfile(BpodSystem.Data.Custom.StimulusPath,fullfile(remotepath,'Session Stimuli',TitleString));
-        fprintf('Files successfully copied to server!\n');
-        
-    catch
-        fprintf('Error copying data to server. Files not copied!\n');
-    end
-end
-
-
-% Export Online Figure
-% try
-%     saveas(BpodSystem.ProtocolFigures.SideOutcomePlotFig,fullfile(FigureFolder,FigureName),'png')
-% end
-
-% Create Analysis Figure and Data
+%% Copy data
 try
-    %% save figures
-    if ~isdir(FigureFolder)
-        mkdir(FigureFolder);
+    remotepath = fullfile('Z:','BpodData',subject,'DetectionConfidence');%CHANGE HERE FOR NEW PROTOCOL!
+    if ~isdir(fullfile(remotepath,'Session Data'))
+        mkdir(fullfile(remotepath,'Session Data'));
     end
-    
-    [trialTab,sessionTab]=retrieveDataOnline(SessionData);
-    metadata=defineMetadata();
-    %     metadata.binning.noise=[-20 prctile(trialTab.NoiseVolume,[33 66 100])];
-    metadata.titlestring=TitleString;
-    metadata.pooled=true;
-    [dayTab]=retrieveDaydata(sessionTab,trialTab,metadata);
-    [FigureHandle,infostring]=AnalysisFigure(trialTab,sessionTab,dayTab,metadata);
-    
-    expression = '\w\w\w\d\d_2018*';
-    matchStr = regexp(FigureName,expression,'match');
-    [y,m,d]=datevec(matchStr{1});
-    dateNumStr=sprintf('%4.0f-%02.0f-%02.0f',y,m,d);
-    
-    % Export Analysis Figure
-    FigureName=['Analysis_' dateNumStr '_' FigureName];
-    saveas(FigureHandle,fullfile(FigureFolder,TitleString),'png')
+    if ~isdir(fullfile(remotepath,'Session Settings'))
+        mkdir(fullfile(remotepath,'Session Settings'));
+    end
+    if ~isdir(fullfile(remotepath,'Session Stimuli'))
+        mkdir(fullfile(remotepath,'Session Stimuli'));
+    end
+    save(fullfile(remotepath,'Session Data',[TitleString, '.mat']),'SessionData');
+    [~,filename,~]=fileparts(BpodSystem.SettingsPath);
+    newfilename=[filename '_' datestr(now,'yyyy-mm-dd') '.mat'];
+    copyfile(BpodSystem.SettingsPath,fullfile(remotepath,'Session Settings',newfilename));
+    copyfile(BpodSystem.Data.Custom.StimulusPath,fullfile(remotepath,'Session Stimuli',TitleString));
+    fprintf('Files successfully copied to server!\n');    
+catch
+    fprintf('Error copying data to server. Files not copied!\n');
 end
 
-% Send Analysis Summary to Evernote
-if evernote
-    ResultData=OnlineAnalysis(SessionData);
-    load('MailSettings.mat')
-    MailAddress = MailSettings.MailTo; % 'bosc274.b4f75e1@m.evernote.com';
-    
-    % Note informations:
-    titstr=strsplit(TitleString,'_');
-    note = sprintf('%s %s %s:\n',titstr{3},titstr{4},titstr{5});%date year session
-%     for k=1:length(infostring)
-%         note = sprintf('%s\n%s',note,infostring{k});
-%     end
-    note = sprintf('%sacc=%2.0f (S%2.0f-N%2.0f) lapse=%2.0f (S%2.0f-N%2.0f)\n',note,ResultData.acc.both,ResultData.acc.signal,ResultData.acc.noise,ResultData.lapse.both,ResultData.lapse.signal,ResultData.lapse.noise);
-    note = sprintf('%scoutEarly=%2.0f skippedFeedback=%2.0f(S%2.0f-N%2.0f)\n',note,ResultData.coutEarly.both,ResultData.skipped.signal,ResultData.skipped.noise,ResultData.skipped.both);
-    note = sprintf('%sn=%d (%d min) reward=%2.1fml\n',note,ResultData.nTrials,ResultData.Duration,ResultData.Reward);
+%% analyze data
+[trialTab,sessionTab]=retrieveDataOnline(SessionData);
+Results=sessionTab(:,{'Day','Date','SessionNumber','Trials','Duration','TotalReward','Variation','Evidence','Easy','Intermediate','Difficult','FbDelay','Catch'});
+Results=OnlineAnalysis(trialTab,sessionTab,Results);
+% Results.Date=datestr(Results.Date,'mm/dd/yy');
 
-    Subject = strcat(titstr{1}, ' @ ', titstr{2}, ' +');%subject protocol
-    Body = note;
-    
-    sent = SendMyMail(MailSettings,MailSettings.MailTo,Subject,Body); % (MailSettings,MailAddress,Subject,Body,Attachment);
-    if sent
-        fprintf('"%s" sent to %s.\n',Subject,MailAddress);
-    else
-        fprintf('Error:SendFigureTo:Mail could not be sent to %s.\n',MailAddress);
-    end
-    
+%TODO put all this in session Tab via correctErrors and then retrieve it with OnlineAnalysis
+
+
+
+%% send email to Evernote
+SubjectLine=strcat(titstr{1}, ' @ ', titstr{2}, ' +');
+text.Line1=sprintf('%s\t',sessionTab.Day{1},sessionTab.Datestr{1},num2str(sessionTab.SessionNumber),num2str(sessionTab.Trials),sessionTab.Duration,sessionTab.TotalReward);%     body=d{1};
+text.Line2=sprintf('beta=%s:\t%s\t%s\t%s\t\t\nFbDelay=%s\tCatch=%d',sessionTab.Evidence,sessionTab.Easy,sessionTab.Intermediate,sessionTab.Difficult,sessionTab.FbDelay,sessionTab.Catch);
+text.Line3=sprintf('acc %2.0f\t easyhits %2.0f\t alarms %2.0f\t bias %2.0f',Results.Accuracy,Results.HitsEasy,100-Results.Rejects,Results.Bias);
+text.Line4=sprintf('coutEarly %2.0f\t skippedFeedback %2.0f\t',Results.CoutEarly,Results.SkippedFeedback);
+Body=sprintf('x\n\n%s\n%s\n%s\n%s',text.Line1,text.Line2,text.Line3,text.Line4);
+load('MailSettings.mat');
+sent = SendMyMail(MailSettings,MailSettings.MailTo,SubjectLine,Body); % (MailSettings,MailAddress,Subject,Body,Attachment);
+if sent
+    fprintf('"%s" sent to %s.\n',SubjectLine,MailSettings.MailTo);
+else
+    fprintf('Error:SendFigureTo:Mail could not be sent to %s.\n',MailSettings.MailTo);
 end
 
 end

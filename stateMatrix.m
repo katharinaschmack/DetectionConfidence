@@ -60,6 +60,8 @@ if BpodSystem.Data.Custom.LightGuidance(iTrial)==true
     LED.LinError_PreFb={};
     LED.LoutError_GracePeriod={};
     LinCorrect_CueFb_Duration=BpodSystem.Data.Custom.StimDuration(iTrial);
+        Cout_Grace.Duration=0;
+
 else
     LED.wait_Cin={strcat('PWM',num2str(CenterPort)),100};
     LED.Pre_Stim={strcat('PWM',num2str(CenterPort)),100};
@@ -73,6 +75,7 @@ else
     LED.LinError_PreFb={strcat('PWM',num2str(CorrectPort)),100,strcat('PWM',num2str(ErrorPort)),100};
     LED.LoutError_GracePeriod={strcat('PWM',num2str(CorrectPort)),100,strcat('PWM',num2str(ErrorPort)),100};
     LinCorrect_CueFb_Duration=0;
+    Cout_Grace.Duration=60;
 end
     
 sma = NewStateMatrix();
@@ -94,7 +97,12 @@ sma = AddState(sma, 'Name', 'wait_Cin',...
 
 sma = AddState(sma, 'Name', 'Cin_PreStim',...
     'Timer', BpodSystem.Data.Custom.PreStimDuration(iTrial),...
-    'StateChangeConditions', {CenterPortOut, 'Cout_Early','Tup','Cin_Stim'},...
+    'StateChangeConditions', {CenterPortOut, 'Cout_Grace','Tup','Cin_Stim'},...
+    'OutputActions', LED.Pre_Stim);
+
+sma = AddState(sma, 'Name', 'Cout_Grace',...
+    'Timer', Cout_Grace.Duration,...
+    'StateChangeConditions', {CenterPortIn, 'Cin_PreStim','Tup','Cout_Early'},...
     'OutputActions', LED.Pre_Stim);
 
 % if TaskParameters.GUI.AllowBreakFixation==0

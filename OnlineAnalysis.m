@@ -3,23 +3,23 @@ function ResultData=OnlineAnalysis(trialTab,sessionTab,ResultData)
 responseIdx=~isnan(trialTab.ResponseLeft);
 signalIdx=trialTab.EmbedSignal==1;
 correctIdx=trialTab.ResponseCorrect==1;
-switch sessionTab.variation{1}
+switch sessionTab.Variation
     case 'signal'
         dv=trialTab.SignalVolume;
         dv(~signalIdx)=nan;
-    case 'noise'
+    case 'noise '
         dv=-trialTab.NoiseVolume;
         dv(~signalIdx)=nan;
-    case 'both'
+    case {'both  ','none  '}
         dv=trialTab.SignalVolume-trialTab.NoiseVolume;
         dv(~signalIdx)=nan;
 end
-switch sessionTab.decisionVariable{1}
+switch sessionTab.DecisionVariable
     case 'continuous'
         easyIdx=dv>prctile(dv,90);
         interIdx=dv<prctile(dv,55)&dv>prctile(dv,45);
         diffIdx=dv<prctile(dv,10);
-    case 'discrete'
+    case 'discrete  '
         easyIdx=dv==max(dv);
         interIdx=dv>min(dv)&dv<max(dv);
         diffIdx=dv==min(dv);
