@@ -256,7 +256,7 @@ if iTrial>0
         %compute rewards the animal got in this trial
         if any(strcmp('Cin_Reward',statesThisTrial))
             RewardDuration = diff(BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Reward(1,:));%
-            RewardReceivedCenter = (RewardDuration/CenterValveTime) * BpodSystem.Data.Custom.RewardAmountCenter(iTrial);
+            RewardReceivedCenter = nanmax((RewardDuration/CenterValveTime) * BpodSystem.Data.Custom.RewardAmountCenter(iTrial),0);
         else
             RewardReceivedCenter=0;
         end
@@ -268,7 +268,7 @@ if iTrial>0
         end
         if any(strcmp('LinError_Fb',statesThisTrial))
             RewardDuration = diff(BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_Fb(1,:));%
-            RewardReceivedError = (RewardDuration/ErrorValveTime) * BpodSystem.Data.Custom.RewardAmountError(iTrial);
+            RewardReceivedError = nanmax((RewardDuration/ErrorValveTime) * BpodSystem.Data.Custom.RewardAmountError(iTrial),0);
         else
             RewardReceivedError = 0;
         end
