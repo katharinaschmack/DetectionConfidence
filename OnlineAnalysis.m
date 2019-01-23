@@ -1,9 +1,12 @@
-function ResultData=OnlineAnalysis(trialTab,sessionTab,ResultData)
+function Results=OnlineAnalysis(trialTab,sessionTab)
 
+if height(sessionTab)==1
+Results=sessionTab(:,{'Day','Date','SessionNumber','Trials','Duration','TotalReward','Variation','Evidence','Easy','Intermediate','Difficult','FbDelay','Catch'});
+end
 responseIdx=~isnan(trialTab.ResponseLeft);
 signalIdx=trialTab.EmbedSignal==1;
 correctIdx=trialTab.ResponseCorrect==1;
-switch sessionTab.Variation
+switch sessionTab{1,'Variation'}
     case 'signal'
         dv=trialTab.SignalVolume;
         dv(~signalIdx)=nan;
@@ -14,23 +17,25 @@ switch sessionTab.Variation
         dv=trialTab.SignalVolume-trialTab.NoiseVolume;
         dv(~signalIdx)=nan;
 end
-switch sessionTab.DecisionVariable
+switch sessionTab{1,'DecisionVariable'}
     case 'continuous'
-        easyIdx=dv>prctile(dv,90);
+        easyIdx=dv>prctile(dv,95);
         interIdx=dv<prctile(dv,55)&dv>prctile(dv,45);
-        diffIdx=dv<prctile(dv,10);
+        diffIdx=dv<prctile(dv,5);
     case 'discrete  '
         easyIdx=dv==max(dv);
         interIdx=dv>min(dv)&dv<max(dv);
         diffIdx=dv==min(dv);
 end
-ResultData.Accuracy=mean(trialTab.ResponseCorrect(responseIdx))*100;
-ResultData.HitsEasy=mean(trialTab.ResponseCorrect(responseIdx&easyIdx))*100;
-ResultData.HitsIntermediate=mean(trialTab.ResponseCorrect(responseIdx&interIdx))*100;
-ResultData.HitsDifficult=mean(trialTab.ResponseCorrect(responseIdx&diffIdx))*100;
-ResultData.Rejects=mean(trialTab.ResponseCorrect(responseIdx&~signalIdx))*100;
-ResultData.Bias=mean(trialTab.ResponseLeft(responseIdx))*100;
-ResultData.CoutEarly=mean(trialTab.CoutEarly)*100;
-ResultData.SkippedFeedback=mean(trialTab.CoutEarly)*100;
-ResultData.Catch=mean(trialTab.CatchTrial(correctIdx))*100;
-
+Results.Accuracy=mean(trialTab.ResponseCorrect(responseIdx))*100;
+Results.HitsEasy=mean(trialTab.ResponseCorrect(responseIdx&easyIdx))*100;
+Results.HitsIntermediate=mean(trialTab.ResponseCorrect(responseIdx&interIdx))*100;
+Results.HitsDifficult=mean(trialTab.ResponseCorrect(responseIdx&diffIdx))*100;
+Results.Rejects=mean(trialTab.ResponseCorrect(responseIdx&~signalIdx))*100;
+Results.Bias=mean(trialTab.ResponseLeft(responseIdx))*100;
+Results.CoutEarly=mean(trialTab.CoutEarly)*100;
+Results.SkippedFeedback=nanmean(trialTab.SkippedFeedback(correctIdx))*100;
+Results.Catch=mean(trialTab.CatchTrial(correctIdx))*100;
+if height(sessionTab)==1
+Results.Date=datestr(datenum(Results.Date),'mm/dd/yy');
+end

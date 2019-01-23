@@ -42,8 +42,7 @@ end
 
 %% analyze data
 [trialTab,sessionTab]=retrieveDataOnline(SessionData);
-Results=sessionTab(:,{'Day','Date','SessionNumber','Trials','Duration','TotalReward','Variation','Evidence','Easy','Intermediate','Difficult','FbDelay','Catch'});
-Results=OnlineAnalysis(trialTab,sessionTab,Results);
+Results=OnlineAnalysis(trialTab,sessionTab);
 % Results.Date=datestr(Results.Date,'mm/dd/yy');
 
 %TODO put all this in session Tab via correctErrors and then retrieve it with OnlineAnalysis
