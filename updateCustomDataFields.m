@@ -39,8 +39,17 @@ if iTrial>0
         ErrorValve = 2^(ErrorPort-1);
         
         CorrectValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCorrect(iTrial), CorrectPort);
-        CenterValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCenter(iTrial), CenterPort);
-        ErrorValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountError(iTrial), ErrorPort);
+        if BpodSystem.Data.Custom.RewardAmountCenter(iTrial)>0
+            CenterValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountCenter(iTrial), CenterPort)*(BpodSystem.Data.Custom.RewardAmountCenter(iTrial)>0);
+        else
+            CenterValveTime=0;
+        end
+        if BpodSystem.Data.Custom.RewardAmountError(iTrial)>0
+            ErrorValveTime  = GetValveTimes(BpodSystem.Data.Custom.RewardAmountError(iTrial), ErrorPort)*(BpodSystem.Data.Custom.RewardAmountError(iTrial)>0);
+        else
+            ErrorValveTime = 0;
+        end
+
         
         %mark whether animal withdraw too early from center port
         %     if TaskParameters.GUI.AllowBreakFixation==0&&any(strcmp('Cout_Early',statesThisTrial))
