@@ -282,7 +282,26 @@ if iTrial>0
             RewardReceivedError = 0;
         end
         RewardReceivedTotal = RewardReceivedCenter + RewardReceivedCorrect + RewardReceivedError;
+       
+      
+        %compute absolute Stimulus Start Time and Reward Time (for
+        %photometry plot)
+        if any(strcmp('Cin_Stim',statesThisTrial))
+            BpodSystem.Data.Custom.StimulusStartTime(iTrial) = BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Stim(1,1);
+        elseif any(strcmp('Cin_PreStim',statesThisTrial))
+            BpodSystem.Data.Custom.StimulusStartTime(iTrial) = BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_PreStim(end,1)+BpodSystem.Data.Custom.PreStimDuration(iTrial);
+        else 
+            BpodSystem.Data.Custom.StimulusStartTime(iTrial) = nan;
+        end
         
+        if any(strcmp('LinCorrect_Fb',statesThisTrial))
+            BpodSystem.Data.Custom.RewardStartTime(iTrial) = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_Fb(1,1);
+        elseif any(strcmp('LinError_Fb',statesThisTrial))
+            BpodSystem.Data.Custom.RewardStartTime(iTrial) = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_Fb(1,1);
+        else 
+            BpodSystem.Data.Custom.RewardStartTime(iTrial) = nan;
+        end
+
         %assemble output
         BpodSystem.Data.Custom.BeforeTrialInterval(iTrial) = BpodSystem.Data.Custom.AfterTrialInterval(iTrial);
         
@@ -542,5 +561,13 @@ end
 %Light Guidance
 BpodSystem.Data.Custom.LightGuidance(iTrial+1) = TaskParameters.GUI.LightGuidance;
     
-    
+%Photometry
+BpodSystem.Data.Custom.PhotometryOn(iTrial+1)=TaskParameters.GUI.PhotometryOn;
+BpodSystem.Data.Custom.LED1_amp(iTrial+1)=TaskParameters.GUI.LED1_amp;
+BpodSystem.Data.Custom.LED2_amp(iTrial+1)=TaskParameters.GUI.LED2_amp;
+BpodSystem.Data.Custom.LED1_f(iTrial+1)=TaskParameters.GUI.LED1_f;
+BpodSystem.Data.Custom.LED2_f(iTrial+1)=TaskParameters.GUI.LED2_f;
+BpodSystem.Data.Custom.PostTrialRecording(iTrial+1)=TaskParameters.GUI.PostTrialRecording;
+
+
 end

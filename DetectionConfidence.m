@@ -26,7 +26,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.DecisionVariable.Style = 'popupmenu';
     TaskParameters.GUIMeta.DecisionVariable.String = {'discrete','continuous'};
     TaskParameters.GUI.BetaParam=0.1;
-
+    
     TaskParameters.GUI.NoiseVolumeTable.NoiseVolume=[20 40 60]';
     TaskParameters.GUI.NoiseVolumeTable.SignalVolume=[50 45 40]';
     TaskParameters.GUI.NoiseVolumeTable.Prob=[1 1 1]';
@@ -41,8 +41,8 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.ContinuousTable.Style = 'table';
     TaskParameters.GUIMeta.ContinuousTable.String = 'Decision variable';
     TaskParameters.GUIMeta.ContinuousTable.ColumnLabel = {'noiseLims','signalLims'};
-
-
+    
+    
     TaskParameters.GUI.EasyTrials=20;
     TaskParameters.GUI.StimDuration=0.1;
     TaskParameters.GUIPanels.Stimulus = {'DecisionVariable','BetaParam','EasyTrials','StimDuration'};
@@ -53,13 +53,13 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.PreStimDurationSelection.Style = 'popupmenu';
     TaskParameters.GUIMeta.PreStimDurationSelection.String = {'Fix','AutoIncr','TruncExp'};
     TaskParameters.GUI.PreStimDurationTau = 0.2;
-
+    
     TaskParameters.GUI.PreStimDurationMin = 0.05;%minimum sample time required for reward will not decrease further (0.05 in Marion's script)
     TaskParameters.GUI.PreStimDuration = TaskParameters.GUI.PreStimDurationMin;
     TaskParameters.GUIMeta.PreStimDuration.Style = 'text';
     TaskParameters.GUI.PreStimDurationMax = .5; %sample time required for reward will not increase further (0.5)
     TaskParameters.GUI.PreStimDurationRampUp = 0.01;
-    TaskParameters.GUI.PreStimDurationRampDown = 0.005;        
+    TaskParameters.GUI.PreStimDurationRampDown = 0.005;
     TaskParameters.GUI.RewardAmountCenter = 0.5;%reward amount center ports (marion .5)
     
     TaskParameters.GUI.RewardAmountCenterSelection = 2;
@@ -67,8 +67,8 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.RewardAmountCenterSelection.Style = 'popupmenu';
     TaskParameters.GUIMeta.RewardAmountCenterSelection.String = {'Fix','Decrease'};
     TaskParameters.GUI.RewardAmountCenterEasyTrials = 50;
-
-
+    
+    
     TaskParameters.GUI.CoutEarlyTimeout = 0;%time out for early withdrawal (marion 1s)
     TaskParameters.GUIPanels.Timing = {'PreStimDuration',...
         'PreStimDurationSelection','PreStimDurationMin','PreStimDurationMax','PreStimDurationRampUp','PreStimDurationRampDown','PreStimDurationTau'};
@@ -76,16 +76,16 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIPanels.Sampling = {'RewardAmountCenter',...
         'RewardAmountCenterSelection','RewardAmountCenterEasyTrials','CoutEarlyTimeout'};
     
-    %Choice 
-    TaskParameters.GUI.ChoiceDeadline = 5; %Maximal Interval for choice after stimulus presentAfterTrialIntervalon    
+    %Choice
+    TaskParameters.GUI.ChoiceDeadline = 5; %Maximal Interval for choice after stimulus presentAfterTrialIntervalon
     TaskParameters.GUI.BiasCorrection = 4;
     TaskParameters.GUIMeta.BiasCorrection.Style = 'popupmenu';
     TaskParameters.GUIMeta.BiasCorrection.String = {'None','BruteForce','Soft','PerLevel'};%BruteForce: presents the same stimulus until a correct choice is made, then resumes stimulus sequence; Soft: calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
     TaskParameters.GUI.RewardAmountCorrect = 5;%reward amount lateral ports (marion 5)
     TaskParameters.GUI.RewardAmountError = 0;%reward amount lateral ports (marion 5)
-    TaskParameters.GUI.ErrorTimeout = 0;%time out for errors     
+    TaskParameters.GUI.ErrorTimeout = 0;%time out for errors
     TaskParameters.GUIPanels.Choice = {'ChoiceDeadline','BiasCorrection','RewardAmountCorrect','RewardAmountError','ErrorTimeout'};%,'Deplete','DepleteRate','Jackpot','JackpotMin','JackpotTime'};
-
+    
     %Feedback delay %UPDATE TO GRAY OUT IRRELEVANT FIELDS
     TaskParameters.GUI.FeedbackDelaySelection = 1;
     TaskParameters.GUIMeta.FeedbackDelaySelection.Style = 'popupmenu';
@@ -100,7 +100,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI.CatchError = false;
     TaskParameters.GUIMeta.CatchError.Style = 'checkbox';
     TaskParameters.GUI.FeedbackDelay = TaskParameters.GUI.FeedbackDelayMin;
-    TaskParameters.GUIMeta.FeedbackDelay.Style = 'text';    
+    TaskParameters.GUIMeta.FeedbackDelay.Style = 'text';
     TaskParameters.GUI.StartNoCatchTrials = 20;
     TaskParameters.GUI.SkippedCorrectCorrection = 1;
     TaskParameters.GUIMeta.SkippedCorrectCorrection.Style = 'popupmenu';
@@ -125,29 +125,65 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.ShowST.Style = 'checkbox';
     TaskParameters.GUI.ShowFeedback = 1;
     TaskParameters.GUIMeta.ShowFeedback.Style = 'checkbox';
-    
     TaskParameters.GUIPanels.ShowPlots = {'ShowPsycAud','ShowVevaiometric','ShowTrialRate','ShowFix','ShowST','ShowFeedback'};
+    
+    TaskParameters.GUIPanels.Photometry = {'LED1_amp', 'LED2_amp', 'PhotometryOn', 'LED1_f', 'LED2_f','PostTrialRecording'};
+    TaskParameters.GUI.LED1_amp = 2.5;
+    TaskParameters.GUI.LED2_amp = 2.5;
+    TaskParameters.GUI.PhotometryOn = 0;
+    TaskParameters.GUI.LED1_f = 0;%531
+    TaskParameters.GUI.LED2_f = 0;%211
+    TaskParameters.GUI.PostTrialRecording = 2;%sets Time that will be recorded after trial end
     
     TaskParameters.Figures.OutcomePlot.Position = [0, 600, 1000, 400];
     
-    TaskParameters.GUITabs.General = {'General'};
+    TaskParameters.GUITabs.General = {'General','Photometry'};
     TaskParameters.GUITabs.Stimulus = {'Stimulus','NoiseVolumeTable','ContinuousTable'};
     TaskParameters.GUITabs.Timing = {'Timing'};
     TaskParameters.GUITabs.Feedback = {'Sampling','Choice','FeedbackDelay'};
     TaskParameters.GUITabs.Plots = {'ShowPlots'};
     TaskParameters.GUI = orderfields(TaskParameters.GUI);
-
+    
 end
-
-
 BpodParameterGUI('init', TaskParameters);
+%% SHUJINGS CODE, not sure whether I need this
+%     BpodParameterGUI('init', S);
+%     BpodSystem.Pause = 1;
+%     HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
+%     S = BpodParameterGUI('sync', S); % Sync parameters with BpodParameterGUI plugin
+%     BpodSystem.ProtocolSettings = S; % copy settings back prior to saving
+%     SaveBpodProtocolSettings;
 
 %server data
 [~,BpodSystem.Data.Custom.Rig] = system('hostname');
 [~,BpodSystem.Data.Custom.Subject] = fileparts(fileparts(fileparts(fileparts(BpodSystem.DataPath))));
 BpodSystem.SoftCodeHandlerFunction = 'SoftCodeHandler';
 
+
+%% init photometry raster function handle
+%     prfh = str2func(S.GUI.PhotometryRasterFcn);
+%% Initialize NIDAQ
+TaskParameters.nidaq.duration = 120;
+TaskParameters.nidaq.IsContinuous = true;
+TaskParameters.nidaq.updateInterval = 0.1; % save new data every n seconds
+startX = 0; % 0 defined as time from cue (because reward time can be variable depending upon outcomedelay)
+BpodSystem.ProtocolSettings = TaskParameters; % copy settings back because syncPhotometrySettings relies upon BpodSystem.ProtocolSettings
+if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
+    TaskParameters = initPhotometry(TaskParameters);
+end
+%% photometry plots
+if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
+    updatePhotometryPlot('init');
+    %         prfh('init', 'baselinePeriod', [1 S.PreCsRecording])
+end
+%     %% lick rasters for cs1 and cs2 ADD LATER
+%     PhotometryRasterFcnList = {'lickNoLick_Sound_PhotometryRasters', 'LNL_Sound_pRasters_3Sounds', 'LNL_pRasters_bySound'};
+%     BpodSystem.ProtocolFigures.lickRaster.fig = ensureFigure('lick_raster', 1);
+%     BpodSystem.ProtocolFigures.lickRaster.AxSound1 = subplot(1, 3, 1); title('Sound 1');
+%     BpodSystem.ProtocolFigures.lickRaster.AxSound2 = subplot(1, 3, 2); title('Sound 2');
+%     BpodSystem.ProtocolFigures.lickRaster.AxSound3 = subplot(1, 3, 3); title('Sound 3');
 %start
+
 [filepath,filename,~]=fileparts(BpodSystem.DataPath);
 BpodSystem.Data.Custom.StimulusPath=fullfile(strrep(filepath,'Session Data','Session Stimuli'),filename);
 if ~exist(BpodSystem.Data.Custom.StimulusPath,'dir')
@@ -181,22 +217,105 @@ RunSession = true;
 iTrial = 1;
 
 while RunSession
-    TaskParameters = BpodParameterGUI('sync', TaskParameters);   
+    TaskParameters = BpodParameterGUI('sync', TaskParameters);
+    
+    % SHUJINGs CODE, not sure whether I want this
+    %     BpodSystem.ProtocolSettings = S; % copy settings back prior to saving
+    %     SaveBpodProtocolSettings;
+    
     sma = stateMatrix(iTrial);
     SendStateMatrix(sma);
-    RawEvents = RunStateMatrix;
+    %% prep data acquisition
+    if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
+        preparePhotometryAcq(S);
+    end
+    
+    RawEvents = RunStateMatrix();
+    
+    %% Stop Photometry session
+    if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
+        stopPhotometryAcq;
+    end
+    
     if ~isempty(fieldnames(RawEvents))
+        %% Process NIDAQ session
+        if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
+            try
+                processPhotometryAcq(iTrial);
+            catch
+                disp('*** Data not saved, issue with processPhotometryAcq ***');
+            end
+            
+        end
         BpodSystem.Data = AddTrialEvents(BpodSystem.Data,RawEvents);
         SaveBpodSessionData;
+    else
+        disp([' *** Trial # ' num2str(iTrial) ':  aborted, data not saved ***']); % happens when you abort early (I think), e.g. when you are halting session
     end
-    HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
+    
     if BpodSystem.BeingUsed == 0
         return
     end
     updateCustomDataFields(iTrial)%get data and create new stimuli here
-
+    
+    %% update plots
+    %behavior
     MainPlot(BpodSystem.GUIHandles.OutcomePlot,'update',iTrial);
-
+    
+    if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
+        try % in case photometry hicupped
+            % saving data
+            processPhotometryOnline(iTrial);
+            startX=BpodSystem.Data.Custom.RewardStartTime(iTrial);
+            %startX=BpodSystem.Data.Custom.StimulusStartTime(iTrial);
+            if ~isnan(startx)
+                updatePhotometryPlot('update', startX);
+                xlabel('Time from reward start (s)');
+            else
+                disp('No reward delivered, no photometry plotted.');
+            end
+        catch
+            disp('*** Problem with online photometry processing ***');
+        end
+    end
+    
+    %     %% update photometry rasters WORK ON THIS LATER
+    %     try % in case photometry hicupped
+    %         if S.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
+    %             % Note that switchParameterCriterion not used for
+    %             % LNL_pRasters_bySound, but doesn't matter when
+    %             % supplied via varargin
+    %             prfh('Update', 'switchParameterCriterion', switchParameterCriterion, 'XLim', [-S.nidaq.duration, S.nidaq.duration]);
+    %             if any(blockTransitions) % block transition lines
+    %                 if ~isempty(BpodSystem.ProtocolFigures.phRaster.ax_ch1)
+    %                     for ah = BpodSystem.ProtocolFigures.phRaster.ax_ch1(2:end)
+    %                         plot(btx2, bty, '-r', 'Parent', ah);
+    %                     end
+    %                 end
+    %                 if ~isempty(BpodSystem.ProtocolFigures.phRaster.ax_ch2)
+    %                     for ah = BpodSystem.ProtocolFigures.phRaster.ax_ch2(2:end)
+    %                         plot(btx2, bty, '-r', 'Parent', ah);
+    %                     end
+    %                 end
+    %             end
+    %         end
+    %     end
+    %
+    %     %% lick rasters by sound
+    %     %             bpLickRaster2(SessionData, filtArg, zeroField, figName, ax)
+    %     bpLickRaster2({'SoundValveIndex', 1}, 'Cue', 'lick_raster', BpodSystem.ProtocolFigures.lickRaster.AxSound1, 'session'); hold on;
+    %     bpLickRaster2({'SoundValveIndex', 2}, 'Cue', 'lick_raster', BpodSystem.ProtocolFigures.lickRaster.AxSound2, 'session'); hold on; % make both rasters regardless of number of Sounds, it'll just be blank if you don't have that Sound
+    %     bpLickRaster2({'SoundValveIndex', 3}, 'Cue', 'lick_raster', BpodSystem.ProtocolFigures.lickRaster.AxSound3, 'session'); hold on;
+    %     if any(blockTransitions)
+    %         plot(btx, bty, '-r', 'Parent', BpodSystem.ProtocolFigures.lickRaster.AxSound1);
+    %         plot(btx, bty, '-r', 'Parent', BpodSystem.ProtocolFigures.lickRaster.AxSound2);
+    %         plot(btx, bty, '-r', 'Parent', BpodSystem.ProtocolFigures.lickRaster.AxSound3);
+    %         drawnow;
+    %     end
+    %     set([BpodSystem.ProtocolFigures.lickRaster.AxSound1 BpodSystem.ProtocolFigures.lickRaster.AxSound2 BpodSystem.ProtocolFigures.lickRaster.AxSound3], 'XLim', [startX, startX + S.nidaq.duration]);
+    %     xlabel(BpodSystem.ProtocolFigures.lickRaster.AxSound1, 'Time from cue (s)');
+    %     xlabel(BpodSystem.ProtocolFigures.lickRaster.AxSound2, 'Time from cue (s)');
+    %             xlabel(BpodSystem.ProtocolFigures.lickRaster.AxSound3, 'Time from cue (s)');
     iTrial = iTrial + 1;
 end
 

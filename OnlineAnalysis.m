@@ -19,9 +19,9 @@ switch sessionTab{1,'Variation'}
 end
 switch sessionTab{1,'DecisionVariable'}
     case 'continuous'
-        easyIdx=dv>prctile(dv,95);
+        easyIdx=dv>=prctile(dv,95);
         interIdx=dv<prctile(dv,55)&dv>prctile(dv,45);
-        diffIdx=dv<prctile(dv,5);
+        diffIdx=dv<=prctile(dv,5);
     case 'discrete  '
         easyIdx=dv==max(dv);
         interIdx=dv>min(dv)&dv<max(dv);
