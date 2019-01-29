@@ -4,6 +4,8 @@ global TaskParameters
 %global StimulusSettings
 
 %% Define ports
+npgBNCArg = 1; % BNC 1 source to trigger Nidaq is hard coded
+
 %determine whether this is a signal or a noise trial
 ports=num2str(TaskParameters.GUI.Ports_LMR);
 if (BpodSystem.Data.Custom.EmbedSignal(iTrial))>0%signal embedded
@@ -16,6 +18,7 @@ elseif (BpodSystem.Data.Custom.EmbedSignal(iTrial))==0 %no signal embedded
     ErrorPort = str2num(ports(1));
 else error('Cannot determine which port is the Error one. Check your code!')
 end
+
 
 CorrectPortOut = strcat('Port',num2str(CorrectPort),'Out');
 CenterPortOut = strcat('Port',num2str(CenterPort),'Out');
