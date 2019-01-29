@@ -227,7 +227,7 @@ while RunSession
     SendStateMatrix(sma);
     %% prep data acquisition
     if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
-        preparePhotometryAcq(S);
+        preparePhotometryAcq(TaskParameters);
     end
     
     RawEvents = RunStateMatrix();
