@@ -145,14 +145,13 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI = orderfields(TaskParameters.GUI);
     
 end
-BpodParameterGUI('init', TaskParameters);
 %% SHUJINGS CODE, not sure whether I need this
-%     BpodParameterGUI('init', S);
-%     BpodSystem.Pause = 1;
-%     HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
-%     S = BpodParameterGUI('sync', S); % Sync parameters with BpodParameterGUI plugin
-%     BpodSystem.ProtocolSettings = S; % copy settings back prior to saving
-%     SaveBpodProtocolSettings;
+BpodParameterGUI('init', TaskParameters);
+    BpodSystem.Pause = 1;
+    HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
+    TaskParameters = BpodParameterGUI('sync', TaskParameters); % Sync parameters with BpodParameterGUI plugin
+    BpodSystem.ProtocolSettings = TaskParameters; % copy settings back prior to saving
+    SaveBpodProtocolSettings;
 
 %server data
 [~,BpodSystem.Data.Custom.Rig] = system('hostname');
@@ -166,6 +165,7 @@ BpodSystem.SoftCodeHandlerFunction = 'SoftCodeHandler';
 TaskParameters.nidaq.duration = 120;
 TaskParameters.nidaq.IsContinuous = true;
 TaskParameters.nidaq.updateInterval = 0.1; % save new data every n seconds
+BpodSystem.PluginObjects.Photometry.baselinePeriod = [0 1]; % kludge, FS
 startX = 0; % 0 defined as time from cue (because reward time can be variable depending upon outcomedelay)
 BpodSystem.ProtocolSettings = TaskParameters; % copy settings back because syncPhotometrySettings relies upon BpodSystem.ProtocolSettings
 if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
@@ -263,20 +263,20 @@ while RunSession
     MainPlot(BpodSystem.GUIHandles.OutcomePlot,'update',iTrial);
     
     if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
-        try % in case photometry hicupped
+%         try % in case photometry hicupped
             % saving data
             processPhotometryOnline(iTrial);
-            startX=BpodSystem.Data.Custom.RewardStartTime(iTrial);
+            startX=0;%BpodSystem.Data.Custom.RewardStartTime(iTrial);
             %startX=BpodSystem.Data.Custom.StimulusStartTime(iTrial);
-            if ~isnan(startx)
+            if ~isnan(startX)
                 updatePhotometryPlot('update', startX);
                 xlabel('Time from reward start (s)');
             else
                 disp('No reward delivered, no photometry plotted.');
             end
-        catch
-            disp('*** Problem with online photometry processing ***');
-        end
+%         catch
+%             disp('*** Problem with online photometry processing ***');
+%         end
     end
     
     %     %% update photometry rasters WORK ON THIS LATER
@@ -317,6 +317,8 @@ while RunSession
     %     xlabel(BpodSystem.ProtocolFigures.lickRaster.AxSound2, 'Time from cue (s)');
     %             xlabel(BpodSystem.ProtocolFigures.lickRaster.AxSound3, 'Time from cue (s)');
     iTrial = iTrial + 1;
+    HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
+
 end
 
 
