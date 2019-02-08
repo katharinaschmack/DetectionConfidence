@@ -145,13 +145,13 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI = orderfields(TaskParameters.GUI);
     
 end
-%% SHUJINGS CODE, not sure whether I need this
+%% SHUJINGS CODE, not sure whether I need this, answer: yes, I do!
 BpodParameterGUI('init', TaskParameters);
-    BpodSystem.Pause = 1;
-    HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
-    TaskParameters = BpodParameterGUI('sync', TaskParameters); % Sync parameters with BpodParameterGUI plugin
-    BpodSystem.ProtocolSettings = TaskParameters; % copy settings back prior to saving
-    SaveBpodProtocolSettings;
+BpodSystem.Pause = 1;
+HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
+TaskParameters = BpodParameterGUI('sync', TaskParameters); % Sync parameters with BpodParameterGUI plugin
+BpodSystem.ProtocolSettings = TaskParameters; % copy settings back prior to saving
+SaveBpodProtocolSettings;
 
 %server data
 [~,BpodSystem.Data.Custom.Rig] = system('hostname');
@@ -160,7 +160,9 @@ BpodSystem.SoftCodeHandlerFunction = 'SoftCodeHandler';
 
 
 %% init photometry raster function handle
-%     prfh = str2func(S.GUI.PhotometryRasterFcn);
+%     prfh = str2func(S.GUI.PhotometryRasterFcn); %for being flexible, just
+%     choose one for now
+
 %% Initialize NIDAQ
 TaskParameters.nidaq.duration = 120;
 TaskParameters.nidaq.IsContinuous = true;
@@ -176,13 +178,13 @@ if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
     updatePhotometryPlot('init');
     %         prfh('init', 'baselinePeriod', [1 S.PreCsRecording])
 end
-%     %% lick rasters for cs1 and cs2 ADD LATER
-%     PhotometryRasterFcnList = {'lickNoLick_Sound_PhotometryRasters', 'LNL_Sound_pRasters_3Sounds', 'LNL_pRasters_bySound'};
-%     BpodSystem.ProtocolFigures.lickRaster.fig = ensureFigure('lick_raster', 1);
-%     BpodSystem.ProtocolFigures.lickRaster.AxSound1 = subplot(1, 3, 1); title('Sound 1');
-%     BpodSystem.ProtocolFigures.lickRaster.AxSound2 = subplot(1, 3, 2); title('Sound 2');
-%     BpodSystem.ProtocolFigures.lickRaster.AxSound3 = subplot(1, 3, 3); title('Sound 3');
-%start
+%% lick rasters for cs1 and cs2 ADD LATER
+PhotometryRasterFcnList = {'lickNoLick_Sound_PhotometryRasters', 'LNL_Sound_pRasters_3Sounds', 'LNL_pRasters_bySound'};
+BpodSystem.ProtocolFigures.lickRaster.fig = ensureFigure('lick_raster', 1);
+BpodSystem.ProtocolFigures.lickRaster.AxSound1 = subplot(1, 3, 1); title('Sound 1');
+BpodSystem.ProtocolFigures.lickRaster.AxSound2 = subplot(1, 3, 2); title('Sound 2');
+BpodSystem.ProtocolFigures.lickRaster.AxSound3 = subplot(1, 3, 3); title('Sound 3');
+
 
 [filepath,filename,~]=fileparts(BpodSystem.DataPath);
 BpodSystem.Data.Custom.StimulusPath=fullfile(strrep(filepath,'Session Data','Session Stimuli'),filename);

@@ -8,13 +8,16 @@ path=('C:\Users\Katharina\BpodUser\Data\');
 files=dir(fullfile(path,'\*\DetectionConfidence\Session Settings\*.mat'));
 for f=1:length(files)
     load(fullfile(files(f).folder,files(f).name))
-    
-    ProtocolSettings.GUI.LED1_amp = 2.5;
-    ProtocolSettings.GUI.LED2_amp = 2.5;
+    ProtocolSettings.GUI.LED1_amp = 5;
+    ProtocolSettings.GUI.LED2_amp = 0;
     ProtocolSettings.GUI.PhotometryOn = 0;
     ProtocolSettings.GUI.LED1_f = 531;
-    ProtocolSettings.GUI.LED2_f = 211;
-    ProtocolSettings.GUIPanels.Photometry = {'LED1_amp', 'LED2_amp', 'PhotometryOn', 'LED1_f', 'LED2_f'};    %BruteForce: presents the same stimulus until a correct choice is made, then resumes stimulus sequence; Soft: calculates bias over all trials and presents non-prefered stimulus with p=1-bias.% ProtocolSettings.GUI.BetaParam=0.1;
+    ProtocolSettings.GUI.LED2_f = 0;%211
+    ProtocolSettings.GUI.PostTrialRecording = 0;%sets Time that will be recorded after trial end
+    ProtocolSettings.GUIPanels.Photometry = {'LED1_amp', 'LED2_amp', 'PhotometryOn', 'LED1_f', 'LED2_f','PostTrialRecording'};
+    ProtocolSettings.GUITabs.General = {'General','Photometry'};
+
+    %BruteForce: presents the same stimulus until a correct choice is made, then resumes stimulus sequence; Soft: calculates bias over all trials and presents non-prefered stimulus with p=1-bias.% ProtocolSettings.GUI.BetaParam=0.1;
     % ProtocolSettings.GUI.ContinuousTable.NoiseLimits=[min(ProtocolSettings.GUI.NoiseVolumeTable.NoiseVolume);max(ProtocolSettings.GUI.NoiseVolumeTable.NoiseVolume)];
     % ProtocolSettings.GUI.ContinuousTable.SignalLimits=[max(ProtocolSettings.GUI.NoiseVolumeTable.SignalVolume);min(ProtocolSettings.GUI.NoiseVolumeTable.SignalVolume)];
     % ProtocolSettings.GUI.DecisionVariable=1;
@@ -69,7 +72,7 @@ for f=1:length(files)
     % end
     %
     %save new Settings
-    newfilename=strrep(files(f).name,'.mat','_new.mat');
+    newfilename=strrep(files(f).name,'.mat','_photometry.mat');
     save(fullfile(files(f).folder,newfilename),'ProtocolSettings');
     
 end

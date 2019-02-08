@@ -65,8 +65,7 @@ switch Action
             case {'signal'}
                 AxesHandles.HandlePsycAud.XTick=[0:20:60];
                 AxesHandles.HandlePsycAud.YLim = [-.05 1.05];
-                AxesHandles.HandlePsycAud.XLim = [-5 65];
-
+                AxesHandles.HandlePsycAud.XLim = [-5 70];
                 AxesHandles.HandlePsycAud.XLabel.String = {'signal (dB)'}; %adapt here if you want to show dB
         end
         AxesHandles.HandlePsycAud.YLabel.String = '% Signal responses';
@@ -247,7 +246,7 @@ switch Action
                     case {'signal'}
                         AudDV=BpodSystem.Data.Custom.SignalVolume(1:numel(BpodSystem.Data.Custom.ResponseLeft));
                         AudDV(BpodSystem.Data.Custom.EmbedSignal(1:numel(BpodSystem.Data.Custom.ResponseLeft))==0)=0;
-                        AudBinNumbers=[0:5:60];
+                        AudBinNumbers=[0:5:70];
                         BinIdx = discretize(AudDV,AudBinNumbers);%unelegant! revise!
                         PsycY = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan),(BinIdx(~ndxNan)),'mean');
                         PsycX = grpstats(AudDV(~ndxNan),(BinIdx(~ndxNan)),'mean');
@@ -255,7 +254,7 @@ switch Action
                         BpodSystem.GUIHandles.OutcomePlot.PsycAud.XData = PsycX;
                         
                         
-                        BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData = linspace(0,60,100);
+                        BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData = linspace(0,70,100);
                         ndxSignal=AudDV~=0;
                         mdl=fitglm(AudDV,BpodSystem.Data.Custom.ResponseLeft,'exclude',ndxNan&~ndxSignal,'distribution','binomial');
                         BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.YData = glmval(mdl.Coefficients.Estimate,BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData,'logit');
