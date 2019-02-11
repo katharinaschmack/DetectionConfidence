@@ -17,8 +17,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI.AfterTrialIntervalMax = 2.5;%Maximum for jitter
     TaskParameters.GUIMeta.AfterTrialIntervalJitter.Style = 'checkbox';
     TaskParameters.GUI.LightGuidance = true;%LED ports indicate active ports, if false LED ports remain on when active
-    TaskParameters.GUIMeta.LightGuidance.Style = 'checkbox';
-    
+    TaskParameters.GUIMeta.LightGuidance.Style = 'checkbox';   
     TaskParameters.GUIPanels.General = {'Ports_LMR','AfterTrialInterval','AfterTrialIntervalJitter','AfterTrialIntervalMin','AfterTrialIntervalMax','LightGuidance'};
     
     %sampling period: events, duration and reinforcement for duration
@@ -217,8 +216,17 @@ MainPlot(BpodSystem.GUIHandles.OutcomePlot,'init');
 %% Main loop
 RunSession = true;
 iTrial = 1;
+TaskParameters = BpodParameterGUI('sync', TaskParameters);
+if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
+    site = questdlg('Where are you recording from?', ...
+        'photometry site', ...
+        'rightVS','leftTS','rightVS');
+    BpodSystem.Data.Custom.PhotometrySite=site;
+
+end
 
 while RunSession
+
     TaskParameters = BpodParameterGUI('sync', TaskParameters);
     
     % SHUJINGs CODE, not sure whether I want this
