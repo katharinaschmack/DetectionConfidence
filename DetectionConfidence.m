@@ -178,11 +178,11 @@ if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
     %         prfh('init', 'baselinePeriod', [1 S.PreCsRecording])
 end
 %% lick rasters for cs1 and cs2 ADD LATER
-PhotometryRasterFcnList = {'lickNoLick_Sound_PhotometryRasters', 'LNL_Sound_pRasters_3Sounds', 'LNL_pRasters_bySound'};
-BpodSystem.ProtocolFigures.lickRaster.fig = ensureFigure('lick_raster', 1);
-BpodSystem.ProtocolFigures.lickRaster.AxSound1 = subplot(1, 3, 1); title('Sound 1');
-BpodSystem.ProtocolFigures.lickRaster.AxSound2 = subplot(1, 3, 2); title('Sound 2');
-BpodSystem.ProtocolFigures.lickRaster.AxSound3 = subplot(1, 3, 3); title('Sound 3');
+% PhotometryRasterFcnList = {'lickNoLick_Sound_PhotometryRasters', 'LNL_Sound_pRasters_3Sounds', 'LNL_pRasters_bySound'};
+% BpodSystem.ProtocolFigures.lickRaster.fig = ensureFigure('lick_raster', 1);
+% BpodSystem.ProtocolFigures.lickRaster.AxSound1 = subplot(1, 3, 1); title('Sound 1');
+% BpodSystem.ProtocolFigures.lickRaster.AxSound2 = subplot(1, 3, 2); title('Sound 2');
+% BpodSystem.ProtocolFigures.lickRaster.AxSound3 = subplot(1, 3, 3); title('Sound 3');
 
 
 [filepath,filename,~]=fileparts(BpodSystem.DataPath);
