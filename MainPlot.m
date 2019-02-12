@@ -207,11 +207,12 @@ switch Action
         
         
         %Plot Skipped
-        ndxSkippedCorrect=BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==1&(BpodSystem.Data.Custom.WaitingTime(indxToPlot)<BpodSystem.Data.Custom.FeedbackDelay(indxToPlot))&~BpodSystem.Data.Custom.CatchTrial(indxToPlot);
+        SessionData.Custom.FeedbackDelay(1:end-1)
+        ndxSkippedCorrect=BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==1&(BpodSystem.Data.Custom.WaitingTime(indxToPlot)<(BpodSystem.Data.Custom.FeedbackDelay(indxToPlot)-1E-3))&~BpodSystem.Data.Custom.CatchTrial(indxToPlot);
         if TaskParameters.GUI.CatchError
             ndxSkippedError=false(1,length(indxToPlot));
         else
-            ndxSkippedError=BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==0&(BpodSystem.Data.Custom.WaitingTime(indxToPlot)<BpodSystem.Data.Custom.FeedbackDelayError((indxToPlot)))&~BpodSystem.Data.Custom.CatchTrial((indxToPlot));
+            ndxSkippedError=BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==0&(BpodSystem.Data.Custom.WaitingTime(indxToPlot)<(BpodSystem.Data.Custom.FeedbackDelayError(indxToPlot)-1E-3)))&~BpodSystem.Data.Custom.CatchTrial((indxToPlot));
         end
         ndxSkipped=ndxSkippedCorrect|ndxSkippedError;
         Xdata = indxToPlot(ndxSkipped&~ndxMiss&~ndxEarly);
