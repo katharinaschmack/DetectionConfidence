@@ -355,7 +355,7 @@ switch Action
                 ndxSkippedError=false(1,iTrial);
             else
                 ndxWaitedError=BpodSystem.Data.Custom.ResponseCorrect==0&(BpodSystem.Data.Custom.WaitingTime>=(BpodSystem.Data.Custom.FeedbackDelayError(1:iTrial)-1E-3))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
-                ndxSkippedError=BpodSystem.Data.Custom.ResponseCorrect==0&(BpodSystem.Data.Custom.WaitingTime<(BpodSystem.Data.Custom.FeedbackDelayError(1:iTrial)-1E-3)&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
+                ndxSkippedError=BpodSystem.Data.Custom.ResponseCorrect==0&(BpodSystem.Data.Custom.WaitingTime<(BpodSystem.Data.Custom.FeedbackDelayError(1:iTrial)-1E-3))&~BpodSystem.Data.Custom.CatchTrial(1:iTrial);
             end
             ndxSkipped=ndxSkippedCorrect|ndxSkippedError;
             ndxWaited=ndxWaitedCorrect|ndxWaitedError;
