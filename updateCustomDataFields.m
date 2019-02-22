@@ -298,7 +298,9 @@ if iTrial>0
             BpodSystem.Data.Custom.RewardStartTime(iTrial) = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinCorrect_Fb(1,1);
         elseif any(strcmp('LinError_Fb',statesThisTrial))
             BpodSystem.Data.Custom.RewardStartTime(iTrial) = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_Fb(1,1);
-        else 
+        elseif any(strcmp('LinError_GraceStart',statesThisTrial))&&~any(strcmp('LinError_Fb',statesThisTrial))
+            BpodSystem.Data.Custom.RewardStartTime(iTrial) = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GraceStart(1,1)+BpodSystem.Data.Custom.FeedbackDelay(iTrial);
+        else
             BpodSystem.Data.Custom.RewardStartTime(iTrial) = nan;
         end
 

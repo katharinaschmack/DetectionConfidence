@@ -286,12 +286,17 @@ switch Action
                     BinIdx = discretize(AudDV,AudBinNumbers);%unelegant! revise!
 
             end
-            WTerr = grpstats(BpodSystem.Data.Custom.WaitingTime(ndxError&ndxMinWT),BinIdx(ndxError&ndxMinWT),'mean')';
-            WTcatch = grpstats(BpodSystem.Data.Custom.WaitingTime(ndxCorrectCatch&ndxMinWT),BinIdx(ndxCorrectCatch&ndxMinWT),'mean')';
-            
-            Xerr = grpstats(AudDV(ndxError&ndxMinWT),(BinIdx(ndxError&ndxMinWT)),'mean');
-            Xcatch = grpstats(AudDV(ndxCorrectCatch&ndxMinWT),(BinIdx(ndxCorrectCatch&ndxMinWT)),'mean');
-
+            try
+                WTerr = grpstats(BpodSystem.Data.Custom.WaitingTime(ndxError&ndxMinWT),BinIdx(ndxError&ndxMinWT),'mean')';
+                WTcatch = grpstats(BpodSystem.Data.Custom.WaitingTime(ndxCorrectCatch&ndxMinWT),BinIdx(ndxCorrectCatch&ndxMinWT),'mean')';                
+                Xerr = grpstats(AudDV(ndxError&ndxMinWT),(BinIdx(ndxError&ndxMinWT)),'mean');
+                Xcatch = grpstats(AudDV(ndxCorrectCatch&ndxMinWT),(BinIdx(ndxCorrectCatch&ndxMinWT)),'mean');
+            catch
+                WTerr = [];
+                WTcatch = [];
+                Xerr = [];
+                Xcatch = [];                
+            end
             BpodSystem.GUIHandles.OutcomePlot.VevaiometricErr.YData = WTerr;
             BpodSystem.GUIHandles.OutcomePlot.VevaiometricErr.XData = Xerr;
             BpodSystem.GUIHandles.OutcomePlot.VevaiometricCatch.YData = WTcatch;
