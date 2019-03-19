@@ -38,49 +38,6 @@ switch TaskParameters.GUIMeta.DecisionVariable.String{TaskParameters.GUI.Decisio
                 end
                 StimulusSettings.NoiseVolume=TaskParameters.GUI.NoiseVolumeTable.NoiseVolume(StimulusSettings.SignalVolume==TaskParameters.GUI.NoiseVolumeTable.SignalVolume);
         end
-        %then decide whether to embed signal depending on Bias
-        %Correction
-        switch TaskParameters.GUIMeta.BiasCorrection.String{TaskParameters.GUI.BiasCorrection}
-            case 'None'
-                %draw randomly
-                StimulusSettings.EmbedSignal=randsample(0:1,1,1,[.5 .5]);
-                
-            case 'BruteForce'
-                % repeat stimulus in case of error in 50% of trials
-                % (overall switch probabily after error = .25)
-                % (overwrite Signal and noise Volume)
-                if iTrial > 5 && BpodSystem.Data.Custom.ResponseCorrect(iTrial)~=1 && rand>.5
-                    StimulusSettings.EmbedSignal=BpodSystem.Data.Custom.EmbedSignal(iTrial);
-                    StimulusSettings.NoiseVolume=BpodSystem.Data.Custom.NoiseVolume(iTrial);
-                    StimulusSettings.SignalVolume=BpodSystem.Data.Custom.SignalVolume(iTrial);
-                else
-                    %draw randomly
-                    StimulusSettings.EmbedSignal=randsample(0:1,1,1,[.5 .5]);
-                end
-                
-            case 'Soft'
-                if iTrial > 5
-                    %show non-prefered stimulus with p=1-bias (max .9) in case of Soft bias
-                    %correction
-                    CurrentBias=min(.9,max(.1,nansum(BpodSystem.Data.Custom.ResponseLeft)./sum(~isnan(BpodSystem.Data.Custom.ResponseLeft))));
-                    StimulusSettings.EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);
-                else
-                    %draw randomly
-                    StimulusSettings.EmbedSignal=randsample(0:1,1,1,[.5 .5]);
-                end
-                
-            case 'PerLevel'
-                if iTrial>5 && sum(BpodSystem.Data.Custom.NoiseVolume==StimulusSettings.NoiseVolume) > 5
-                    noiseIdx=BpodSystem.Data.Custom.NoiseVolume==StimulusSettings.NoiseVolume;
-                    CurrentBias=min(.9,max(.1,nansum(BpodSystem.Data.Custom.ResponseLeft(noiseIdx))./sum(~isnan(BpodSystem.Data.Custom.ResponseLeft(noiseIdx)))));
-                    StimulusSettings.EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);
-                else
-                    %draw randomly
-                    StimulusSettings.EmbedSignal=randsample(0:1,1,1,[.5 .5]);
-                end
-        end
-        beta=rescaleNoise(StimulusSettings.NoiseVolume,StimulusSettings.EmbedSignal);
-
         
     case 'continuous'
         alpha=TaskParameters.GUI.BetaParam;
@@ -88,63 +45,36 @@ switch TaskParameters.GUIMeta.DecisionVariable.String{TaskParameters.GUI.Decisio
         noiseMin=max(TaskParameters.GUI.ContinuousTable.NoiseLimits);%ACHTUNG! noise volumes inverted to evidence
         signalRange=range(TaskParameters.GUI.ContinuousTable.SignalLimits);
         signalMin=min(TaskParameters.GUI.ContinuousTable.SignalLimits);
-        
-        switch TaskParameters.GUIMeta.BiasCorrection.String{TaskParameters.GUI.BiasCorrection}
-            case {'None'}
-                if iTrial<TaskParameters.GUI.EasyTrials %make beta and random embed signal for easy trials
-                    beta=betarnd(0.1,0.1,1,1)*2-1;%symmetric beta between -1 and 1
-                else
-                    %sample from symmetric beta distribution
-                    beta=betarnd(alpha,alpha,1,1)*2-1;%symmetric beta between -1 and 1
-                end
-                StimulusSettings.EmbedSignal=beta>0;
-                StimulusSettings.NoiseVolume=(abs(beta)*noiseRange)+noiseMin;
-                StimulusSettings.SignalVolume=(abs(beta)*signalRange)+signalMin;
-            case {'BruteForce'}
-                % repeat stimulus in case of error in 50% of trials
-                % (overall switch probabily after error = .25)
-                if iTrial > 5 && BpodSystem.Data.Custom.ResponseCorrect(iTrial)~=1 && rand>.5
-                    beta=BpodSystem.Data.Custom.NoiseVolumeRescaled(iTrial);
-                else
-                    if iTrial<TaskParameters.GUI.EasyTrials %make beta and random embed signal for easy trials
-                        beta=betarnd(0.14,0.1,1,1)*2-1;%symmetric beta between -1 and 1
-                    else
-                        %sample from symmetric beta distribution
-                        beta=betarnd(alpha,alpha,1,1)*2-1;%symmetric beta between -1 and 1
-                    end
-                end
-                StimulusSettings.EmbedSignal=beta>0;
-                StimulusSettings.NoiseVolume=(abs(beta)*noiseRange)+noiseMin;
-                StimulusSettings.SignalVolume=(abs(beta)*signalRange)+signalMin;
-
-            case {'Soft'}
-                if iTrial<TaskParameters.GUI.EasyTrials %make beta and random embed signal for easy trials
-                    StimulusSettings.EmbedSignal=randsample(0:1,1,1,[.5 .5]);
-                    beta=betarnd(alpha/4,alpha/4,1,1)*2-1;%easy abd symmetric between -1 and 1
-                else
-                    CurrentBias=min(.9,max(.1,nansum(BpodSystem.Data.Custom.ResponseLeft)./sum(~isnan(BpodSystem.Data.Custom.ResponseLeft))));
-                    StimulusSettings.EmbedSignal=randsample(0:1,1,1,[CurrentBias 1-CurrentBias]);
-                    beta=betarnd(alpha,alpha,1,1)*2-1;%symmetric beta between -1 and 1
-                end
-                StimulusSettings.NoiseVolume=(abs(beta)*noiseRange)+noiseMin;
-                StimulusSettings.SignalVolume=(abs(beta)*signalRange)+signalMin;
-                
-            case {'PerLevel'}
-                if iTrial<TaskParameters.GUI.EasyTrials %make beta for easy trials
-                    beta=betarnd(alpha/4,alpha/4,1,1)*2-1;%symmetric between -1 and 1
-                else  % make beta distribution according to specified beta
-                    CurrentBias=min(.9,max(.1,nansum(BpodSystem.Data.Custom.ResponseLeft)./sum(~isnan(BpodSystem.Data.Custom.ResponseLeft))));
-                    BetaRatio = (1 - min(0.9,max(0.1,CurrentBias))) / min(0.9,max(0.1,CurrentBias));
-                    BetaA =  (2*alpha*BetaRatio) / (1+BetaRatio); %make a,b symmetric around BetaParams to make B symmetric
-                    BetaB = (alpha-BetaA) + alpha;
-                    beta = betarnd(max(0,BetaA),max(0,BetaB),1,1)*2-1;%assymmetric beta between -1 and 1
-                end
-                StimulusSettings.EmbedSignal=beta>0;
-                StimulusSettings.NoiseVolume=(abs(beta)*noiseRange)+noiseMin;
-                StimulusSettings.SignalVolume=(abs(beta)*signalRange)+signalMin;                
-        end        
+        if iTrial<TaskParameters.GUI.EasyTrials %make beta and random embed signal for easy trials
+            beta=betarnd(0.1,0.1,1,1)*2-1;%symmetric beta between -1 and 1
+        else
+            %sample from symmetric beta distribution
+            beta=betarnd(alpha,alpha,1,1)*2-1;%symmetric beta between -1 and 1
+        end
+        StimulusSettings.NoiseVolume=(abs(beta)*noiseRange)+noiseMin;
+        StimulusSettings.SignalVolume=(abs(beta)*signalRange)+signalMin;
 end
 
+%decide whether to embed signal or not
+switch TaskParameters.GUIMeta.BiasVersion.String{TaskParameters.GUI.BiasVersion}
+    case {'None'}
+        CurrentBias=.5;
+        BpodSystem.Data.Custom.BlockBias(iTrial)=CurrentBias;
+
+    case {'Soft'}
+        if iTrial<TaskParameters.GUI.EasyTrials %make beta and random embed signal for easy trials
+            CurrentBias=.5;
+        else
+            CurrentBias=1-min(.9,max(.1,nansum(BpodSystem.Data.Custom.ResponseLeft)./sum(~isnan(BpodSystem.Data.Custom.ResponseLeft))));
+        end
+        BpodSystem.Data.Custom.BlockBias(iTrial)=CurrentBias;
+        
+    case 'Block'
+        %look up current bias
+        CurrentBias=BpodSystem.Data.Custom.BlockBias(iTrial+1);
+end
+StimulusSettings.EmbedSignal=randsample(0:1,1,1,[1-CurrentBias CurrentBias]);
+% fprintf('CurrentBias %2.1f\tBlockTrial %2.1f\n',CurrentBias,BpodSystem.Data.Custom.BlockTrial(iTrial+1));
 if BpodSystem.Data.Custom.RepeatMode(iTrial+1) %overwrite stimulus difficult and identity if in repeat mode
     StimulusSettings.EmbedSignal=BpodSystem.Data.Custom.EmbedSignal(iTrial);
     StimulusSettings.SignalVolume=BpodSystem.Data.Custom.SignalVolume(iTrial);

@@ -40,9 +40,16 @@ switch Action
         set(AxesHandles.HandleOutcome,'TickDir', 'out','XLim',[0, nTrialsToShow],'YLim',[-1.25 1.25],'YTick',ytick,'YTickLabel', ytickLabelStr,'FontSize', 13);
         %xlabel(AxesHandles.HandleOutcome, 'Trial#', 'FontSize', 14);
         hold(AxesHandles.HandleOutcome, 'on');
-        BpodSystem.GUIHandles.OutcomePlot.PsycAud = line(AxesHandles.HandlePsycAud,[-1 1],[.5 .5], 'LineStyle','none','Marker','o','MarkerEdge','k','MarkerFace','k', 'MarkerSize',6,'Visible','off');
-        BpodSystem.GUIHandles.OutcomePlot.PsycAudFit = line(AxesHandles.HandlePsycAud,[-1. 1.],[.5 .5],'color','k','Visible','off');
-        
+        BpodSystem.GUIHandles.OutcomePlot.PsycAud = line(AxesHandles.HandlePsycAud,[-100 -101],[-1 -1], 'LineStyle','none','Marker','o','MarkerEdge','k','MarkerFace','k', 'MarkerSize',6,'Visible','off');
+        BpodSystem.GUIHandles.OutcomePlot.PsycAudBlock1 = line(AxesHandles.HandlePsycAud,[-100 -101],[-1 -1], 'LineStyle','none','Marker','o','MarkerEdge','b','MarkerFace','b', 'MarkerSize',3,'Visible','off');
+        BpodSystem.GUIHandles.OutcomePlot.PsycAudBlock2 = line(AxesHandles.HandlePsycAud,[-100 -101],[-1 -1], 'LineStyle','none','Marker','o','MarkerEdge','c','MarkerFace','c', 'MarkerSize',3,'Visible','off');
+        BpodSystem.GUIHandles.OutcomePlot.PsycAudBlock3 = line(AxesHandles.HandlePsycAud,[-100 -101],[-1 -1], 'LineStyle','none','Marker','o','MarkerEdge','m','MarkerFace','m', 'MarkerSize',3,'Visible','off');
+
+        BpodSystem.GUIHandles.OutcomePlot.PsycAudFit = line(AxesHandles.HandlePsycAud,[-100 -101],[-1 -1],'color','k','Visible','off');
+        BpodSystem.GUIHandles.OutcomePlot.PsycAudFitBlock1 = line(AxesHandles.HandlePsycAud,[-100 -101],[.5 .5],'color','b','Visible','off');
+        BpodSystem.GUIHandles.OutcomePlot.PsycAudFitBlock2 = line(AxesHandles.HandlePsycAud,[-100 -101],[.5 .5],'color','c','Visible','off');
+        BpodSystem.GUIHandles.OutcomePlot.PsycAudFitBlock3 = line(AxesHandles.HandlePsycAud,[-100 -101],[.5 .5],'color','m','Visible','off');
+
         switch BpodSystem.Data.Custom.Variation
             case {'noise','both','none'}
                 switch TaskParameters.GUIMeta.DecisionVariable.String{TaskParameters.GUI.DecisionVariable}
@@ -237,8 +244,7 @@ switch Action
                         PsycX = grpstats(BpodSystem.Data.Custom.NoiseVolumeRescaled(~ndxNan),(BinIdx(~ndxNan)),'mean');
                         BpodSystem.GUIHandles.OutcomePlot.PsycAud.YData = PsycY;
                         BpodSystem.GUIHandles.OutcomePlot.PsycAud.XData = PsycX;
-                        
-                        
+                                                
                         %fit
                         BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData = linspace(-1,1,100);
                         mdl=fitglm(AudDV,BpodSystem.Data.Custom.ResponseLeft,'exclude',ndxNan,'distribution','binomial');
@@ -248,18 +254,34 @@ switch Action
                         AudDV(BpodSystem.Data.Custom.EmbedSignal(1:numel(BpodSystem.Data.Custom.ResponseLeft))==0)=0;
                         AudBinNumbers=[0:5:70];
                         BinIdx = discretize(AudDV,AudBinNumbers);%unelegant! revise!
-                        PsycY = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan),(BinIdx(~ndxNan)),'mean');
-                        PsycX = grpstats(AudDV(~ndxNan),(BinIdx(~ndxNan)),'mean');
-                        BpodSystem.GUIHandles.OutcomePlot.PsycAud.YData = PsycY;
-                        BpodSystem.GUIHandles.OutcomePlot.PsycAud.XData = PsycX;
-                        
-                        
-                        BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData = linspace(0,70,100);
-                        ndxSignal=AudDV~=0;
-                        mdl=fitglm(AudDV,BpodSystem.Data.Custom.ResponseLeft,'exclude',ndxNan&~ndxSignal,'distribution','binomial');
-                        BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.YData = glmval(mdl.Coefficients.Estimate,BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData,'logit');
+                        if TaskParameters.GUI.BiasVersion==3
+                            for k=1:3
+                                biasBlock=TaskParameters.GUI.BiasTable.Signal(k);
+                                ndxBlock=~ndxNan&BpodSystem.Data.Custom.BlockBias(1:iTrial)==biasBlock;
+                                PsycY = grpstats(BpodSystem.Data.Custom.ResponseLeft(ndxBlock),(BinIdx(ndxBlock)),'mean');
+                                PsycX = grpstats(AudDV(ndxBlock),(BinIdx(ndxBlock)),'mean');
+                                eval(['BpodSystem.GUIHandles.OutcomePlot.PsycAudBlock' num2str(k) '.YData = PsycY;']);
+                                eval(['BpodSystem.GUIHandles.OutcomePlot.PsycAudBlock' num2str(k) '.XData = PsycX;']);
+                                eval(['BpodSystem.GUIHandles.OutcomePlot.PsycAudFitBlock' num2str(k) '.XData = linspace(0,70,100);']);
+                                ndxSignal=AudDV~=0;
+                                if sum(ndxBlock&ndxSignal)>5
+                                    
+                                    mdl=fitglm(AudDV,BpodSystem.Data.Custom.ResponseLeft,'exclude',~(ndxBlock&ndxSignal),'distribution','binomial');
+                                    eval(['BpodSystem.GUIHandles.OutcomePlot.PsycAudFitBlock' num2str(k)...
+                                        '.YData = glmval(mdl.Coefficients.Estimate,BpodSystem.GUIHandles.OutcomePlot.PsycAudFitBlock' num2str(k) '.XData,''logit'');']);
+                                end
+                            end
+                        else
+                            PsycY = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan),(BinIdx(~ndxNan)),'mean');
+                            PsycX = grpstats(AudDV(~ndxNan),(BinIdx(~ndxNan)),'mean');
+                            BpodSystem.GUIHandles.OutcomePlot.PsycAud.YData = PsycY;
+                            BpodSystem.GUIHandles.OutcomePlot.PsycAud.XData = PsycX;
+                            BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData = linspace(0,70,100);
+                            ndxSignal=AudDV~=0;
+                            mdl=fitglm(AudDV,BpodSystem.Data.Custom.ResponseLeft,'exclude',ndxNan&~ndxSignal,'distribution','binomial');
+                            BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.YData = glmval(mdl.Coefficients.Estimate,BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData,'logit');
+                        end
 
-                        
                 end
             end
         end

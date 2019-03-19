@@ -8,14 +8,32 @@ path=('C:\Users\Katharina\BpodUser\Data\');
 files=dir(fullfile(path,'\*\DetectionConfidence\Session Settings\*.mat'));
 for f=1:length(files)
     load(fullfile(files(f).folder,files(f).name))
-    ProtocolSettings.GUI.LED1_amp = 5;
-    ProtocolSettings.GUI.LED2_amp = 0;
-    ProtocolSettings.GUI.PhotometryOn = 0;
-    ProtocolSettings.GUI.LED1_f = 531;
-    ProtocolSettings.GUI.LED2_f = 0;%211
-    ProtocolSettings.GUI.PostTrialRecording = 0;%sets Time that will be recorded after trial end
-    ProtocolSettings.GUIPanels.Photometry = {'LED1_amp', 'LED2_amp', 'PhotometryOn', 'LED1_f', 'LED2_f','PostTrialRecording'};
-    ProtocolSettings.GUITabs.General = {'General','Photometry'};
+
+    ProtocolSettings.GUI=rmfield(ProtocolSettings.GUI,'BiasCorrection');
+    ProtocolSettings.GUIMeta=rmfield(ProtocolSettings.GUIMeta,'BiasCorrection');
+    ProtocolSettings.GUIPanels.Choice(strcmp(ProtocolSettings.GUIPanels.Choice,'BiasCorrection'))=[];
+
+    ProtocolSettings.GUI.BiasVersion = 3;
+    ProtocolSettings.GUIMeta.BiasVersion.Style = 'popupmenu';
+    ProtocolSettings.GUIMeta.BiasVersion.String = {'None','Soft','Block'};%Soft: use for bias correction, calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
+    ProtocolSettings.GUI.BiasTable.Signal=[.3 .5 .7]';
+    ProtocolSettings.GUI.BiasTable.BlockLength=[2000 0 0]';
+    ProtocolSettings.GUIMeta.BiasTable.Style = 'table';
+    ProtocolSettings.GUIMeta.BiasTable.String = 'Bias blocks';
+    ProtocolSettings.GUIMeta.BiasTable.ColumnLabel = {'signal bias','trials'};
+
+    ProtocolSettings.GUIPanels.BiasVersion={'BiasVersion'};
+    ProtocolSettings.GUIPanels.BiasTable={'BiasTable'};
+    ProtocolSettings.GUITabs.Stimulus = {'Stimulus','NoiseVolumeTable','ContinuousTable','BiasVersion','BiasTable'};
+
+%     ProtocolSettings.GUI.LED1_amp = 5;
+%     ProtocolSettings.GUI.LED2_amp = 0;
+%     ProtocolSettings.GUI.PhotometryOn = 0;
+%     ProtocolSettings.GUI.LED1_f = 531;
+%     ProtocolSettings.GUI.LED2_f = 0;%211
+%     ProtocolSettings.GUI.PostTrialRecording = 0;%sets Time that will be recorded after trial end
+%     ProtocolSettings.GUIPanels.Photometry = {'LED1_amp', 'LED2_amp', 'PhotometryOn', 'LED1_f', 'LED2_f','PostTrialRecording'};
+%     ProtocolSettings.GUITabs.General = {'General','Photometry'};
 
     %BruteForce: presents the same stimulus until a correct choice is made, then resumes stimulus sequence; Soft: calculates bias over all trials and presents non-prefered stimulus with p=1-bias.% ProtocolSettings.GUI.BetaParam=0.1;
     % ProtocolSettings.GUI.ContinuousTable.NoiseLimits=[min(ProtocolSettings.GUI.NoiseVolumeTable.NoiseVolume);max(ProtocolSettings.GUI.NoiseVolumeTable.NoiseVolume)];

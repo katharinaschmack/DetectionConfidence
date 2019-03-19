@@ -41,12 +41,25 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.ContinuousTable.String = 'Decision variable';
     TaskParameters.GUIMeta.ContinuousTable.ColumnLabel = {'noiseLims','signalLims'};
     
+    TaskParameters.GUI.BiasVersion = 3;
+    TaskParameters.GUIMeta.BiasVersion.Style = 'popupmenu';
+    TaskParameters.GUIMeta.BiasVersion.String = {'None','Soft','Block'};%Soft: use for bias correction, calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
+    TaskParameters.GUI.BiasTable.Signal=[.3 .5 .7]';
+    TaskParameters.GUI.BiasTable.BlockLength=[2000 0 0]';
+    TaskParameters.GUIMeta.BiasTable.Style = 'table';
+    TaskParameters.GUIMeta.BiasTable.String = 'Bias blocks';
+    TaskParameters.GUIMeta.BiasTable.ColumnLabel = {'signal bias','trials'};
+
     
     TaskParameters.GUI.EasyTrials=20;
     TaskParameters.GUI.StimDuration=0.1;
     TaskParameters.GUIPanels.Stimulus = {'DecisionVariable','BetaParam','EasyTrials','StimDuration'};
     TaskParameters.GUIPanels.NoiseVolumeTable ={'NoiseVolumeTable'};
     TaskParameters.GUIPanels.ContinuousTable ={'ContinuousTable'};
+    TaskParameters.GUIPanels.BiasVersion={'BiasVersion'};
+    TaskParameters.GUIPanels.BiasTable={'BiasTable'};
+    
+
     
     TaskParameters.GUI.PreStimDurationSelection = 3;
     TaskParameters.GUIMeta.PreStimDurationSelection.Style = 'popupmenu';
@@ -76,14 +89,11 @@ if isempty(fieldnames(TaskParameters))
         'RewardAmountCenterSelection','RewardAmountCenterEasyTrials','CoutEarlyTimeout'};
     
     %Choice
-    TaskParameters.GUI.ChoiceDeadline = 5; %Maximal Interval for choice after stimulus presentAfterTrialIntervalon
-    TaskParameters.GUI.BiasCorrection = 4;
-    TaskParameters.GUIMeta.BiasCorrection.Style = 'popupmenu';
-    TaskParameters.GUIMeta.BiasCorrection.String = {'None','BruteForce','Soft','PerLevel'};%BruteForce: presents the same stimulus until a correct choice is made, then resumes stimulus sequence; Soft: calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
+    TaskParameters.GUI.ChoiceDeadline = 5; %Maximal Interval for choice after stimulus presentAfterTrialIntervalon   
     TaskParameters.GUI.RewardAmountCorrect = 5;%reward amount lateral ports (marion 5)
     TaskParameters.GUI.RewardAmountError = 0;%reward amount lateral ports (marion 5)
     TaskParameters.GUI.ErrorTimeout = 0;%time out for errors
-    TaskParameters.GUIPanels.Choice = {'ChoiceDeadline','BiasCorrection','RewardAmountCorrect','RewardAmountError','ErrorTimeout'};%,'Deplete','DepleteRate','Jackpot','JackpotMin','JackpotTime'};
+    TaskParameters.GUIPanels.Choice = {'ChoiceDeadline','RewardAmountCorrect','RewardAmountError','ErrorTimeout'};%,'Deplete','DepleteRate','Jackpot','JackpotMin','JackpotTime'};
     
     %Feedback delay %UPDATE TO GRAY OUT IRRELEVANT FIELDS
     TaskParameters.GUI.FeedbackDelaySelection = 1;
@@ -137,7 +147,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.Figures.OutcomePlot.Position = [0, 600, 1000, 400];
     
     TaskParameters.GUITabs.General = {'General','Photometry'};
-    TaskParameters.GUITabs.Stimulus = {'Stimulus','NoiseVolumeTable','ContinuousTable'};
+    TaskParameters.GUITabs.Stimulus = {'Stimulus','NoiseVolumeTable','ContinuousTable','BiasVersion','BiasTable'};
     TaskParameters.GUITabs.Timing = {'Timing'};
     TaskParameters.GUITabs.Feedback = {'Sampling','Choice','FeedbackDelay'};
     TaskParameters.GUITabs.Plots = {'ShowPlots'};

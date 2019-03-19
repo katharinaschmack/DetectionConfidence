@@ -4,12 +4,10 @@ global TaskParameters
 %% OutcomeRecord (if not before first trial)
 if iTrial>0
     
-
     %get states & events of this trial
     statesThisTrial = BpodSystem.Data.RawData.OriginalStateNamesByNumber{iTrial}(BpodSystem.Data.RawData.OriginalStateData{iTrial});
     if isfield(BpodSystem.Data.RawEvents.Trial{iTrial},'Events') %not sure why this is necessary: why can there be trials without events if CenterPortIn is always necessary to proceed?
-        eventsThisTrial = fieldnames(BpodSystem.Data.RawEvents.Trial{iTrial}.Events)';
-        
+        eventsThisTrial = fieldnames(BpodSystem.Data.RawEvents.Trial{iTrial}.Events)';        
         
         %get port IDs
         ports=num2str(TaskParameters.GUI.Ports_LMR);
@@ -80,7 +78,6 @@ if iTrial>0
                 else %and got out, in and stayed until choice deadline over
                     CinDuration=BpodSystem.Data.RawEvents.Trial{iTrial}.States.EndOfTrial(2) - cin(1);
                 end
-                
             end
         else
             CinDuration=nan;
@@ -232,7 +229,6 @@ if iTrial>0
                 WaitingTime = BpodSystem.Data.RawEvents.Trial{iTrial}.States.LoutError_GracePeriod(end,2) - ...
                     BpodSystem.Data.RawEvents.Trial{iTrial}.States.LinError_GraceStart(1,1);
             end
-            
         else
             WaitingTime = nan;
         end
@@ -355,12 +351,9 @@ if iTrial>0
         
         BpodSystem.Data.Custom.PsychtoolboxStartup=false;
         BpodSystem.Data.Custom.EmbedSignal(iTrial)=nan;
-        BpodSystem.Data.Custom.RepeatMode(iTrial)=false;
-        
-        
+        BpodSystem.Data.Custom.RepeatMode(iTrial)=false;        
     end
-else
-    
+else   
     BpodSystem.Data.Custom.BeforeTrialInterval = [];
     BpodSystem.Data.Custom.CoutEarly = [];
     BpodSystem.Data.Custom.EarlyWithdrawal = [];
@@ -388,7 +381,6 @@ else
     BpodSystem.Data.Custom.EmbedSignal=[];
     BpodSystem.Data.Custom.RepeatMode=[];
     BpodSystem.Data.Custom.NoiseVolumeRescaled=[];
-    
     
 end
 
@@ -539,10 +531,24 @@ else
     BpodSystem.Data.Custom.AfterTrialInterval(iTrial+1) = TaskParameters.GUI.AfterTrialInterval;
 end
 
+%update Bias
+if iTrial>0
+    tableIdx=TaskParameters.GUI.BiasTable.Signal==BpodSystem.Data.Custom.BlockBias(iTrial);
+    CurrentBlockLength=TaskParameters.GUI.BiasTable.BlockLength(tableIdx);
+    if BpodSystem.Data.Custom.BlockTrial(iTrial)<CurrentBlockLength
+        BpodSystem.Data.Custom.BlockBias(iTrial+1)=BpodSystem.Data.Custom.BlockBias(iTrial);
+        BpodSystem.Data.Custom.BlockTrial(iTrial+1)=BpodSystem.Data.Custom.BlockTrial(iTrial)+1;
+    else
+        BpodSystem.Data.Custom.BlockBias(iTrial+1)=...
+            randsample(TaskParameters.GUI.BiasTable.Signal(~tableIdx&TaskParameters.GUI.BiasTable.BlockLength>0),1);
+        BpodSystem.Data.Custom.BlockTrial(iTrial+1)=1;
+    end
+else
+    BpodSystem.Data.Custom.BlockBias=randsample(TaskParameters.GUI.BiasTable.Signal(TaskParameters.GUI.BiasTable.BlockLength>0),1);%prepare block bias for first trial
+    BpodSystem.Data.Custom.BlockTrial=1;%prepare block bias for first trial
+end
 
-
-
-%otherwise create new stimulus
+%create new stimulus
 PrepareStimulus(iTrial);
 
 %reward depletion %UPDATE HERE IF BIAS CORRECTION IS NEEDED
