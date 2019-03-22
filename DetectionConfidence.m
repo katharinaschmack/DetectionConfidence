@@ -230,7 +230,7 @@ TaskParameters = BpodParameterGUI('sync', TaskParameters);
 if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
     site = questdlg('Where are you recording from?', ...
         'photometry site', ...
-        'rightVS','leftTS','rightVS','leftVS');
+        'rightVS','leftVS','leftTS','rightVS');
     BpodSystem.Data.Custom.PhotometrySite=site;
 end
 
