@@ -139,7 +139,7 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIPanels.Photometry = {'LED1_amp', 'LED2_amp', 'PhotometryOn', 'LED1_f', 'LED2_f','PostTrialRecording'};
     TaskParameters.GUI.LED1_amp = 2.5;
     TaskParameters.GUI.LED2_amp = 2.5;
-    TaskParameters.GUI.PhotometryOn = 0;
+    TaskParameters.GUI.PhotometryOn = 0;%2
     TaskParameters.GUI.LED1_f = 0;%531
     TaskParameters.GUI.LED2_f = 0;%211
     TaskParameters.GUI.PostTrialRecording = 2;%sets Time that will be recorded after trial end
@@ -230,19 +230,35 @@ TaskParameters = BpodParameterGUI('sync', TaskParameters);
 if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
     site = questdlg('Where are you recording from?', ...
         'photometry site', ...
-        'rightVS','leftTS','rightVS');
+        'rightVS','leftTS','rightVS','leftVS');
     BpodSystem.Data.Custom.PhotometrySite=site;
+end
 
+%% alternate LED modulation mode
+if TaskParameters.GUI.PhotometryOn==2
+    % store initial LED settings
+    storedLED1_amp = TaskParameters.GUI.LED1_amp;
+    storedLED2_amp = TaskParameters.GUI.LED2_amp;
 end
 
 while RunSession
 
+   if TaskParameters.GUI.PhotometryOn==2
+       LEDmode = rem(iTrial, 3);
+       switch LEDmode
+           case 1
+               TaskParameters.GUI.LED1_amp = storedLED1_amp;
+               TaskParameters.GUI.LED2_amp = storedLED2_amp;
+           case 2
+               TaskParameters.GUI.LED1_amp = storedLED1_amp;
+               TaskParameters.GUI.LED2_amp = 0;
+           case 0
+               TaskParameters.GUI.LED1_amp = 0;
+               TaskParameters.GUI.LED2_amp = storedLED2_amp;
+       end
+   end    
     TaskParameters = BpodParameterGUI('sync', TaskParameters);
-    
-    % SHUJINGs CODE, not sure whether I want this
-    %     BpodSystem.ProtocolSettings = S; % copy settings back prior to saving
-    %     SaveBpodProtocolSettings;
-    
+        
     sma = stateMatrix(iTrial);
     SendStateMatrix(sma);
     %% prep data acquisition
