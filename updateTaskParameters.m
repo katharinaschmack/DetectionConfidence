@@ -4,27 +4,39 @@
 % NewProtocolSettings=ProtocolSettings;
 % load('C:\Users\Katharina\BpodUser\Data\Dummy Subject\DetectionConfidence\Session Settings\K01_confidence.mat')
 
-path=('C:\Users\Katharina\BpodUser\Data\');
+path=('C:\Users\root\BpodUser\Data\');
 files=dir(fullfile(path,'\*\DetectionConfidence\Session Settings\*.mat'));
 for f=1:length(files)
     load(fullfile(files(f).folder,files(f).name))
 
-    ProtocolSettings.GUI=rmfield(ProtocolSettings.GUI,'BiasCorrection');
-    ProtocolSettings.GUIMeta=rmfield(ProtocolSettings.GUIMeta,'BiasCorrection');
-    ProtocolSettings.GUIPanels.Choice(strcmp(ProtocolSettings.GUIPanels.Choice,'BiasCorrection'))=[];
-
-    ProtocolSettings.GUI.BiasVersion = 3;
-    ProtocolSettings.GUIMeta.BiasVersion.Style = 'popupmenu';
-    ProtocolSettings.GUIMeta.BiasVersion.String = {'None','Soft','Block'};%Soft: use for bias correction, calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
-    ProtocolSettings.GUI.BiasTable.Signal=[.3 .5 .7]';
-    ProtocolSettings.GUI.BiasTable.BlockLength=[2000 0 0]';
-    ProtocolSettings.GUIMeta.BiasTable.Style = 'table';
-    ProtocolSettings.GUIMeta.BiasTable.String = 'Bias blocks';
-    ProtocolSettings.GUIMeta.BiasTable.ColumnLabel = {'signal bias','trials'};
-
-    ProtocolSettings.GUIPanels.BiasVersion={'BiasVersion'};
-    ProtocolSettings.GUIPanels.BiasTable={'BiasTable'};
-    ProtocolSettings.GUITabs.Stimulus = {'Stimulus','NoiseVolumeTable','ContinuousTable','BiasVersion','BiasTable'};
+%     ProtocolSettings.GUI=rmfield(ProtocolSettings.GUI,'BiasCorrection');
+%     ProtocolSettings.GUIMeta=rmfield(ProtocolSettings.GUIMeta,'BiasCorrection');
+%     ProtocolSettings.GUIPanels.Choice(strcmp(ProtocolSettings.GUIPanels.Choice,'BiasCorrection'))=[];
+% 
+%     ProtocolSettings.GUI.BiasVersion = 3;
+%     ProtocolSettings.GUIMeta.BiasVersion.Style = 'popupmenu';
+%     ProtocolSettings.GUIMeta.BiasVersion.String = {'None','Soft','Block'};%Soft: use for bias correction, calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
+%     ProtocolSettings.GUI.BiasTable.Signal=[.3 .5 .7]';
+%     ProtocolSettings.GUI.BiasTable.BlockLength=[2000 0 0]';
+%     ProtocolSettings.GUIMeta.BiasTable.Style = 'table';
+%     ProtocolSettings.GUIMeta.BiasTable.String = 'Bias blocks';
+%     ProtocolSettings.GUIMeta.BiasTable.ColumnLabel = {'signal bias','trials'};
+% 
+%     ProtocolSettings.GUIPanels.BiasVersion={'BiasVersion'};
+%     ProtocolSettings.GUIPanels.BiasTable={'BiasTable'};
+%     ProtocolSettings.GUITabs.Stimulus = {'Stimulus','NoiseVolumeTable','ContinuousTable','BiasVersion','BiasTable'};
+ProtocolSettings.GUI.ch1=1;
+    ProtocolSettings.GUIPanels.Photometry = {'PhotometryOn','LED1_amp', 'LED2_amp','ch1','ch2','LED1_f', 'LED2_f','PostTrialRecording'};
+    ProtocolSettings.GUI.LED1_amp = 2.5;
+    ProtocolSettings.GUI.LED2_amp = 2.5;
+    ProtocolSettings.GUI.PhotometryOn = 0;%2
+    ProtocolSettings.GUI.LED1_f = 0;%531
+    ProtocolSettings.GUI.LED2_f = 0;%211
+    ProtocolSettings.GUI.PostTrialRecording = 2;%sets Time that will be recorded after trial end
+    ProtocolSettings.GUI.ch1 = 1;
+    ProtocolSettings.GUIMeta.ch1.Style = 'checkbox';
+    ProtocolSettings.GUI.ch2 = 1;
+    ProtocolSettings.GUIMeta.ch2.Style = 'checkbox';
 
 %     ProtocolSettings.GUI.LED1_amp = 5;
 %     ProtocolSettings.GUI.LED2_amp = 0;

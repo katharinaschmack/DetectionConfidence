@@ -136,14 +136,18 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.ShowFeedback.Style = 'checkbox';
     TaskParameters.GUIPanels.ShowPlots = {'ShowPsycAud','ShowVevaiometric','ShowTrialRate','ShowFix','ShowST','ShowFeedback'};
     
-    TaskParameters.GUIPanels.Photometry = {'LED1_amp', 'LED2_amp', 'PhotometryOn', 'LED1_f', 'LED2_f','PostTrialRecording'};
+    TaskParameters.GUIPanels.Photometry = {'PhotometryOn','LED1_amp', 'LED2_amp','ch1','ch2','LED1_f', 'LED2_f','PostTrialRecording'};
     TaskParameters.GUI.LED1_amp = 2.5;
     TaskParameters.GUI.LED2_amp = 2.5;
     TaskParameters.GUI.PhotometryOn = 0;%2
     TaskParameters.GUI.LED1_f = 0;%531
     TaskParameters.GUI.LED2_f = 0;%211
     TaskParameters.GUI.PostTrialRecording = 2;%sets Time that will be recorded after trial end
-    
+    TaskParameters.GUI.ch1 = 1;
+    TaskParameters.GUIMeta.ch1.Style = 'checkbox';
+    TaskParameters.GUI.ch2 = 1;
+    TaskParameters.GUIMeta.ch2.Style = 'checkbox';
+
     TaskParameters.Figures.OutcomePlot.Position = [0, 600, 1000, 400];
     
     TaskParameters.GUITabs.General = {'General','Photometry'};
@@ -154,7 +158,6 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI = orderfields(TaskParameters.GUI);
     
 end
-%% SHUJINGS CODE, not sure whether I need this, answer: yes, I do!
 BpodParameterGUI('init', TaskParameters);
 BpodSystem.Pause = 1;
 HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
@@ -258,7 +261,9 @@ while RunSession
        end
    end    
     TaskParameters = BpodParameterGUI('sync', TaskParameters);
-        
+    BpodSystem.ProtocolSettings = TaskParameters; % copy settings back prior to saving
+    SaveBpodProtocolSettings;
+
     sma = stateMatrix(iTrial);
     SendStateMatrix(sma);
     %% prep data acquisition
