@@ -59,7 +59,7 @@ end
 switch TaskParameters.GUIMeta.BiasVersion.String{TaskParameters.GUI.BiasVersion}
     case {'None'}
         CurrentBias=.5;
-        BpodSystem.Data.Custom.BlockBias(iTrial)=CurrentBias;
+        BpodSystem.Data.Custom.BlockBias(iTrial+1)=CurrentBias;
 
     case {'Soft'}
         if iTrial<TaskParameters.GUI.EasyTrials %make beta and random embed signal for easy trials
@@ -67,7 +67,7 @@ switch TaskParameters.GUIMeta.BiasVersion.String{TaskParameters.GUI.BiasVersion}
         else
             CurrentBias=1-min(.9,max(.1,nansum(BpodSystem.Data.Custom.ResponseLeft)./sum(~isnan(BpodSystem.Data.Custom.ResponseLeft))));
         end
-        BpodSystem.Data.Custom.BlockBias(iTrial)=CurrentBias;
+        BpodSystem.Data.Custom.BlockBias(iTrial+1)=CurrentBias;
         
     case 'Block'
         %look up current bias
