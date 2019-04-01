@@ -381,7 +381,7 @@ else
     BpodSystem.Data.Custom.EmbedSignal=[];
     BpodSystem.Data.Custom.RepeatMode=[];
     BpodSystem.Data.Custom.NoiseVolumeRescaled=[];
-    
+    BpodSystem.Data.Custom.currentBlockNumber=1;
 end
 
 %% update times & stimulus
@@ -542,13 +542,20 @@ if iTrial>0
         BpodSystem.Data.Custom.BlockBias(iTrial+1)=...
             randsample(TaskParameters.GUI.BiasTable.Signal(~tableIdx&TaskParameters.GUI.BiasTable.BlockLength>0),1);
         BpodSystem.Data.Custom.BlockTrial(iTrial+1)=1;
+        BpodSystem.Data.Custom.currentBlockNumber=BpodSystem.Data.Custom.currentBlockNumber+1;
     end
 else
     BpodSystem.Data.Custom.BlockBias=randsample(TaskParameters.GUI.BiasTable.Signal(TaskParameters.GUI.BiasTable.BlockLength>0),1);%prepare block bias for first trial
     BpodSystem.Data.Custom.BlockTrial=1;%prepare block bias for first trial
 end
-
-%create new stimulus
+BpodSystem.Data.Custom.BiasVersion(iTrial+1)=TaskParameters.GUI.BiasVersion;
+switch TaskParameters.GUIMeta.BiasVersion.String{TaskParameters.GUI.BiasVersion}
+    case {'None','Soft'}
+        BpodSystem.Data.Custom.BlockNumber(iTrial+1)=0;
+    case {'Block'}
+        BpodSystem.Data.Custom.BlockNumber(iTrial+1)=BpodSystem.Data.Custom.currentBlockNumber;
+end
+                %create new stimulus
 PrepareStimulus(iTrial);
 
 %reward depletion %UPDATE HERE IF BIAS CORRECTION IS NEEDED
