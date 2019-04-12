@@ -254,7 +254,7 @@ switch Action
                         AudDV(BpodSystem.Data.Custom.EmbedSignal(1:numel(BpodSystem.Data.Custom.ResponseLeft))==0)=0;
                         AudBinNumbers=[0:5:70];
                         BinIdx = discretize(AudDV,AudBinNumbers);%unelegant! revise!
-                        if TaskParameters.GUI.BiasVersion==3
+                        if TaskParameters.GUI.BiasVersion>2
                             for k=1:3
                                 biasBlock=TaskParameters.GUI.BiasTable.Signal(k);
                                 ndxBlock=~ndxNan&BpodSystem.Data.Custom.BlockBias(1:iTrial)==biasBlock;

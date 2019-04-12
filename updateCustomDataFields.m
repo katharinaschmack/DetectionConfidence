@@ -537,25 +537,31 @@ if iTrial>0
     CurrentBlockLength=TaskParameters.GUI.BiasTable.BlockLength(tableIdx);
     if BpodSystem.Data.Custom.BlockTrial(iTrial)<CurrentBlockLength
         BpodSystem.Data.Custom.BlockBias(iTrial+1)=BpodSystem.Data.Custom.BlockBias(iTrial);
+        BpodSystem.Data.Custom.BlockNoise(iTrial+1)=BpodSystem.Data.Custom.BlockNoise(iTrial);
         BpodSystem.Data.Custom.BlockTrial(iTrial+1)=BpodSystem.Data.Custom.BlockTrial(iTrial)+1;
+%         BpodSystem.Data.Custom.currentBlockNumber=BpodSystem.Data.Custom.currentBlockNumber;
     else
         BpodSystem.Data.Custom.BlockBias(iTrial+1)=...
-            randsample(TaskParameters.GUI.BiasTable.Signal(~tableIdx&TaskParameters.GUI.BiasTable.BlockLength>0),1);
+            randsample(TaskParameters.GUI.BiasTable.Signal,...
+            1,1,~ismember(TaskParameters.GUI.BiasTable.Signal,BpodSystem.Data.Custom.BlockBias(iTrial)));
+        BpodSystem.Data.Custom.BlockNoise(iTrial+1)=randsample(TaskParameters.GUI.BiasTable.Noise,...
+            1,1,~ismember(TaskParameters.GUI.BiasTable.Noise,BpodSystem.Data.Custom.BlockNoise(iTrial)));       
         BpodSystem.Data.Custom.BlockTrial(iTrial+1)=1;
         BpodSystem.Data.Custom.currentBlockNumber=BpodSystem.Data.Custom.currentBlockNumber+1;
     end
 else
-    BpodSystem.Data.Custom.BlockBias=randsample(TaskParameters.GUI.BiasTable.Signal(TaskParameters.GUI.BiasTable.BlockLength>0),1);%prepare block bias for first trial
+    BpodSystem.Data.Custom.BlockBias=randsample(TaskParameters.GUI.BiasTable.Signal,1,1,TaskParameters.GUI.BiasTable.BlockLength>0);%prepare block bias for first trial
+    BpodSystem.Data.Custom.BlockNoise=randsample(TaskParameters.GUI.BiasTable.Noise,1);%,1,1,TaskParameters.GUI.BiasTable.BlockLength>0);
     BpodSystem.Data.Custom.BlockTrial=1;%prepare block bias for first trial
 end
 BpodSystem.Data.Custom.BiasVersion(iTrial+1)=TaskParameters.GUI.BiasVersion;
 switch TaskParameters.GUIMeta.BiasVersion.String{TaskParameters.GUI.BiasVersion}
     case {'None','Soft'}
         BpodSystem.Data.Custom.BlockNumber(iTrial+1)=0;
-    case {'Block'}
+    case {'Block','Noise'}
         BpodSystem.Data.Custom.BlockNumber(iTrial+1)=BpodSystem.Data.Custom.currentBlockNumber;
 end
-                %create new stimulus
+%create new stimulus
 PrepareStimulus(iTrial);
 
 %reward depletion %UPDATE HERE IF BIAS CORRECTION IS NEEDED
