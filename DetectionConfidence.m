@@ -43,12 +43,13 @@ if isempty(fieldnames(TaskParameters))
     
     TaskParameters.GUI.BiasVersion = 3;
     TaskParameters.GUIMeta.BiasVersion.Style = 'popupmenu';
-    TaskParameters.GUIMeta.BiasVersion.String = {'None','Soft','Block'};%Soft: use for bias correction, calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
+    TaskParameters.GUIMeta.BiasVersion.String = {'None','Soft','Block','Noise'};%Soft: use for bias correction, calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
     TaskParameters.GUI.BiasTable.Signal=[.3 .5 .7]';
+    TaskParameters.GUI.BiasTable.Noise=[35 40 45]';
     TaskParameters.GUI.BiasTable.BlockLength=[2000 0 0]';
     TaskParameters.GUIMeta.BiasTable.Style = 'table';
     TaskParameters.GUIMeta.BiasTable.String = 'Bias blocks';
-    TaskParameters.GUIMeta.BiasTable.ColumnLabel = {'signal bias','trials'};
+    TaskParameters.GUIMeta.BiasTable.ColumnLabel = {'signal bias','noise','trials'};
 
     
     TaskParameters.GUI.EasyTrials=20;
@@ -136,14 +137,18 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUIMeta.ShowFeedback.Style = 'checkbox';
     TaskParameters.GUIPanels.ShowPlots = {'ShowPsycAud','ShowVevaiometric','ShowTrialRate','ShowFix','ShowST','ShowFeedback'};
     
-    TaskParameters.GUIPanels.Photometry = {'LED1_amp', 'LED2_amp', 'PhotometryOn', 'LED1_f', 'LED2_f','PostTrialRecording'};
+    TaskParameters.GUIPanels.Photometry = {'PhotometryOn','LED1_amp', 'LED2_amp','ch1','ch2','LED1_f', 'LED2_f','PostTrialRecording'};
     TaskParameters.GUI.LED1_amp = 2.5;
     TaskParameters.GUI.LED2_amp = 2.5;
-    TaskParameters.GUI.PhotometryOn = 0;
+    TaskParameters.GUI.PhotometryOn = 0;%2
     TaskParameters.GUI.LED1_f = 0;%531
     TaskParameters.GUI.LED2_f = 0;%211
     TaskParameters.GUI.PostTrialRecording = 2;%sets Time that will be recorded after trial end
-    
+    TaskParameters.GUI.ch1 = 1;
+    TaskParameters.GUIMeta.ch1.Style = 'checkbox';
+    TaskParameters.GUI.ch2 = 1;
+    TaskParameters.GUIMeta.ch2.Style = 'checkbox';
+
     TaskParameters.Figures.OutcomePlot.Position = [0, 600, 1000, 400];
     
     TaskParameters.GUITabs.General = {'General','Photometry'};
@@ -154,7 +159,6 @@ if isempty(fieldnames(TaskParameters))
     TaskParameters.GUI = orderfields(TaskParameters.GUI);
     
 end
-%% SHUJINGS CODE, not sure whether I need this, answer: yes, I do!
 BpodParameterGUI('init', TaskParameters);
 BpodSystem.Pause = 1;
 HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
@@ -230,19 +234,37 @@ TaskParameters = BpodParameterGUI('sync', TaskParameters);
 if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
     site = questdlg('Where are you recording from?', ...
         'photometry site', ...
-        'rightVS','leftTS','rightVS');
+        'rightVS','leftVS','leftTS','rightVS');
     BpodSystem.Data.Custom.PhotometrySite=site;
+end
 
+%% alternate LED modulation mode
+if TaskParameters.GUI.PhotometryOn==2
+    % store initial LED settings
+    storedLED1_amp = TaskParameters.GUI.LED1_amp;
+    storedLED2_amp = TaskParameters.GUI.LED2_amp;
 end
 
 while RunSession
 
+   if TaskParameters.GUI.PhotometryOn==2
+       LEDmode = rem(iTrial, 3);
+       switch LEDmode
+           case 1
+               TaskParameters.GUI.LED1_amp = storedLED1_amp;
+               TaskParameters.GUI.LED2_amp = storedLED2_amp;
+           case 2
+               TaskParameters.GUI.LED1_amp = storedLED1_amp;
+               TaskParameters.GUI.LED2_amp = 0;
+           case 0
+               TaskParameters.GUI.LED1_amp = 0;
+               TaskParameters.GUI.LED2_amp = storedLED2_amp;
+       end
+   end    
     TaskParameters = BpodParameterGUI('sync', TaskParameters);
-    
-    % SHUJINGs CODE, not sure whether I want this
-    %     BpodSystem.ProtocolSettings = S; % copy settings back prior to saving
-    %     SaveBpodProtocolSettings;
-    
+    BpodSystem.ProtocolSettings = TaskParameters; % copy settings back prior to saving
+    SaveBpodProtocolSettings;
+
     sma = stateMatrix(iTrial);
     SendStateMatrix(sma);
     %% prep data acquisition
