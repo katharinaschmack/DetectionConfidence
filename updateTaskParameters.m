@@ -5,7 +5,7 @@
 % load('C:\Users\Katharina\BpodUser\Data\Dummy Subject\DetectionConfidence\Session Settings\K01_confidence.mat')
 
 path=('C:\Users\Katharina\BpodUser\Data\');
-files=dir(fullfile(path,'\*\DetectionConfidence\Session Settings\*.mat'));
+files=dir(fullfile(path,'\K*\DetectionConfidence\Session Settings\*.mat'));
 for f=1:length(files)
     load(fullfile(files(f).folder,files(f).name))
 
@@ -90,7 +90,7 @@ for f=1:length(files)
     % end
     %
     %save new Settings
-    newfilename=strrep(files(f).name,'.mat','_photometry.mat');
+    newfilename=strrep(files(f).name,'.mat','_new.mat');
     save(fullfile(files(f).folder,newfilename),'ProtocolSettings');
     
 end
