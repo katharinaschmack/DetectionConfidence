@@ -8,6 +8,7 @@ global TaskParameters
 
 %% Task parameters
 TaskParameters = BpodSystem.ProtocolSettings;
+TaskParameters=rmfield(TaskParameters,'nidaq');
 if isempty(fieldnames(TaskParameters))
     %general
     TaskParameters.GUI.Ports_LMR = '123'; %Port IDs signal center noise
