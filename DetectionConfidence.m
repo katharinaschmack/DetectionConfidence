@@ -44,12 +44,13 @@ if isempty(fieldnames(TaskParameters))
     
     TaskParameters.GUI.BiasVersion = 3;
     TaskParameters.GUIMeta.BiasVersion.Style = 'popupmenu';
-    TaskParameters.GUIMeta.BiasVersion.String = {'None','Soft','Block'};%Soft: use for bias correction, calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
+    TaskParameters.GUIMeta.BiasVersion.String = {'None','Soft','Block','Noise'};%Soft: use for bias correction, calculates bias over all trials and presents non-prefered stimulus with p=1-bias.
     TaskParameters.GUI.BiasTable.Signal=[.3 .5 .7]';
+    TaskParameters.GUI.BiasTable.Noise=[35 40 45]';
     TaskParameters.GUI.BiasTable.BlockLength=[2000 0 0]';
     TaskParameters.GUIMeta.BiasTable.Style = 'table';
     TaskParameters.GUIMeta.BiasTable.String = 'Bias blocks';
-    TaskParameters.GUIMeta.BiasTable.ColumnLabel = {'signal bias','trials'};
+    TaskParameters.GUIMeta.BiasTable.ColumnLabel = {'signal bias','noise','trials'};
 
     
     TaskParameters.GUI.EasyTrials=20;
