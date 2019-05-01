@@ -544,8 +544,13 @@ if iTrial>0
         BpodSystem.Data.Custom.BlockBias(iTrial+1)=...
             randsample(TaskParameters.GUI.BiasTable.Signal,...
             1,1,~ismember(TaskParameters.GUI.BiasTable.Signal,BpodSystem.Data.Custom.BlockBias(iTrial)));
-        BpodSystem.Data.Custom.BlockNoise(iTrial+1)=randsample(TaskParameters.GUI.BiasTable.Noise,...
-            1,1,~ismember(TaskParameters.GUI.BiasTable.Noise,BpodSystem.Data.Custom.BlockNoise(iTrial)));       
+        switch TaskParameters.GUIMeta.BiasVersion.String{TaskParameters.GUI.BiasVersion}
+            case 'Noise'
+                BpodSystem.Data.Custom.BlockNoise(iTrial+1)=randsample(TaskParameters.GUI.BiasTable.Noise,...
+                    1,1,~ismember(TaskParameters.GUI.BiasTable.Noise,BpodSystem.Data.Custom.BlockNoise(iTrial)));
+            case {'Block','Soft','None'}
+                BpodSystem.Data.Custom.BlockNoise(iTrial+1)=BpodSystem.Data.Custom.BlockNoise(iTrial);
+        end
         BpodSystem.Data.Custom.BlockTrial(iTrial+1)=1;
         BpodSystem.Data.Custom.currentBlockNumber=BpodSystem.Data.Custom.currentBlockNumber+1;
     end

@@ -238,6 +238,15 @@ if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
     BpodSystem.Data.Custom.PhotometrySite=site;
 end
 
+%if TaskParameters.GUI.PharmacologyOn 
+    drug = questdlg('What did you administer?', ...
+        'drug condition', ...
+        'ketamine','placebo','ketamine');
+    BpodSystem.Data.Custom.Pharmacology=drug;
+%end
+
+
+
 %% alternate LED modulation mode
 if TaskParameters.GUI.PhotometryOn==2
     % store initial LED settings
