@@ -8,7 +8,7 @@ global TaskParameters
 
 %% Task parameters
 TaskParameters = BpodSystem.ProtocolSettings;
-TaskParameters=rmfield(TaskParameters,'nidaq');
+try TaskParameters=rmfield(TaskParameters,'nidaq');end
 if isempty(fieldnames(TaskParameters))
     %general
     TaskParameters.GUI.Ports_LMR = '123'; %Port IDs signal center noise
@@ -245,6 +245,10 @@ end
         'ketamine','placebo','ketamine');
     BpodSystem.Data.Custom.Pharmacology=drug;
 %end
+firstblock = questdlg('Which block do you want to start with?', ...
+    'first block', ...
+    '30','50','70','50');
+BpodSystem.Data.Custom.firstblock=firstblock;
 
 
 
