@@ -544,13 +544,29 @@ if iTrial>0
         BpodSystem.Data.Custom.BlockBias(iTrial+1)=...
             randsample(TaskParameters.GUI.BiasTable.Signal,...
             1,1,~ismember(TaskParameters.GUI.BiasTable.Signal,BpodSystem.Data.Custom.BlockBias(iTrial)));
-        BpodSystem.Data.Custom.BlockNoise(iTrial+1)=randsample(TaskParameters.GUI.BiasTable.Noise,...
-            1,1,~ismember(TaskParameters.GUI.BiasTable.Noise,BpodSystem.Data.Custom.BlockNoise(iTrial)));       
+        switch TaskParameters.GUIMeta.BiasVersion.String{TaskParameters.GUI.BiasVersion}
+            case 'Noise'
+                BpodSystem.Data.Custom.BlockNoise(iTrial+1)=randsample(TaskParameters.GUI.BiasTable.Noise,...
+                    1,1,~ismember(TaskParameters.GUI.BiasTable.Noise,BpodSystem.Data.Custom.BlockNoise(iTrial)));
+            case {'Block','Soft','None'}
+                BpodSystem.Data.Custom.BlockNoise(iTrial+1)=BpodSystem.Data.Custom.BlockNoise(iTrial);
+        end
         BpodSystem.Data.Custom.BlockTrial(iTrial+1)=1;
         BpodSystem.Data.Custom.currentBlockNumber=BpodSystem.Data.Custom.currentBlockNumber+1;
     end
 else
-    BpodSystem.Data.Custom.BlockBias=randsample(TaskParameters.GUI.BiasTable.Signal,1,1,TaskParameters.GUI.BiasTable.BlockLength>0);%prepare block bias for first trial
+    if isfield(BpodSystem.Data.Custom,'firstblock')
+        switch BpodSystem.Data.Custom.firstblock
+            case '30'
+                BpodSystem.Data.Custom.BlockBias=.3;
+            case '50'
+                BpodSystem.Data.Custom.BlockBias=.5;
+            case '70'
+                BpodSystem.Data.Custom.BlockBias=.7;
+        end
+    else
+        BpodSystem.Data.Custom.BlockBias=randsample(TaskParameters.GUI.BiasTable.Signal,1,1,TaskParameters.GUI.BiasTable.BlockLength>0);%prepare block bias for first trial
+    end
     BpodSystem.Data.Custom.BlockNoise=randsample(TaskParameters.GUI.BiasTable.Noise,1);%,1,1,TaskParameters.GUI.BiasTable.BlockLength>0);
     BpodSystem.Data.Custom.BlockTrial=1;%prepare block bias for first trial
 end

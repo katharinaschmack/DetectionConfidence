@@ -8,7 +8,7 @@ global TaskParameters
 
 %% Task parameters
 TaskParameters = BpodSystem.ProtocolSettings;
-TaskParameters=rmfield(TaskParameters,'nidaq');
+try TaskParameters=rmfield(TaskParameters,'nidaq');end
 if isempty(fieldnames(TaskParameters))
     %general
     TaskParameters.GUI.Ports_LMR = '123'; %Port IDs signal center noise
@@ -182,23 +182,14 @@ TaskParameters.nidaq.duration = 120;
 TaskParameters.nidaq.IsContinuous = true;
 TaskParameters.nidaq.updateInterval = 0.1; % save new data every n seconds
 BpodSystem.PluginObjects.Photometry.baselinePeriod = [0 1]; % kludge, FS
-startX = 0; % 0 defined as time from cue (because reward time can be variable depending upon outcomedelay)
 BpodSystem.ProtocolSettings = TaskParameters; % copy settings back because syncPhotometrySettings relies upon BpodSystem.ProtocolSettings
 if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
     TaskParameters = initPhotometry(TaskParameters);
 end
-%% photometry plots
-if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
-    updatePhotometryPlot('init');
-    %         prfh('init', 'baselinePeriod', [1 S.PreCsRecording])
+%% photometry plot
+if TaskParameters.GUI.PhotometryOn 
+    updatePhotometryPlotKatharina('init');
 end
-%% lick rasters for cs1 and cs2 ADD LATER
-% PhotometryRasterFcnList = {'lickNoLick_Sound_PhotometryRasters', 'LNL_Sound_pRasters_3Sounds', 'LNL_pRasters_bySound'};
-% BpodSystem.ProtocolFigures.lickRaster.fig = ensureFigure('lick_raster', 1);
-% BpodSystem.ProtocolFigures.lickRaster.AxSound1 = subplot(1, 3, 1); title('Sound 1');
-% BpodSystem.ProtocolFigures.lickRaster.AxSound2 = subplot(1, 3, 2); title('Sound 2');
-% BpodSystem.ProtocolFigures.lickRaster.AxSound3 = subplot(1, 3, 3); title('Sound 3');
-
 
 [filepath,filename,~]=fileparts(BpodSystem.DataPath);
 BpodSystem.Data.Custom.StimulusPath=fullfile(strrep(filepath,'Session Data','Session Stimuli'),filename);
@@ -238,6 +229,19 @@ if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
         'rightVS','leftVS','leftTS','rightVS');
     BpodSystem.Data.Custom.PhotometrySite=site;
 end
+
+% %if TaskParameters.GUI.PharmacologyOn 
+%     drug = questdlg('What did you administer?', ...
+%         'drug condition', ...
+%         'ketamine','placebo','ketamine');
+%     BpodSystem.Data.Custom.Pharmacology=drug;
+% %end
+% firstblock = questdlg('Which block do you want to start with?', ...
+%     'first block', ...
+%     '30','50','70','50');
+% BpodSystem.Data.Custom.firstblock=firstblock;
+
+
 
 %% alternate LED modulation mode
 if TaskParameters.GUI.PhotometryOn==2
@@ -306,59 +310,11 @@ while RunSession
     MainPlot(BpodSystem.GUIHandles.OutcomePlot,'update',iTrial);
     
     if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
-%         try % in case photometry hicupped
-            % saving data
-            processPhotometryOnline(iTrial);
-            startX=0;%BpodSystem.Data.Custom.RewardStartTime(iTrial);
-            %startX=BpodSystem.Data.Custom.StimulusStartTime(iTrial);
-            if ~isnan(startX)
-                updatePhotometryPlot('update', startX);
-                xlabel('Time from reward start (s)');
-            else
-                disp('No reward delivered, no photometry plotted.');
-            end
-%         catch
-%             disp('*** Problem with online photometry processing ***');
-%         end
-    end
-    
-    %     %% update photometry rasters WORK ON THIS LATER
-    %     try % in case photometry hicupped
-    %         if S.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
-    %             % Note that switchParameterCriterion not used for
-    %             % LNL_pRasters_bySound, but doesn't matter when
-    %             % supplied via varargin
-    %             prfh('Update', 'switchParameterCriterion', switchParameterCriterion, 'XLim', [-S.nidaq.duration, S.nidaq.duration]);
-    %             if any(blockTransitions) % block transition lines
-    %                 if ~isempty(BpodSystem.ProtocolFigures.phRaster.ax_ch1)
-    %                     for ah = BpodSystem.ProtocolFigures.phRaster.ax_ch1(2:end)
-    %                         plot(btx2, bty, '-r', 'Parent', ah);
-    %                     end
-    %                 end
-    %                 if ~isempty(BpodSystem.ProtocolFigures.phRaster.ax_ch2)
-    %                     for ah = BpodSystem.ProtocolFigures.phRaster.ax_ch2(2:end)
-    %                         plot(btx2, bty, '-r', 'Parent', ah);
-    %                     end
-    %                 end
-    %             end
-    %         end
-    %     end
-    %
-    %     %% lick rasters by sound
-    %     %             bpLickRaster2(SessionData, filtArg, zeroField, figName, ax)
-    %     bpLickRaster2({'SoundValveIndex', 1}, 'Cue', 'lick_raster', BpodSystem.ProtocolFigures.lickRaster.AxSound1, 'session'); hold on;
-    %     bpLickRaster2({'SoundValveIndex', 2}, 'Cue', 'lick_raster', BpodSystem.ProtocolFigures.lickRaster.AxSound2, 'session'); hold on; % make both rasters regardless of number of Sounds, it'll just be blank if you don't have that Sound
-    %     bpLickRaster2({'SoundValveIndex', 3}, 'Cue', 'lick_raster', BpodSystem.ProtocolFigures.lickRaster.AxSound3, 'session'); hold on;
-    %     if any(blockTransitions)
-    %         plot(btx, bty, '-r', 'Parent', BpodSystem.ProtocolFigures.lickRaster.AxSound1);
-    %         plot(btx, bty, '-r', 'Parent', BpodSystem.ProtocolFigures.lickRaster.AxSound2);
-    %         plot(btx, bty, '-r', 'Parent', BpodSystem.ProtocolFigures.lickRaster.AxSound3);
-    %         drawnow;
-    %     end
-    %     set([BpodSystem.ProtocolFigures.lickRaster.AxSound1 BpodSystem.ProtocolFigures.lickRaster.AxSound2 BpodSystem.ProtocolFigures.lickRaster.AxSound3], 'XLim', [startX, startX + S.nidaq.duration]);
-    %     xlabel(BpodSystem.ProtocolFigures.lickRaster.AxSound1, 'Time from cue (s)');
-    %     xlabel(BpodSystem.ProtocolFigures.lickRaster.AxSound2, 'Time from cue (s)');
-    %             xlabel(BpodSystem.ProtocolFigures.lickRaster.AxSound3, 'Time from cue (s)');
+        processPhotometryOnline(iTrial);
+        startX=[BpodSystem.Data.Custom.RewardStartTime(iTrial) BpodSystem.Data.Custom.StimulusStartTime(iTrial)];
+        updatePhotometryPlotKatharina('update', startX,{'reward','stimulus'});        
+    end   
+
     iTrial = iTrial + 1;
     HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
 
