@@ -188,7 +188,7 @@ if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
 end
 %% photometry plot
 if TaskParameters.GUI.PhotometryOn 
-    updatePhotometryPlotKatharina('init');
+    updatePhotometryPlotKatharina('init',[0 0],{'Reward','Stimulus'});
 end
 
 [filepath,filename,~]=fileparts(BpodSystem.DataPath);
@@ -226,7 +226,7 @@ TaskParameters = BpodParameterGUI('sync', TaskParameters);
 if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
     site = questdlg('Where are you recording from?', ...
         'photometry site', ...
-        'rightVS','leftVS','leftTS','rightVS');
+        'right','left','right');
     BpodSystem.Data.Custom.PhotometrySite=site;
 end
 
@@ -311,8 +311,17 @@ while RunSession
     
     if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
         processPhotometryOnline(iTrial);
-        startX=[BpodSystem.Data.Custom.RewardStartTime(iTrial) BpodSystem.Data.Custom.StimulusStartTime(iTrial)];
-        updatePhotometryPlotKatharina('update', startX,{'reward','stimulus'});        
+        if BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial)>0
+            rewtime=BpodSystem.Data.Custom.RewardStartTime(iTrial);
+        else
+            rewtime=nan;
+        end
+        if (BpodSystem.Data.Custom.CoutEarly(iTrial))~=1
+            stimtime=BpodSystem.Data.Custom.StimulusStartTime(iTrial);
+        else
+            stimtime=nan;
+        end
+        updatePhotometryPlotKatharina('update', [rewtime stimtime],{'reward','stimulus'});        
     end   
 
     iTrial = iTrial + 1;
