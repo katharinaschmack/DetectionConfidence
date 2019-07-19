@@ -1,0 +1,17 @@
+		30	50	70	next
+K11	ketamine	2	0	2	0.7
+	placebo	1	1	1	0.3
+K12	ketamine	2	-1	2	0.3
+	placebo	1	2	1	0.5
+K13	ketamine	1	1	2	0.7
+	placebo	2	1	0	0.5
+K14	ketamine	1	1	2	0.7
+	placebo	1	2	0	0.5
+K15	ketamine	2	1	1	0.3
+	placebo	1	2	0	0.3
+K16	ketamine	2	2	0	0.3
+	placebo	1	1	1	0.7
+K17	ketamine	1	1	1	0.3
+	placebo	0	2	2	0.7
+K18	ketamine	1	2	0	0.3
+	placebo	0	2	2	0.7
