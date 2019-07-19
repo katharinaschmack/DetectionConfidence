@@ -415,12 +415,12 @@ switch TaskParameters.GUIMeta.PreStimDurationSelection.String{TaskParameters.GUI
             Crit = 0.8; % Rat: Crit = 0.8
             ConsiderTrials = max(1,iTrial-History):1:iTrial;
             ConsiderTrials(isnan(BpodSystem.Data.Custom.CinDuration(ConsiderTrials)))=[];%only use trials with central port entry
-            if TaskParameters.GUI.AllowBreakFixation==0
+%             if TaskParameters.GUI.AllowBreakFixation==0
                 ConsiderPerformance = sum(~BpodSystem.Data.Custom.CoutEarly(ConsiderTrials))/length(ConsiderTrials);
-            elseif TaskParameters.GUI.AllowBreakFixation==1
-                ConsiderPerformance = sum(~BpodSystem.Data.Custom.BrokeFixation(ConsiderTrials))/length(ConsiderTrials);
-            end
-            
+%             elseif TaskParameters.GUI.AllowBreakFixation==1
+%                 ConsiderPerformance = sum(~BpodSystem.Data.Custom.BrokeFixation(ConsiderTrials))/length(ConsiderTrials);
+%             end
+%             
             if  ConsiderPerformance > Crit && ~CoutEarly %if success over all trials AND on last trial: increase
                 RampedPreStimDuration = BpodSystem.Data.Custom.PreStimDuration(iTrial) + TaskParameters.GUI.PreStimDurationRampUp;
             elseif ConsiderPerformance < Crit/2 && CoutEarly  %if failure over all trials (<crit/2) AND on last trial: decrease
