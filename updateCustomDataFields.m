@@ -443,8 +443,7 @@ end
 TaskParameters.GUI.PreStimDuration = BpodSystem.Data.Custom.PreStimDuration(iTrial+1);
 BpodSystem.Data.Custom.StimDuration(iTrial+1) = TaskParameters.GUI.StimDuration;
 BpodSystem.Data.Custom.PostStimDuration(iTrial+1) = 0;
-
-
+BpodSystem.Data.Custom.CoutEarlyGrace(iTrial+1)=TaskParameters.GUI.CoutEarlyGrace;
 
 %test if stimulus should be repeated due to previous catch or skipped fb
 if iTrial>0
