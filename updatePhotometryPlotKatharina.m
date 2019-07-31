@@ -76,7 +76,7 @@ switch Op
                     alignedXData=nidaq.online.currentXData-startX(condition);
 %                     alignedXData=alignedXData-min(alignedXData(alignedXData>0));
                     idx = alignedXData>=window(1)&alignedXData<=window(2);
-                    xData = alignedXData(idx);
+                    xData = ceil(alignedXData(idx)*100)/100;
                     try
 %                         yData = BpodSystem.PluginObjects.Photometry.currentTrialDFF{ch}(idx);                        
                     yData = nidaq.online.currentDemodData{ch}(idx);

@@ -28,7 +28,7 @@ end
 dT = 1/nidaq.sample_rate;
 nidaq.online.currentXData = 0:dT:nidaq.duration - dT;
 nidaq.online.currentXData = nidaq.online.currentXData(:); % make column vector
-
+nidaq.online.currentXData = nidaq.online.currentXData(1:size(nidaq.online.currentDemodData{1}, 1));
 
 %% pad or truncate if acquisition stopped short or long
 for ch = nidaq.channelsOn
@@ -40,7 +40,6 @@ for ch = nidaq.channelsOn
     %                 nidaq.online.trialDemodData{currentTrial, ch} = nidaq.online.trialDemodData{currentTrial, ch}(1:length(nidaq.online.currentXData));
     %             end
     %         else
-    nidaq.online.currentXData = nidaq.online.currentXData(1:size(nidaq.online.currentDemodData{ch}, 1));
     %         end
     
     %         nidaq.online.currentDemodData{ch} = nidaq.online.trialDemodData{currentTrial, ch};
@@ -48,5 +47,4 @@ for ch = nidaq.channelsOn
     %         nidaq.online.trialDemodData{currentTrial, ch} = decimate(nidaq.online.currentDemodData{ch}, decimationFactor);
     nidaq.online.currentDemodData{ch}=decimate(nidaq.online.currentDemodData{ch}, decimationFactor);
 end
-
 nidaq.online.currentXData = decimate(nidaq.online.currentXData, decimationFactor);
