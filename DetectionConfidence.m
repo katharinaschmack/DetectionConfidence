@@ -108,6 +108,10 @@ while RunSession
     SaveBpodProtocolSettings;
     
     %% prepare stateMatrix
+    if TaskParameters.GUI.PhotometryOn~=0&&TaskParametersDefault.GUI.BaselineRecording>0&&iTrial==1
+        BpodSystem.Data.Custom.PhotometryOn(iTrial)=3;
+        BpodSystem.Data.Custom.PostTrialRecording(iTrial)=30;
+    end
     sma = stateMatrix(iTrial);
     SendStateMatrix(sma);
     
