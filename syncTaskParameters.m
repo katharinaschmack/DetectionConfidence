@@ -29,7 +29,7 @@ TaskParametersDefault.GUIMeta.PharmacologyOn.Style = 'checkbox';
 
 % 'Photometry' panel
 TaskParametersDefault.GUIPanels.Photometry = {'PhotometryOn','LED1_amp', 'LED2_amp',...
-    'ch1','ch2','LED1_f', 'LED2_f','PostTrialRecording'};
+    'ch1','ch2','LED1_f', 'LED2_f','PostTrialRecording','BaselineRecording'};
 TaskParametersDefault.GUI.LED1_amp = 2.5;
 TaskParametersDefault.GUI.LED2_amp = 2.5;
 TaskParametersDefault.GUI.PhotometryOn = 0;%0-no photometry, 1-photometry in channels as defined, 2-alternating between channels
@@ -40,6 +40,8 @@ TaskParametersDefault.GUI.ch1 = 1;
 TaskParametersDefault.GUIMeta.ch1.Style = 'checkbox';
 TaskParametersDefault.GUI.ch2 = 1;
 TaskParametersDefault.GUIMeta.ch2.Style = 'checkbox';
+TaskParametersDefault.GUI.BaselineRecording = 30;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 'Stimulus' tab
