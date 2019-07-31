@@ -26,6 +26,7 @@ BpodSystem.Data.Custom.StimulusPath=fullfile(strrep(filepath,'Session Data','Ses
 if ~exist(BpodSystem.Data.Custom.StimulusPath,'dir')
     mkdir(BpodSystem.Data.Custom.StimulusPath)
 end
+BpodSystem.Data.Custom.recordBaselineTrial=false;
 
 
 %% User Input for Photometry & Pharmacoloy & Blocks (to do: add option in GUI to switch on and off)
@@ -108,9 +109,9 @@ while RunSession
     SaveBpodProtocolSettings;
     
     %% prepare stateMatrix
-    if TaskParameters.GUI.PhotometryOn~=0&&TaskParametersDefault.GUI.BaselineRecording>0&&iTrial==1
-        BpodSystem.Data.Custom.PhotometryOn(iTrial)=3;
-        BpodSystem.Data.Custom.PostTrialRecording(iTrial)=30;
+    %record baseline on first trial 
+    if TaskParameters.GUI.PhotometryOn~=0&&TaskParameters.GUI.BaselineRecording>0&&iTrial==1
+        iTrial=recordBaselineTrial(iTrial);
     end
     sma = stateMatrix(iTrial);
     SendStateMatrix(sma);
@@ -151,7 +152,7 @@ while RunSession
     MainPlot(BpodSystem.GUIHandles.OutcomePlot,'update',iTrial);
     
     %% update photometry plot
-    if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
+    if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode 
         processPhotometryOnline(iTrial);
         if BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial)>0
             rewtime=BpodSystem.Data.Custom.RewardStartTime(iTrial);
@@ -163,11 +164,19 @@ while RunSession
         else
             stimtime=nan;
         end
+        try %kludge, problem with plotting baseline
         updatePhotometryPlotKatharina('update', [rewtime stimtime],{'reward','stimulus'});
+        catch
+            fprintf('Trial %d: Error in updatePhotometryPlotKatharina.m\n',iTrial)
+        end
     end
     
     %% Go on to next trial
     iTrial = iTrial + 1;
+    %record baseline on 
+    if BpodSystem.Pause==1
+        iTrial=recordBaselineTrial(iTrial);
+    end
     HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
 end %while loop for trials
 

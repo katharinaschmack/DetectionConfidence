@@ -2,38 +2,7 @@ function UserKillScriptKatharina()
 global BpodSystem
 global TaskParameters
 
-%% record end baseline
-if TaskParameters.GUI.PhotometryOn~=0&&TaskParametersDefault.GUI.BaselineRecording>0
-    BpodSystem.Data.Custom.PhotometryOn(iTrial)=3;
-    BpodSystem.Data.Custom.PostTrialRecording(iTrial)=TaskParametersDefault.GUI.BaselineRecording;
-    
-    sma = stateMatrix(iTrial);
-    SendStateMatrix(sma);
-    
-    %% prepare photometry
-    if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
-        preparePhotometryAcq(TaskParameters);
-    end
-    
-    %% RUN!!!
-    RawEvents = RunStateMatrix();
-    
-    %% stop photometry session
-    if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
-        stopPhotometryAcq;
-    end
-    
-    %% process photometry session
-    if ~isempty(fieldnames(RawEvents))
-        if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
-            processPhotometryAcq(iTrial);
-        end
-        BpodSystem.Data = AddTrialEvents(BpodSystem.Data,RawEvents);
-        SaveBpodSessionData;
-    else
-        disp([' *** Trial # ' num2str(iTrial) ':  aborted, data not saved ***']); % happens when you abort early (I think), e.g. when you are halting session
-    end
-end
+
 
 %save data
 SessionData=BpodSystem.Data;
