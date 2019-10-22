@@ -42,6 +42,14 @@ if TaskParameters.GUI.PharmacologyOn
         'ketamine','placebo','ketamine');
     BpodSystem.Data.Custom.Pharmacology=drug;
 end
+if TaskParameters.GUI.LaserPercentage>0
+    PulsePal;
+    load('ParameterMatrix25Hz5ms200ms.mat','ParameterMatrix');
+%     ParameterMatrix(2:13,4)={0 5 0 0.005 0 0 1/25-0.005 0.2 0 0.2 0 1};
+%     ParameterMatrix(2:13,5)={0 5 0 0.005 0 0 1/25-0.005 0.2 0 0.2 0 1};
+    ProgramPulsePal(ParameterMatrix);
+end
+
 if TaskParameters.GUI.DetermineFirstBlock
     firstblock = questdlg('Which block do you want to start with?', ...
         'first block', ...
