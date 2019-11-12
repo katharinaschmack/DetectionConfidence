@@ -606,7 +606,7 @@ BpodSystem.Data.Custom.LED2_f(iTrial+1)=TaskParameters.GUI.LED2_f;
 BpodSystem.Data.Custom.PostTrialRecording(iTrial+1)=TaskParameters.GUI.PostTrialRecording;
 
 %Laser Stimulation
-if iTrial>TaskParameter.GUI.NoLaserStartTrials
+if (iTrial+1)>TaskParameters.GUI.NoLaserStartTrials
     BpodSystem.Data.Custom.LaserTrial(iTrial+1)=randsample([1 0],1,1,[TaskParameters.GUI.LaserPercentage 1-TaskParameters.GUI.LaserPercentage]);
 else
     BpodSystem.Data.Custom.LaserTrial(iTrial+1)=0;
