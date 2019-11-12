@@ -43,10 +43,12 @@ if TaskParameters.GUI.PharmacologyOn
     BpodSystem.Data.Custom.Pharmacology=drug;
 end
 if TaskParameters.GUI.LaserPercentage>0
-    PulsePal;
-    load('ParameterMatrix25Hz5ms200ms.mat','ParameterMatrix');
-%     ParameterMatrix(2:13,4)={0 5 0 0.005 0 0 1/25-0.005 0.2 0 0.2 0 1};
-%     ParameterMatrix(2:13,5)={0 5 0 0.005 0 0 1/25-0.005 0.2 0 0.2 0 1};
+    PulsePal('COM3');
+    load('ParameterMatrix25Hz5ms100ms.mat','ParameterMatrix');
+%      ParameterMatrix(2:13,4)={0 5 0 0.005 0 0 1/25-0.005 0.1 0 0.1 0 1};
+%      ParameterMatrix(2:13,4)={0 5 0 0.005 0 0 1/25-0.005 0.1 0 0.1 0 1};
+%           ParameterMatrix(2:13,5)={0 5 0 30 0 0 0.1 30 0 30 0 1};
+
     ProgramPulsePal(ParameterMatrix);
         site = questdlg('Where are you stimulating?', ...
         'photometry site', ...

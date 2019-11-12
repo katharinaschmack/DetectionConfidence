@@ -15,7 +15,7 @@ TaskParametersDefault.GUITabs.Feedback = {'Sampling','Choice','FeedbackDelay'};
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 'General' panel
 TaskParametersDefault.GUIPanels.General = {'Ports_LMR','AfterTrialInterval','AfterTrialIntervalJitter',...
-    'AfterTrialIntervalMin','AfterTrialIntervalMax','LightGuidance','PharmacologyOn','LaserStimulation'};
+    'AfterTrialIntervalMin','AfterTrialIntervalMax','LightGuidance','PharmacologyOn','LaserPercentage','NoLaserStartTrials'};
 TaskParametersDefault.GUI.Ports_LMR = 123; %Port IDs for signal-center-noise
 TaskParametersDefault.GUI.AfterTrialInterval = .5; %Duration before trial trial starts (s) (for historic reasons named AfterTrialInterval, should be 'BeforeTrialInterval')
 TaskParametersDefault.GUI.AfterTrialIntervalJitter = true; %true sets exponential jitter with mean  defined by AfterTrialInterval, false fixed AfterTrialInterval
