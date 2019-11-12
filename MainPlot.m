@@ -19,7 +19,8 @@ switch Action
         %plot in specified axes
         BpodSystem.GUIHandles.OutcomePlot.EarlyWithdrawal = line(-1,0, 'LineStyle','none','Marker','d','MarkerEdge','none','MarkerFace','b', 'MarkerSize',8);
         BpodSystem.GUIHandles.OutcomePlot.SkippedFeedback = line(-1,0, 'LineStyle','none','Marker','h','MarkerFace',[.5 .5 .5],'MarkerEdge','none', 'MarkerSize',11);
-        
+        BpodSystem.GUIHandles.OutcomePlot.OptoGenetics = line(-1,0, 'LineStyle','none','Marker','s','MarkerEdge',[0,0,0],'MarkerFace',[0,0,0], 'MarkerSize',8);
+
         BpodSystem.GUIHandles.OutcomePlot.Aud = line(-1,0, 'LineStyle','none','Marker','o','MarkerEdge',[.5,.5,.5],'MarkerFace',[.7,.7,.7], 'MarkerSize',8);
         %BpodSystem.GUIHandles.OutcomePlot.DV = line(1,0, 'LineStyle','none','Marker','o','MarkerEdge','b','MarkerFace','b', 'MarkerSize',6);
         BpodSystem.GUIHandles.OutcomePlot.CurrentTrialCircle = line(1,0, 'LineStyle','none','Marker','o','MarkerEdge','k','MarkerFace',[1 1 1], 'MarkerSize',6);
@@ -33,6 +34,7 @@ switch Action
         BpodSystem.GUIHandles.OutcomePlot.SignalVolume = line(-1,0, 'LineStyle','none','Marker','*','MarkerFace','k','MarkerEdge','k', 'MarkerSize',5);
         BpodSystem.GUIHandles.OutcomePlot.Catch = line(-1,0, 'LineStyle','none','Marker','o','MarkerEdge',[0,0,0],'MarkerFace',[0,0,0], 'MarkerSize',2);
         
+        
         %set(AxesHandles.HandleOutcome,'TickDir', 'out','XLim',[0, nTrialsToShow], 'YTick', [0:20:60],'YTickLabel', {' 0dB','20dB','40dB','60dB'}, 'FontSize', 13);
         ytick=linspace(-1,1,5);
         ytickLabel=inverseRescaleNoise(ytick);
@@ -44,11 +46,13 @@ switch Action
         BpodSystem.GUIHandles.OutcomePlot.PsycAudBlock1 = line(AxesHandles.HandlePsycAud,[-100 -101],[-1 -1], 'LineStyle','none','Marker','o','MarkerEdge','b','MarkerFace','b', 'MarkerSize',3,'Visible','off');
         BpodSystem.GUIHandles.OutcomePlot.PsycAudBlock2 = line(AxesHandles.HandlePsycAud,[-100 -101],[-1 -1], 'LineStyle','none','Marker','o','MarkerEdge','c','MarkerFace','c', 'MarkerSize',3,'Visible','off');
         BpodSystem.GUIHandles.OutcomePlot.PsycAudBlock3 = line(AxesHandles.HandlePsycAud,[-100 -101],[-1 -1], 'LineStyle','none','Marker','o','MarkerEdge','m','MarkerFace','m', 'MarkerSize',3,'Visible','off');
+        BpodSystem.GUIHandles.OutcomePlot.PsycAudLaser = line(AxesHandles.HandlePsycAud,[-100 -101],[-1 -1], 'LineStyle','none','Marker','o','MarkerEdge','m','MarkerFace','m', 'MarkerSize',6,'Visible','off');
 
         BpodSystem.GUIHandles.OutcomePlot.PsycAudFit = line(AxesHandles.HandlePsycAud,[-100 -101],[-1 -1],'color','k','Visible','off');
         BpodSystem.GUIHandles.OutcomePlot.PsycAudFitBlock1 = line(AxesHandles.HandlePsycAud,[-100 -101],[.5 .5],'color','b','Visible','off');
         BpodSystem.GUIHandles.OutcomePlot.PsycAudFitBlock2 = line(AxesHandles.HandlePsycAud,[-100 -101],[.5 .5],'color','c','Visible','off');
         BpodSystem.GUIHandles.OutcomePlot.PsycAudFitBlock3 = line(AxesHandles.HandlePsycAud,[-100 -101],[.5 .5],'color','m','Visible','off');
+        BpodSystem.GUIHandles.OutcomePlot.PsycAudLaserFit = line(AxesHandles.HandlePsycAud,[-100 -101],[-1 -1], 'LineStyle','none','Marker','o','MarkerEdge','m','MarkerFace','m', 'MarkerSize',6,'Visible','off');
 
         switch BpodSystem.Data.Custom.Variation
             case {'noise','both','none'}
@@ -212,7 +216,12 @@ switch Action
         Ydata = BpodSystem.Data.Custom.NoiseVolumeRescaled(indxToPlot); Ydata = Ydata(ndxCatch&~ndxMiss&~ndxEarly);
         set(BpodSystem.GUIHandles.OutcomePlot.Catch, 'xdata', Xdata, 'ydata', Ydata);
         
-        
+        %Plot Optogenetics
+        ndxOpto = BpodSystem.Data.Custom.LaserTrial(indxToPlot)==1;
+        Xdata = indxToPlot(ndxOpto);
+        Ydata = ones(length(Xdata),1)*-1.2;
+        set(BpodSystem.GUIHandles.OutcomePlot.Catch, 'xdata', Xdata, 'ydata', Ydata);
+
         %Plot Skipped
         ndxSkippedCorrect=BpodSystem.Data.Custom.ResponseCorrect(indxToPlot)==1&(BpodSystem.Data.Custom.WaitingTime(indxToPlot)<(BpodSystem.Data.Custom.FeedbackDelay(indxToPlot)-1E-3))&~BpodSystem.Data.Custom.CatchTrial(indxToPlot);
         if TaskParameters.GUI.CatchError
@@ -254,6 +263,7 @@ switch Action
                         AudDV(BpodSystem.Data.Custom.EmbedSignal(1:numel(BpodSystem.Data.Custom.ResponseLeft))==0)=0;
                         AudBinNumbers=[0:5:70];
                         BinIdx = discretize(AudDV,AudBinNumbers);%unelegant! revise!
+                        
                         if TaskParameters.GUI.BiasVersion>2
                             for k=1:3
                                 biasBlock=TaskParameters.GUI.BiasTable.Signal(k);
@@ -272,14 +282,28 @@ switch Action
                                 end
                             end
                         else
-                            PsycY = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan),(BinIdx(~ndxNan)),'mean');
-                            PsycX = grpstats(AudDV(~ndxNan),(BinIdx(~ndxNan)),'mean');
+                            ndxLaser=BpodSystem.Data.Custom.LaserTrial==1;
+                            PsycY = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan&~ndxLaser),(BinIdx(~ndxNan&~ndxLaser)),'mean');
+                            PsycX = grpstats(AudDV(~ndxNan&~ndxLaser),(BinIdx(~ndxNan&~ndxLaser)),'mean');
                             BpodSystem.GUIHandles.OutcomePlot.PsycAud.YData = PsycY;
                             BpodSystem.GUIHandles.OutcomePlot.PsycAud.XData = PsycX;
                             BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData = linspace(0,70,100);
                             ndxSignal=AudDV~=0;
-                            mdl=fitglm(AudDV,BpodSystem.Data.Custom.ResponseLeft,'exclude',ndxNan&~ndxSignal,'distribution','binomial');
+                            mdl=fitglm(AudDV,BpodSystem.Data.Custom.ResponseLeft,'exclude',ndxNan&ndxLaser&~ndxSignal,'distribution','binomial');
                             BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.YData = glmval(mdl.Coefficients.Estimate,BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData,'logit');
+                        
+                            %plot LaserPscyhometric
+                            if sum(ndxLaser)>5
+                                PsycY = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan&ndxLaser),(BinIdx(~ndxNan&ndxLaser)),'mean');
+                                PsycX = grpstats(AudDV(~ndxNan&ndxLaser),(BinIdx(~ndxNan&ndxLaser)),'mean');
+                                BpodSystem.GUIHandles.OutcomePlot.PsycAudLaser.YData = PsycY;
+                                BpodSystem.GUIHandles.OutcomePlot.PsycAudLaser.XData = PsycX;
+                                BpodSystem.GUIHandles.OutcomePlot.PsycAudLaserFit.XData = linspace(0,70,100);
+                                ndxSignal=AudDV~=0;
+                                mdl=fitglm(AudDV,BpodSystem.Data.Custom.ResponseLeft,'exclude',ndxNan&~ndxLaser&~ndxSignal,'distribution','binomial');
+                                BpodSystem.GUIHandles.OutcomePlot.PsycAudLaserFit.YData = glmval(mdl.Coefficients.Estimate,BpodSystem.GUIHandles.OutcomePlot.PsycAudFit.XData,'logit');
+                            end
+                            
                         end
 
                 end

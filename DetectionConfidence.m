@@ -33,7 +33,7 @@ BpodSystem.Data.Custom.recordBaselineTrial=false;
 if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
     site = questdlg('Where are you recording from?', ...
         'photometry site', ...
-        'right','left','right');
+        'left','right','right');
     BpodSystem.Data.Custom.PhotometrySite=site;
 end
 if TaskParameters.GUI.PharmacologyOn
@@ -48,6 +48,10 @@ if TaskParameters.GUI.LaserPercentage>0
 %     ParameterMatrix(2:13,4)={0 5 0 0.005 0 0 1/25-0.005 0.2 0 0.2 0 1};
 %     ParameterMatrix(2:13,5)={0 5 0 0.005 0 0 1/25-0.005 0.2 0 0.2 0 1};
     ProgramPulsePal(ParameterMatrix);
+        site = questdlg('Where are you stimulating?', ...
+        'photometry site', ...
+        'left','right','right');
+    BpodSystem.Data.Custom.StimulationSite=site;
 end
 
 if TaskParameters.GUI.DetermineFirstBlock
