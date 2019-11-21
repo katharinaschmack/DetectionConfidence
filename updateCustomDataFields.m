@@ -606,9 +606,33 @@ BpodSystem.Data.Custom.LED2_f(iTrial+1)=TaskParameters.GUI.LED2_f;
 BpodSystem.Data.Custom.PostTrialRecording(iTrial+1)=TaskParameters.GUI.PostTrialRecording;
 
 %Laser Stimulation
+% if (iTrial+1)>TaskParameters.GUI.NoLaserStartTrials
+%     BpodSystem.Data.Custom.LaserTrial(iTrial+1)=randsample([1 0],1,1,[TaskParameters.GUI.LaserPercentage 1-TaskParameters.GUI.LaserPercentage]);
+% else
+%     BpodSystem.Data.Custom.LaserTrial(iTrial+1)=0;
+% end
+
 if (iTrial+1)>TaskParameters.GUI.NoLaserStartTrials
-    BpodSystem.Data.Custom.LaserTrial(iTrial+1)=randsample([1 0],1,1,[TaskParameters.GUI.LaserPercentage 1-TaskParameters.GUI.LaserPercentage]);
+    if rem(iTrial,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)==1
+        BpodSystem.Data.Custom.LaserTrial(iTrial+1)=1;
+        BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=1;
+        BpodSystem.Data.Custom.elapsedTimeSinceLaserStart(iTrial+1)=0;
+    elseif rem(iTrial,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)==1+TaskParameters.GUI.LaserBlockLength
+        BpodSystem.Data.Custom.elapsedTimeSinceLaserStart(iTrial+1)=toc;
+        BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=BpodSystem.Data.Custom.LaserStimulation(iTrial)+1;
+        if BpodSystem.Data.Custom.elapsedTimeSinceLaserStart(iTrial+1)<TaskParameters.GUI.LaserBlockLength*30
+            BpodSystem.Data.Custom.LaserTrial(iTrial+1)=1;
+        end
+    elseif rem(iTrial,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)>1&&...
+            rem(iTrial,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)<TaskParameters.GUI.LaserBlockLength+1
+        BpodSystem.Data.Custom.LaserTrial(iTrial+1)=0;
+        BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=BpodSystem.Data.Custom.LaserStimulation(iTrial)+1;
+    else
+        BpodSystem.Data.Custom.LaserTrial(iTrial+1)=0;
+        BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=0;
+    end
 else
     BpodSystem.Data.Custom.LaserTrial(iTrial+1)=0;
 end
+
 end
