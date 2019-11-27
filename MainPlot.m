@@ -217,7 +217,7 @@ switch Action
         set(BpodSystem.GUIHandles.OutcomePlot.Catch, 'xdata', Xdata, 'ydata', Ydata);
         
         %Plot Optogenetics
-        ndxOpto = BpodSystem.Data.Custom.LaserTrial(indxToPlot)==1;
+        ndxOpto = BpodSystem.Data.Custom.LaserTrial(indxToPlot)>0;
         Xdata = indxToPlot(ndxOpto);
         Ydata = ones(length(Xdata),1)*-1.2;
         set(BpodSystem.GUIHandles.OutcomePlot.OptoGenetics, 'xdata', Xdata, 'ydata', Ydata);
@@ -282,7 +282,7 @@ switch Action
                                 end
                             end
                         else
-                            ndxLaser=(BpodSystem.Data.Custom.LaserTrial(1:end-1)==1);
+                            ndxLaser=(BpodSystem.Data.Custom.LaserStimulation(1:end-1)>0);
                             PsycY = grpstats(BpodSystem.Data.Custom.ResponseLeft(~ndxNan&~ndxLaser),(BinIdx(~ndxNan&~ndxLaser)),'mean');
                             PsycX = grpstats(AudDV(~ndxNan&~ndxLaser),(BinIdx(~ndxNan&~ndxLaser)),'mean');
 

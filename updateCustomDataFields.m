@@ -613,18 +613,20 @@ BpodSystem.Data.Custom.PostTrialRecording(iTrial+1)=TaskParameters.GUI.PostTrial
 % end
 
 if (iTrial+1)>TaskParameters.GUI.NoLaserStartTrials
-    if rem(iTrial,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)==1
+    if rem(iTrial+1,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)==1
         BpodSystem.Data.Custom.LaserTrial(iTrial+1)=1;
         BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=1;
-        BpodSystem.Data.Custom.elapsedTimeSinceLaserStart(iTrial+1)=0;
-    elseif rem(iTrial,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)==1+TaskParameters.GUI.LaserBlockLength
+        BpodSystem.Data.Custom.LaserBlockStart=datetime;
+    elseif rem(iTrial+1,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)==1+TaskParameters.GUI.LaserBlockLength
         BpodSystem.Data.Custom.elapsedTimeSinceLaserStart(iTrial+1)=toc;
         BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=BpodSystem.Data.Custom.LaserStimulation(iTrial)+1;
-        if BpodSystem.Data.Custom.elapsedTimeSinceLaserStart(iTrial+1)<TaskParameters.GUI.LaserBlockLength*30
+        if seconds(datetime-BpodSystem.Data.Custom.LaserBlockStart)<TaskParameters.GUI.LaserBlockLength*30
             BpodSystem.Data.Custom.LaserTrial(iTrial+1)=1;
+        else 
+                        BpodSystem.Data.Custom.LaserTrial(iTrial+1)=0;
         end
-    elseif rem(iTrial,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)>1&&...
-            rem(iTrial,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)<TaskParameters.GUI.LaserBlockLength+1
+    elseif rem(iTrial+1,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)>1&&...
+            rem(iTrial+1,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)<TaskParameters.GUI.LaserBlockLength+1
         BpodSystem.Data.Custom.LaserTrial(iTrial+1)=0;
         BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=BpodSystem.Data.Custom.LaserStimulation(iTrial)+1;
     else
@@ -633,6 +635,8 @@ if (iTrial+1)>TaskParameters.GUI.NoLaserStartTrials
     end
 else
     BpodSystem.Data.Custom.LaserTrial(iTrial+1)=0;
+            BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=0;
+BpodSystem.Data.Custom.LaserBlockStart=datetime('01/01/2019');
 end
 
 end

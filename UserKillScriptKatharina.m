@@ -12,6 +12,12 @@ SessionData.Settings=TaskParameters;
 titstr=strsplit(TitleString,'_');%1 animal %2 protocol %3 date %4 year %5 session
 Protocol=titstr{2};
 
+
+%% 
+try
+AbortPulsePal();
+end
+
 %% Stop noise stream
 try
     PsychToolboxSoundServerLoop('Stop', 1);
