@@ -3,8 +3,12 @@ function S = initPhotometry(S)
     %% NIDAQ :: Set up NIDAQ data aquisision
     global nidaq BpodSystem
 
-    daq.reset; % currently re-initializing nidaq with every acquisition- see preparePhotometryAcq
-    
+%     daq.reset; % currently re-initializing nidaq with every acquisition- see preparePhotometryAcq
+    if (nidaq.InitReset == 0)
+        daq.reset
+        daq.HardwareInfo.getInstance('DisableReferenceClockSynchronization',true); % Necessary for this Nidaq
+        nidaq.InitReset = 1;
+    end
     % retrieve machine specific settings
     try
         addpath(genpath(fullfile(BpodSystem.BpodUserPath, 'Settings Files'))); % Settings path is assumed to be shielded by gitignore file

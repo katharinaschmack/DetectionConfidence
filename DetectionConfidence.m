@@ -68,6 +68,9 @@ if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
     TaskParameters.nidaq.updateInterval = 0.1; % save new data every n seconds
     BpodSystem.PluginObjects.Photometry.baselinePeriod = [0 1]; % kludge, FS
     BpodSystem.ProtocolSettings = TaskParameters; % copy settings back because syncPhotometrySettings relies upon BpodSystem.ProtocolSettings
+    if ~exist('nidaq','var')||(~isfield(nidaq,'InitReset'))
+        nidaq.InitReset = 0;
+    end
     TaskParameters = initPhotometry(TaskParameters);
     
     %% initialize photometry plot
