@@ -68,9 +68,6 @@ if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
     TaskParameters.nidaq.updateInterval = 0.1; % save new data every n seconds
     BpodSystem.PluginObjects.Photometry.baselinePeriod = [0 1]; % kludge, FS
     BpodSystem.ProtocolSettings = TaskParameters; % copy settings back because syncPhotometrySettings relies upon BpodSystem.ProtocolSettings
-    if ~exist('nidaq','var')||(~isfield(nidaq,'InitReset'))
-        nidaq.InitReset = 0;
-    end
     TaskParameters = initPhotometry(TaskParameters);
     
     %% initialize photometry plot
@@ -126,9 +123,9 @@ while RunSession
     
     %% prepare stateMatrix
     %record baseline on first trial 
-    if TaskParameters.GUI.PhotometryOn~=0&&TaskParameters.GUI.BaselineRecording>0&&iTrial==1
-        iTrial=recordBaselineTrial(iTrial);
-    end
+%     if TaskParameters.GUI.PhotometryOn~=0&&TaskParameters.GUI.BaselineRecording>0&&iTrial==1
+%         iTrial=recordBaselineTrial(iTrial);
+%     end
     sma = stateMatrix(iTrial);
     SendStateMatrix(sma);
     
@@ -189,10 +186,10 @@ while RunSession
     
     %% Go on to next trial
     iTrial = iTrial + 1;
-    %record baseline on 
-    if BpodSystem.Pause==1
-        iTrial=recordBaselineTrial(iTrial);
-    end
+%     %record baseline on 
+%     if BpodSystem.Pause==1
+%         iTrial=recordBaselineTrial(iTrial);
+%     end
     HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
 end %while loop for trials
 
