@@ -4,8 +4,16 @@ function S = preparePhotometryAcq(S)
     % S = Bpod settings structure (contains updated information about LED
     % intensity, etc.)
     global nidaq BpodSystem
-    
-%     daq.reset;
+%     if (~isfield(nidaq,'InitReset'))
+%         nidaq.InitReset = 0;
+%     end
+% 
+%     if (nidaq.InitReset == 0)
+%         daq.reset
+%         %     daq.HardwareInfo.getInstance('DisableReferenceClockSynchronization',true); % Necessary for this Nidaq
+%         nidaq.InitReset = 1;
+%     end
+    %daq.reset;
     
     % retrieve machine specific settings
     try
