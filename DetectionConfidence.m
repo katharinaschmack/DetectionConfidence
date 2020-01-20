@@ -45,8 +45,8 @@ end
 if TaskParameters.GUI.LaserPercentage>0
     PulsePal('COM3');
     load('ParameterMatrix25Hz5ms200ms.mat','ParameterMatrix');
-    ParameterMatrix(2:13,4)={0 5 0 0.005 0 0 1/5-0.005 TaskParameters.GUI.LaserBlockLength*30 0 TaskParameters.GUI.LaserBlockLength*30 0 1};
-    ParameterMatrix(2:13,5)={0 5 0 0.005 0 0 1/5-0.005 TaskParameters.GUI.LaserBlockLength*30 0 TaskParameters.GUI.LaserBlockLength*30 0 1};
+    ParameterMatrix(2:13,4)={0 5 0 0.004 0 0 1/2-0.004 TaskParameters.GUI.LaserBlockLength*30 0 TaskParameters.GUI.LaserBlockLength*30 0 1};
+    ParameterMatrix(2:13,5)={0 5 0 0.004 0 0 1/2-0.004 TaskParameters.GUI.LaserBlockLength*30 0 TaskParameters.GUI.LaserBlockLength*30 0 1};
     ParameterMatrix{2,8}=1;
     ProgramPulsePal(ParameterMatrix);
         site = questdlg('Where are you stimulating?', ...
