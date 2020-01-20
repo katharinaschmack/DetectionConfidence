@@ -7,7 +7,7 @@ if iTrial>0
     %get states & events of this trial
     statesThisTrial = BpodSystem.Data.RawData.OriginalStateNamesByNumber{iTrial}(BpodSystem.Data.RawData.OriginalStateData{iTrial});
     if isfield(BpodSystem.Data.RawEvents.Trial{iTrial},'Events') %not sure why this is necessary: why can there be trials without events if CenterPortIn is always necessary to proceed?
-        eventsThisTrial = fieldnames(BpodSystem.Data.RawEvents.Trial{iTrial}.Events)';        
+        eventsThisTrial = fieldnames(BpodSystem.Data.RawEvents.Trial{iTrial}.Events)';
         
         %get port IDs
         ports=num2str(TaskParameters.GUI.Ports_LMR);
@@ -47,7 +47,7 @@ if iTrial>0
         else
             ErrorValveTime = 0;
         end
-
+        
         
         %mark whether animal withdraw too early from center port
         %     if TaskParameters.GUI.AllowBreakFixation==0&&any(strcmp('Cout_Early',statesThisTrial))
@@ -278,15 +278,15 @@ if iTrial>0
             RewardReceivedError = 0;
         end
         RewardReceivedTotal = RewardReceivedCenter + RewardReceivedCorrect + RewardReceivedError;
-       
-      
+        
+        
         %compute absolute Stimulus Start Time and Reward Time (for
         %photometry plot)
         if any(strcmp('Cin_Stim',statesThisTrial))
             BpodSystem.Data.Custom.StimulusStartTime(iTrial) = BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_Stim(1,1);
         elseif any(strcmp('Cin_PreStim',statesThisTrial))
             BpodSystem.Data.Custom.StimulusStartTime(iTrial) = BpodSystem.Data.RawEvents.Trial{iTrial}.States.Cin_PreStim(end,1)+BpodSystem.Data.Custom.PreStimDuration(iTrial);
-        else 
+        else
             BpodSystem.Data.Custom.StimulusStartTime(iTrial) = nan;
         end
         
@@ -299,7 +299,7 @@ if iTrial>0
         else
             BpodSystem.Data.Custom.RewardStartTime(iTrial) = nan;
         end
-
+        
         %assemble output
         BpodSystem.Data.Custom.BeforeTrialInterval(iTrial) = BpodSystem.Data.Custom.AfterTrialInterval(iTrial);
         
@@ -351,9 +351,9 @@ if iTrial>0
         
         BpodSystem.Data.Custom.PsychtoolboxStartup=false;
         BpodSystem.Data.Custom.EmbedSignal(iTrial)=nan;
-        BpodSystem.Data.Custom.RepeatMode(iTrial)=false;        
+        BpodSystem.Data.Custom.RepeatMode(iTrial)=false;
     end
-else   
+else
     BpodSystem.Data.Custom.BeforeTrialInterval = [];
     BpodSystem.Data.Custom.CoutEarly = [];
     BpodSystem.Data.Custom.EarlyWithdrawal = [];
@@ -382,6 +382,18 @@ else
     BpodSystem.Data.Custom.RepeatMode=[];
     BpodSystem.Data.Custom.NoiseVolumeRescaled=[];
     BpodSystem.Data.Custom.currentBlockNumber=1;
+    
+    nSim=100;
+    blockCenters=(1:nSim)*TaskParameters.GUI.LaserBlockLength/TaskParameters.GUI.LaserPercentage;
+    blockJitter=round((rand(1,nSim)-0.5)*2*TaskParameters.GUI.LaserBlockLength);
+    BpodSystem.Data.Custom.blockStarts=blockCenters+blockJitter;
+    BpodSystem.Data.Custom.blockEnds=BpodSystem.Data.Custom.blockStarts+TaskParameters.GUI.LaserBlockLength;
+    BpodSystem.Data.Custom.LaserBlockStart=NaT;
+    
+    if any((blockStarts(2:end)-blockEnds(1:end-1))<0)
+        error('Check your Optogenetics Settings')
+    end
+    
 end
 
 %% update times & stimulus
@@ -415,12 +427,12 @@ switch TaskParameters.GUIMeta.PreStimDurationSelection.String{TaskParameters.GUI
             Crit = 0.8; % Rat: Crit = 0.8
             ConsiderTrials = max(1,iTrial-History):1:iTrial;
             ConsiderTrials(isnan(BpodSystem.Data.Custom.CinDuration(ConsiderTrials)))=[];%only use trials with central port entry
-%             if TaskParameters.GUI.AllowBreakFixation==0
-                ConsiderPerformance = sum(~BpodSystem.Data.Custom.CoutEarly(ConsiderTrials))/length(ConsiderTrials);
-%             elseif TaskParameters.GUI.AllowBreakFixation==1
-%                 ConsiderPerformance = sum(~BpodSystem.Data.Custom.BrokeFixation(ConsiderTrials))/length(ConsiderTrials);
-%             end
-%             
+            %             if TaskParameters.GUI.AllowBreakFixation==0
+            ConsiderPerformance = sum(~BpodSystem.Data.Custom.CoutEarly(ConsiderTrials))/length(ConsiderTrials);
+            %             elseif TaskParameters.GUI.AllowBreakFixation==1
+            %                 ConsiderPerformance = sum(~BpodSystem.Data.Custom.BrokeFixation(ConsiderTrials))/length(ConsiderTrials);
+            %             end
+            %
             if  ConsiderPerformance > Crit && ~CoutEarly %if success over all trials AND on last trial: increase
                 RampedPreStimDuration = BpodSystem.Data.Custom.PreStimDuration(iTrial) + TaskParameters.GUI.PreStimDurationRampUp;
             elseif ConsiderPerformance < Crit/2 && CoutEarly  %if failure over all trials (<crit/2) AND on last trial: decrease
@@ -474,8 +486,8 @@ else
     repeatMode=false;
 end
 BpodSystem.Data.Custom.RepeatMode(iTrial+1)=repeatMode;
-    
-    
+
+
 %update confidence waiting time
 %update catch trial
 if iTrial > TaskParameters.GUI.StartNoCatchTrials && ~BpodSystem.Data.Custom.RepeatMode(iTrial+1)
@@ -538,7 +550,7 @@ if iTrial>0
         BpodSystem.Data.Custom.BlockBias(iTrial+1)=BpodSystem.Data.Custom.BlockBias(iTrial);
         BpodSystem.Data.Custom.BlockNoise(iTrial+1)=BpodSystem.Data.Custom.BlockNoise(iTrial);
         BpodSystem.Data.Custom.BlockTrial(iTrial+1)=BpodSystem.Data.Custom.BlockTrial(iTrial)+1;
-%         BpodSystem.Data.Custom.currentBlockNumber=BpodSystem.Data.Custom.currentBlockNumber;
+        %         BpodSystem.Data.Custom.currentBlockNumber=BpodSystem.Data.Custom.currentBlockNumber;
     else
         BpodSystem.Data.Custom.BlockBias(iTrial+1)=...
             randsample(TaskParameters.GUI.BiasTable.Signal,...
@@ -596,7 +608,7 @@ end
 
 %Light Guidance
 BpodSystem.Data.Custom.LightGuidance(iTrial+1) = TaskParameters.GUI.LightGuidance;
-    
+
 %Photometry
 BpodSystem.Data.Custom.PhotometryOn(iTrial+1)=TaskParameters.GUI.PhotometryOn;
 BpodSystem.Data.Custom.LED1_amp(iTrial+1)=TaskParameters.GUI.LED1_amp;
@@ -606,37 +618,28 @@ BpodSystem.Data.Custom.LED2_f(iTrial+1)=TaskParameters.GUI.LED2_f;
 BpodSystem.Data.Custom.PostTrialRecording(iTrial+1)=TaskParameters.GUI.PostTrialRecording;
 
 %Laser Stimulation
-% if (iTrial+1)>TaskParameters.GUI.NoLaserStartTrials
-%     BpodSystem.Data.Custom.LaserTrial(iTrial+1)=randsample([1 0],1,1,[TaskParameters.GUI.LaserPercentage 1-TaskParameters.GUI.LaserPercentage]);
-% else
-%     BpodSystem.Data.Custom.LaserTrial(iTrial+1)=0;
-% end
-
-if (iTrial+1)>TaskParameters.GUI.NoLaserStartTrials
-    if rem(iTrial+1,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)==1
+%prepare PulsePal pulse to start
+if ismember(iTrial+1,BpodSystem.Data.Custom.blockStarts)
+    BpodSystem.Data.Custom.LaserTrial(iTrial+1)=1;
+    BpodSystem.Data.Custom.LaserBlockStart=datetime('now');
+    %prepare PulsePal pulse to end
+elseif ismember(iTrial+1,BpodSystem.Data.Custom.blockEnds)
+    %if LaserStimualation is still ongoing, prepare a pulse to stop it
+    if seconds(datetime('now')-BpodSystem.Data.Custom.LaserBlockStart)<TaskParameters.GUI.LaserBlockLength*30
         BpodSystem.Data.Custom.LaserTrial(iTrial+1)=1;
-        BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=1;
-        BpodSystem.Data.Custom.LaserBlockStart=datetime;
-    elseif rem(iTrial+1,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)==1+TaskParameters.GUI.LaserBlockLength
-        BpodSystem.Data.Custom.elapsedTimeSinceLaserStart(iTrial+1)=toc;
-        BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=BpodSystem.Data.Custom.LaserStimulation(iTrial)+1;
-        if seconds(datetime-BpodSystem.Data.Custom.LaserBlockStart)<TaskParameters.GUI.LaserBlockLength*30
-            BpodSystem.Data.Custom.LaserTrial(iTrial+1)=1;
-        else 
-                        BpodSystem.Data.Custom.LaserTrial(iTrial+1)=0;
-        end
-    elseif rem(iTrial+1,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)>1&&...
-            rem(iTrial+1,TaskParameters.GUI.LaserBlockLength./TaskParameters.GUI.LaserPercentage)<TaskParameters.GUI.LaserBlockLength+1
-        BpodSystem.Data.Custom.LaserTrial(iTrial+1)=0;
-        BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=BpodSystem.Data.Custom.LaserStimulation(iTrial)+1;
     else
         BpodSystem.Data.Custom.LaserTrial(iTrial+1)=0;
-        BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=0;
     end
+    %reset block start
+    BpodSystem.Data.Custom.LaserBlockStart=NaT;
 else
     BpodSystem.Data.Custom.LaserTrial(iTrial+1)=0;
-            BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=0;
-BpodSystem.Data.Custom.LaserBlockStart=datetime('01/01/2019');
+end
+%fill in stimulation trial Number
+if ~isnat(BpodSystem.Data.Custom.LaserBlockStart)
+    BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=BpodSystem.Data.Custom.LaserStimulation(iTrial)+1;
+else
+    BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=0;
 end
 
 end
