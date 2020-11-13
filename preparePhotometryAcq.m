@@ -1,6 +1,8 @@
 function S = preparePhotometryAcq(S)
 %% prelude
 global nidaq BpodSystem
+nidaq = [];
+
 % daq.reset %maybe necessary
 % daq.HardwareInfo.getInstance('DisableReferenceClockSynchronization',true); % necessary for some Nidaq
 
@@ -36,15 +38,16 @@ end
 syncPhotometrySettings;
 
 % get settings into nidaq
-nidaq.ai_channelNames          = S.nidaq.ai_channelNames;
+nidaq.ai_channelNames=S.nidaq.ai_channelNames;
 nidaq.ai_data = [];
-nidaq.ao_channelNames          = S.nidaq.ao_channelNames;
+nidaq.ao_channelNames=S.nidaq.ao_channelNames;
 nidaq.ao_data = [];
 nidaq.aiChannels = {};
 nidaq.aoChannels = {};
+nidaq.sample_rate = S.nidaq.sample_rate;
 
 %% fields for online analysis (do I want this?)
-nidaq.online.currentDemodData = cell(1, maxDemodChannels);
+nidaq.online.currentDemodData = cell(1, 2);
 nidaq.online.currentXData = []; % x data starts from 0 (thus independent of protocol), add/subtract offset to redefine zero in protocol-specific funtions
 %     nidaq.online.trialXData = {};
 %     nidaq.online.trialDemodData = cell(1, maxDemodChannels);
@@ -70,10 +73,16 @@ for ch = nidaq.channelsOn
 end
 
 %% add trigger external trigger, if specified
-if S.nidaq.TriggerConnection
-    addTriggerConnection(nidaq.session, 'external', [S.nidaq.Device '/' S.nidaq.TriggerSource], 'StartTrigger');
-    nidaq.session.ExternalTriggerTimeout = 900; % something really long (15min), might be necessary during freely moving behavior when animal doesn't re-initiate trial for a while
-end
+% if S.nidaq.TriggerConnection
+%     addTriggerConnection(nidaq.session, 'external', [S.nidaq.Device '/' S.nidaq.TriggerSource], 'StartTrigger');
+%     nidaq.session.ExternalTriggerTimeout = 900; % something really long (15min), might be necessary during freely moving behavior when animal doesn't re-initiate trial for a while
+% end
+% %% record trigger channel
+% counter = 1;
+% for ch = nidaq.channelsOn
+%     nidaq.aoChannels{counter} = nidaq.session.addAnalogOutputChannel(S.nidaq.Device,ch - 1, 'Voltage'); % - 1 because nidaq channels are zero based
+%     counter = counter + 1;
+% end
 
 %% Sampling rate and continuous updating (important for queue-ing ao data)
 nidaq.session.Rate = nidaq.sample_rate;

@@ -70,15 +70,8 @@ if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
     BpodSystem.ProtocolSettings = TaskParameters; % copy settings back because syncPhotometrySettings relies upon BpodSystem.ProtocolSettings
 %     TaskParameters = initPhotometry(TaskParameters); %DO we need that? The same is done on each trial
     
-    %% initialize photometry plot
-    updatePhotometryPlotKatharina('init',[0 0],{'Reward','Stimulus'});
-    
-    %% alternate LED modulation mode
-    if TaskParameters.GUI.PhotometryOn==2
-        % store initial LED settings
-        storedLED1_amp = TaskParameters.GUI.LED1_amp;
-        storedLED2_amp = TaskParameters.GUI.LED2_amp;
-    end
+    %% initialize photometry plot (work this out later)
+    %updatePhotometryPlotKatharina('init',[0 0],{'Reward','Stimulus'});
 end
 
 %% Initialize trial specific values and save them in BpodSystem.Data.Custom
