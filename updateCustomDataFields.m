@@ -390,7 +390,7 @@ else
     BpodSystem.Data.Custom.blockEnds=BpodSystem.Data.Custom.blockStarts+TaskParameters.GUI.LaserBlockLength;
     BpodSystem.Data.Custom.LaserBlockStart=NaT;
     
-    if any((blockStarts(2:end)-blockEnds(1:end-1))<0)
+    if any((BpodSystem.Data.Custom.blockStarts(2:end)-BpodSystem.Data.Custom.blockEnds(1:end-1))<0)
         error('Check your Optogenetics Settings')
     end
     
