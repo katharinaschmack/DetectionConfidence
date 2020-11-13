@@ -63,12 +63,12 @@ if TaskParameters.GUI.DetermineFirstBlock
 end
 %% Initialize photometry if PhotometryOn
 if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
-    TaskParameters.nidaq.duration = 120;
+    TaskParameters.nidaq.duration = Inf;
     TaskParameters.nidaq.IsContinuous = true;
     TaskParameters.nidaq.updateInterval = 0.1; % save new data every n seconds
-    BpodSystem.PluginObjects.Photometry.baselinePeriod = [0 1]; % kludge, FS
+    % BpodSystem.PluginObjects.Photometry.baselinePeriod = [0 1]; % kludge, FS
     BpodSystem.ProtocolSettings = TaskParameters; % copy settings back because syncPhotometrySettings relies upon BpodSystem.ProtocolSettings
-    TaskParameters = initPhotometry(TaskParameters);
+%     TaskParameters = initPhotometry(TaskParameters); %DO we need that? The same is done on each trial
     
     %% initialize photometry plot
     updatePhotometryPlotKatharina('init',[0 0],{'Reward','Stimulus'});
@@ -103,38 +103,20 @@ iTrial = 1;
 while RunSession
     
     % update TaskParameters
-    if TaskParameters.GUI.PhotometryOn==2
-        LEDmode = rem(iTrial, 3);
-        switch LEDmode
-            case 1
-                TaskParameters.GUI.LED1_amp = storedLED1_amp;
-                TaskParameters.GUI.LED2_amp = storedLED2_amp;
-            case 2
-                TaskParameters.GUI.LED1_amp = storedLED1_amp;
-                TaskParameters.GUI.LED2_amp = 0;
-            case 0
-                TaskParameters.GUI.LED1_amp = 0;
-                TaskParameters.GUI.LED2_amp = storedLED2_amp;
-        end
-    end
     TaskParameters = BpodParameterGUI('sync', TaskParameters);
     BpodSystem.ProtocolSettings = TaskParameters; % copy settings back prior to saving
     SaveBpodProtocolSettings;
-    
-    %% prepare stateMatrix
-    %record baseline on first trial 
-%     if TaskParameters.GUI.PhotometryOn~=0&&TaskParameters.GUI.BaselineRecording>0&&iTrial==1
-%         iTrial=recordBaselineTrial(iTrial);
-%     end
-    sma = stateMatrix(iTrial);
-    SendStateMatrix(sma);
     
     %% prepare photometry
     if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
         preparePhotometryAcq(TaskParameters);
     end
-    
-    %% RUN!!!
+
+    %% prepare stateMatrix
+    sma = stateMatrix(iTrial);
+    SendStateMatrix(sma);
+        
+    %% run state matrix
     RawEvents = RunStateMatrix();
     
     %% stop photometry session
@@ -150,7 +132,7 @@ while RunSession
         BpodSystem.Data = AddTrialEvents(BpodSystem.Data,RawEvents);
         SaveBpodSessionData;
     else
-        disp([' *** Trial # ' num2str(iTrial) ':  aborted, data not saved ***']); % happens when you abort early (I think), e.g. when you are halting session
+        disp(['Trial # ' num2str(iTrial) ':  aborted, data not saved ***']); % happens when you abort early (I think), e.g. when you are halting session
     end
     
     %% check for something (not sure what)
@@ -186,10 +168,6 @@ while RunSession
     
     %% Go on to next trial
     iTrial = iTrial + 1;
-%     %record baseline on 
-%     if BpodSystem.Pause==1
-%         iTrial=recordBaselineTrial(iTrial);
-%     end
     HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
 end %while loop for trials
 
