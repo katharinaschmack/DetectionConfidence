@@ -99,18 +99,9 @@ end
 %% create and cue data for output, add callback function
 updateLEDData;
 % data available notify must be set after queueing data
-if nidaq.IsContinuous
-    nidaq.session.NotifyWhenDataAvailableExceeds = floor(nidaq.session.Rate * nidaq.updateInterval);
-else
-    nidaq.session.NotifyWhenDataAvailableExceeds = floor(nidaq.session.Rate * nidaq.duration); % fire only at the end of acquisition
-end
+nidaq.session.NotifyWhenDataAvailableExceeds = floor(nidaq.session.Rate * nidaq.updateInterval);
 lh{1} = nidaq.session.addlistener('DataAvailable',@processNidaqData);
 display(['data availableexceeds set at ' num2str(floor(nidaq.session.Rate * nidaq.duration))]);
-
-
-
-
-
 
 %%
 nidaq.ai_data = [];
