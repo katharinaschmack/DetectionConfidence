@@ -35,6 +35,10 @@ if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
         'photometry site', ...
         'left','right','right');
     BpodSystem.Data.Custom.PhotometrySite=site;
+    BpodSystem.Data.Custom.PhotometryPath=fullfile(strrep(filepath,'Session Data','Session Photometry'),filename);
+    if ~exist(BpodSystem.Data.Custom.PhotometryPath,'dir')
+        mkdir(BpodSystem.Data.Custom.PhotometryPath);
+    end
 end
 if TaskParameters.GUI.PharmacologyOn
     drug = questdlg('What did you administer?', ...
@@ -63,9 +67,6 @@ if TaskParameters.GUI.DetermineFirstBlock
 end
 %% Initialize photometry if PhotometryOn
 if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
-    TaskParameters.nidaq.duration = Inf;
-    TaskParameters.nidaq.IsContinuous = true;
-    TaskParameters.nidaq.updateInterval = 0.1; % save new data every n seconds
     % BpodSystem.PluginObjects.Photometry.baselinePeriod = [0 1]; % kludge, FS
     BpodSystem.ProtocolSettings = TaskParameters; % copy settings back because syncPhotometrySettings relies upon BpodSystem.ProtocolSettings
 %     TaskParameters = initPhotometry(TaskParameters); %DO we need that? The same is done on each trial
@@ -89,34 +90,29 @@ BpodSystem.GUIHandles.OutcomePlot.HandleFeedback = axes('Position',   [6*.05 + 5
 BpodSystem.GUIHandles.OutcomePlot.HandleVevaiometric = axes('Position',   [7*.05 + 6*.08   .62  .1  .3], 'Visible', 'off');
 MainPlot(BpodSystem.GUIHandles.OutcomePlot,'init');
 
+%% prepare photometry
+if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
+    startPhotometryAcq(TaskParameters);
+    PhotometryPlot('init');
+end
 
 %% Task loop over trials
 RunSession = true;
 iTrial = 1;
+tic;
+t=nan(1000,1);
 while RunSession
-    
     % update TaskParameters
     TaskParameters = BpodParameterGUI('sync', TaskParameters);
     BpodSystem.ProtocolSettings = TaskParameters; % copy settings back prior to saving
     SaveBpodProtocolSettings;
     
-    %% prepare photometry
-    if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
-        preparePhotometryAcq(TaskParameters);
-    end
-
     %% prepare stateMatrix
     sma = stateMatrix(iTrial);
     SendStateMatrix(sma);
-        
+    
     %% run state matrix
     RawEvents = RunStateMatrix();
-    
-    %% stop photometry session
-    if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
-        stopPhotometryAcq;
-    end
-    
     %% process photometry session
     if ~isempty(fieldnames(RawEvents))
         if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
@@ -140,29 +136,18 @@ while RunSession
     MainPlot(BpodSystem.GUIHandles.OutcomePlot,'update',iTrial);
     
     %% update photometry plot
-    if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode 
-        processPhotometryOnline(iTrial);
-        if BpodSystem.Data.Custom.RewardReceivedCorrect(iTrial)>0
-            rewtime=BpodSystem.Data.Custom.RewardStartTime(iTrial);
-        else
-            rewtime=nan;
-        end
-        if (BpodSystem.Data.Custom.CoutEarly(iTrial))~=1
-            stimtime=BpodSystem.Data.Custom.StimulusStartTime(iTrial);
-        else
-            stimtime=nan;
-        end
-        try %kludge, problem with plotting baseline
-        updatePhotometryPlotKatharina('update', [rewtime stimtime],{'reward','stimulus'});
-        catch
-            fprintf('Trial %d: Error in updatePhotometryPlotKatharina.m\n',iTrial)
-        end
+    if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
+        PhotometryPlot('update',iTrial);
     end
     
     %% Go on to next trial
     iTrial = iTrial + 1;
     HandlePauseCondition; % Checks to see if the protocol is paused. If so, waits until user resumes.
 end %while loop for trials
+%     %% stop photometry session PUT IN KILL SCRIPT
+%     if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
+%         stopPhotometryAcq;
+%     end
 
 end
 

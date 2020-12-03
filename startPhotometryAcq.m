@@ -1,8 +1,14 @@
-function S = preparePhotometryAcq(S)
+function S = startPhotometryAcq(S)
 %% prelude
 global nidaq BpodSystem
 nidaq = [];
 S.nidaq = [];
+nidaq.ai_data = []; %flush data buffer
+nidaq.ai_timestamps = []; %flush data buffer
+
+nidaq.ao_data = []; %flush data buffer
+nidaq.ao_timestamps = []; %flush data buffer
+
 % daq.reset %maybe necessary
 % daq.HardwareInfo.getInstance('DisableReferenceClockSynchronization',true); % necessary for some Nidaq
 
@@ -37,28 +43,20 @@ end
 % settings selected in GUI  S.GUI.(exampleField)
 syncPhotometrySettings;
 
-% get settings into nidaq
-nidaq.ai_channelNames=S.nidaq.ai_channelNames;
-nidaq.ai_data = [];
-nidaq.ao_channelNames=S.nidaq.ao_channelNames;
-nidaq.ao_data = [];
-nidaq.aiChannels = {};
-nidaq.aoChannels = {};
+% get settings into nidaq and save in BpodSystem.Data.NidaqParameters
 nidaq.sample_rate = S.nidaq.sample_rate;
-nidaq.duration = S.nidaq.duration;
-nidaq.updateInterval =S.nidaq.updateInterval;
-%% fields for online analysis (do I want this?)
-nidaq.online.currentDemodData = cell(1, 2);
-nidaq.online.currentXData = []; % x data starts from 0 (thus independent of protocol), add/subtract offset to redefine zero in protocol-specific funtions
-%     nidaq.online.trialXData = {};
-%     nidaq.online.trialDemodData = cell(1, maxDemodChannels);
-nidaq.online.decimationFactor = 100;
+nidaq.updateInterval = S.nidaq.updateInterval;
+nidaq.refreshPeriod = S.nidaq.refreshPeriod;
 
+BpodSystem.Data.NidaqParameters=nidaq;
 
 %% Set up session and channels
 nidaq.session = daq.createSession('ni');
+BpodSystem.Data.NidaqParameters.hardware_sample_rate=nidaq.session.Rate;
+% BpodSystem.Data.NidaqData=cell(1200,2);%pre-allocate data
+% BpodSystem.Data.LEDData=cell(1200,2);
 
-%% add inputs
+%% add inputs (photodetectors)
 counter = 1;
 for ch = nidaq.channelsOn
     nidaq.aiChannels{counter} = addAnalogInputChannel(nidaq.session,S.nidaq.Device,ch - 1,'Voltage'); % - 1 because nidaq channels are zero based
@@ -66,34 +64,39 @@ for ch = nidaq.channelsOn
     counter = counter + 1;
 end
 
-%% add outputs
+%% add extra input (BNC output from Bpod, for perfect synchronizing) 
+nidaq.aiChannels{counter} = addAnalogInputChannel(nidaq.session,S.nidaq.Device,counter - 1,'Voltage'); % - 1 because nidaq channels are zero based
+nidaq.aiChannels{counter}.TerminalConfig = 'SingleEnded';
+
+%% add outputs (LED modulation)
 counter = 1;
 for ch = nidaq.channelsOn
     nidaq.aoChannels{counter} = nidaq.session.addAnalogOutputChannel(S.nidaq.Device,ch - 1, 'Voltage'); % - 1 because nidaq channels are zero based
     counter = counter + 1;
 end
 
-%% add trigger external trigger, if specified
-% if S.nidaq.TriggerConnection
-%     addTriggerConnection(nidaq.session, 'external', [S.nidaq.Device '/' S.nidaq.TriggerSource], 'StartTrigger');
-%     nidaq.session.ExternalTriggerTimeout = 900; % something really long (15min), might be necessary during freely moving behavior when animal doesn't re-initiate trial for a while
-% end
-
-%% Sampling rate and continuous updating (important for queue-ing ao data)
+%% set sampling rate and continuous recording
 nidaq.session.Rate = nidaq.sample_rate;
 if floor(nidaq.session.Rate) ~= nidaq.sample_rate
     error('*** need to handle case where true sample rate < requested sample rate ***');
 end
 nidaq.session.IsContinuous = true;
 
-%% create and cue data for output, add callback function
-updateLEDData;
-% data available notify must be set after queueing data
-nidaq.session.NotifyWhenDataAvailableExceeds = floor(nidaq.session.Rate * nidaq.updateInterval);
-lh{1} = nidaq.session.addlistener('DataAvailable',@processNidaqData);
-display(['data availableexceeds set at ' num2str(floor(nidaq.session.Rate * nidaq.duration))]);
+%% callback for queuing data
+updateLEDData; %queue first data
 
-%%
-nidaq.ai_data = [];
-nidaq.session.prepare(); %Saves 50ms on startup time, perhaps more for repeats.
+%% set up continuous queuing (10% default)
+nidaq.session.NotifyWhenScansQueuedBelow = floor(nidaq.sample_rate) * nidaq.refreshPeriod * 0.1; % fire event every second
+lh{1} = nidaq.session.addlistener('DataRequired', @queueLEDData);
+fprintf(['update LED output data every ' num2str(floor(nidaq.sample_rate) * nidaq.refreshPeriod) ' samples\n']);
+
+%% callback for recording data (update Interval)
+nidaq.session.NotifyWhenDataAvailableExceeds = floor(nidaq.session.Rate * nidaq.updateInterval);
+lh{2} = nidaq.session.addlistener('DataAvailable',@processNidaqData);
+fprintf(['readout photodetector input data every ' num2str(floor(nidaq.session.Rate * nidaq.updateInterval)) ' samples\n']);
+
+%% callback for errors
+lh{3} = nidaq.session.addlistener('ErrorOccurred', @(src,event) disp(getReport(event.Error))); 
+
+%% start 
 nidaq.session.startBackground(); % takes ~0.1 second to start and release control.

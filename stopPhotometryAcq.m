@@ -1,20 +1,19 @@
 function stopPhotometryAcq
-    % as of 8/16/16, this function works to reliably stop photometry acquisition and flush any
-    % output data 
-    global nidaq
+    global nidaq   
+%     %% hack for switching off LED
+%     % set amplitude to zero
+%     for channelIndex = 1:length(nidaq.channelsOn)
+%         channel = nidaq.channelsOn(channelIndex);
+%         nidaq.(['LED' num2str(channel) '_amp'])=0;
+%     end
+%     
+%     %wait for a little longer than refresh period to make sure that zero data is read 
+%     %(I could use this time for data copying if I wanted to be super
+%     %efficient)
+%     pause(1.1*nidaq.refreshPeriod);
     
-
-    if    ~nidaq.IsContinuous % for non-continuous mode you want to wait for whole nidaq acquisition to terminate
-    %     count = 0;        
-        while size(nidaq.ai_data, 1) < floor(nidaq.duration * nidaq.session.Rate) % - (0.1 * nidaq.sample_rate)
-    %         get(nidaq.session, 'ScansOutputByHardware')
-            pause(0.05); % wait for processNidaqData to finish executing
-    %         if count > 20
-    %             keyboard
-    %         end
-    %         count = count + 1;
-        end
-    end
-    nidaq.session.stop(); % Kills ~0.002 seconds after state matrix is done.
+    %% start session
+    nidaq.session.stop(); %  ~0.002 seconds after state matrix is done.
     wait(nidaq.session);
     nidaq.session.outputSingleScan(zeros(1, length(nidaq.channelsOn))); % make sure LEDs are turned off
+    

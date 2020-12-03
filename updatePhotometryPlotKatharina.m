@@ -1,33 +1,10 @@
-function updatePhotometryPlotKatharina(Op, startX, titles)
+function PhotometryPlot(Op, startX, titles)
 % startX: time point in seconds from beginning of photometry
 % acquisition to be defined as 0
-if nargin<3
-    titles={'start recording'};
-    if nargin < 2
-        startX = 0;
-    end
-end
 channelColors=[0 .9 0; .9 0 0];
 window=[-1 2];
 
 global BpodSystem nidaq
-
-%% for simulation (reverse when finished)
-% if ~BpodSystem.EmulatorMode
-syncPhotometrySettings;
-% else
-%     titles={'reward','stimulus'};
-%     samples=round(rand*1000);
-%     startX=sort(randsample(samples,2));
-%
-%     nidaq.online.currentXData=1:samples;
-%     nidaq.online.currentDemodData{1}=rand(1,samples);
-%     nidaq.online.currentDemodData{1}(startX(1))=10;
-%     nidaq.online.currentDemodData{1}(startX(2))=20;
-%
-%     nidaq.online.currentDemodData{1}=smoothdata(nidaq.online.currentDemodData{1},'gaussian',10);
-%     nidaq.online.currentDemodData{2}=rand(1,samples);
-% end
 Op = lower(Op);
 
 switch Op
@@ -39,7 +16,7 @@ switch Op
         heightFig=min(scrsz(4)*.2*2);
         marg=100;
         %% start with raw signal figure
-        BpodSystem.ProtocolFigures.rawFig       = figure(...
+        BpodSystem.ProtocolFigures.rawFig = figure(...
             'Position', [marg+widthFig heightScr-heightFig/2-marg widthFig heightFig/2],...
             'Name','Raw signal plot','numbertitle','off');
         for ch=1:2

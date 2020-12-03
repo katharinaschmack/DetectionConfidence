@@ -601,8 +601,7 @@ elseif TaskParameters.GUI.RewardAmountCenterSelection==2
     if sum(~isnan(BpodSystem.Data.Custom.ResponseCorrect))>TaskParameters.GUI.RewardAmountCenterEasyTrials
         BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=0;
     else
-        BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=TaskParameters.GUI.RewardAmountCenter;
-        
+        BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=TaskParameters.GUI.RewardAmountCenter;       
     end
 end
 

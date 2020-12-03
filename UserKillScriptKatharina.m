@@ -2,16 +2,26 @@ function UserKillScriptKatharina()
 global BpodSystem
 global TaskParameters
 
+% stop photometryAcquision if necessary
+try
+if TaskParameters.GUI.PhotometryOn && ~BpodSystem.EmulatorMode
+    stopPhotometryAcq;
+    fprintf('Photometry acquisition orderly stopped.\n');
+end
+catch
+    fprintf('Problem with stopping photometry acquisition.\n');
+end
 
 
 %save data
+try
 SessionData=BpodSystem.Data;
 SessionData.Settings=TaskParameters;
 [localpath,TitleString] = fileparts(BpodSystem.DataPath);
 [~,subject] = fileparts(fileparts(fileparts(fileparts(BpodSystem.DataPath))));
 titstr=strsplit(TitleString,'_');%1 animal %2 protocol %3 date %4 year %5 session
 Protocol=titstr{2};
-
+end
 
 %% 
 try
