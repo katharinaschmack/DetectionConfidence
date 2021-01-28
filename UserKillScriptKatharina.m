@@ -53,6 +53,14 @@ try
     newfilename=[filename '_' datestr(now,'yyyy-mm-dd') '.mat'];
     copyfile(BpodSystem.SettingsPath,fullfile(remotepath,'Session Settings',newfilename));
     copyfile(BpodSystem.Data.Custom.StimulusPath,fullfile(remotepath,'Session Stimuli',TitleString));
+    
+    if BpodSystem.Data.Custom.PhotometryOn
+    if ~isdir(fullfile(remotepath,'Session Photometry'))
+        mkdir(fullfile(remotepath,'Session Photometry'));
+    end
+    photopath=strrep(BpodSystem.Data.Custom.StimulusPath,'Session Stimuli','Session Photometry');
+    copyfile(photopath,fullfile(remotepath,'Session Photometry',TitleString));
+    end
     fprintf('Files successfully copied to server!\n');    
 catch
     fprintf('Error copying data to server. Files not copied!\n');
