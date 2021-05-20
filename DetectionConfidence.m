@@ -1,7 +1,7 @@
 function DetectionConfidence()
 % Bpod script for an auditory detection in noise task with
 % time-investment-based confidence reports
-% Katharina Schmack, Cold Spring Harbor Laboratory, March 2018
+% Katharina Schmack, Cold FpharmSpring Harbr Laboratory, March 2018
 
 global BpodSystem
 global TaskParameters
@@ -39,7 +39,7 @@ end
 if TaskParameters.GUI.PharmacologyOn
     drug = questdlg('What did you administer?', ...
         'drug condition', ...
-        'ketamine','placebo','ketamine');
+        'haloperidol015','vehicle','haloperidol020');
     BpodSystem.Data.Custom.Pharmacology=drug;
 end
 if TaskParameters.GUI.LaserPercentage>0
@@ -50,8 +50,8 @@ if TaskParameters.GUI.LaserPercentage>0
     ParameterMatrix{2,8}=1;
     ProgramPulsePal(ParameterMatrix);
         site = questdlg('Where are you stimulating?', ...
-        'photometry site', ...
-        'left','right','right');
+        'stimulation site', ...
+        'left','left10','right','right');
     BpodSystem.Data.Custom.StimulationSite=site;
 end
 

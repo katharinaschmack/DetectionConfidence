@@ -4,7 +4,7 @@ global BpodSystem %we need this for volume adjustment
 
 %% abbreviate variable names and clip impossible values for better handling
 SamplingRate=StimulusSettings.SamplingRate;
-%SignalRamp=StimulusSettings.SignalRamp; %UPDATE HERE IF NO NOISE IS USED
+SignalRamp=StimulusSettings.Ramp; %UPDATE HERE IF NO NOISE IS USED
 SignalDuration=StimulusSettings.SignalDuration;
 SignalForm=StimulusSettings.SignalForm;
 SignalMinFreq=StimulusSettings.SignalMinFreq;
@@ -48,3 +48,15 @@ SignalVolume=max(min(StimulusSettings.SignalVolume,StimulusSettings.MaxVolume),S
         att = toneAtt.*attFactor;%this is the value for multiplying signal scaled/clipped to [-1 to 1]
         signal(s,:)=signal(s,:).*att; %should the two speakers dB be added?
     end
+    
+%put an envelope to avoide clicking sounds at beginning and end
+omega=(acos(sqrt(0.1))-acos(sqrt(0.9)))/(SignalRamp/pi*2); % This is for the envelope with Ramp duration duration
+t=0 : (1/SamplingRate) : pi/2/omega;
+t=t(1:(end-1));
+RaiseVec= (cos(omega*t)).^2;
+
+Envelope = ones(length(signal),1); % This is the envelope
+Envelope(1:length(RaiseVec)) = fliplr(RaiseVec);
+Envelope(end-length(RaiseVec)+1:end) = (RaiseVec);
+
+signal = signal.*Envelope';
