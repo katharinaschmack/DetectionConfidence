@@ -51,7 +51,7 @@ if TaskParameters.GUI.LaserPercentage>0
     ProgramPulsePal(ParameterMatrix);
         site = questdlg('Where are you stimulating?', ...
         'stimulation site', ...
-        'left','left10','right','right');
+        'left','right','bilateral','right');
     BpodSystem.Data.Custom.StimulationSite=site;
 end
 

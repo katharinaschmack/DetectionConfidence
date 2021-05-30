@@ -383,17 +383,18 @@ else
     BpodSystem.Data.Custom.NoiseVolumeRescaled=[];
     BpodSystem.Data.Custom.currentBlockNumber=1;
     
-    nSim=100;
-    blockCenters=(1:nSim)*TaskParameters.GUI.LaserBlockLength/TaskParameters.GUI.LaserPercentage;
-    blockJitter=round((rand(1,nSim)-0.5)*2*TaskParameters.GUI.LaserBlockLength);
-    BpodSystem.Data.Custom.blockStarts=blockCenters+blockJitter;
-    BpodSystem.Data.Custom.blockEnds=BpodSystem.Data.Custom.blockStarts+TaskParameters.GUI.LaserBlockLength;
-    BpodSystem.Data.Custom.LaserBlockStart=NaT;
-    
-    if any((BpodSystem.Data.Custom.blockStarts(2:end)-BpodSystem.Data.Custom.blockEnds(1:end-1))<0)
-        error('Check your Optogenetics Settings')
+    if TaskParameters.GUI.LaserBlockLength>1
+        nSim=100;
+        blockCenters=(1:nSim)*TaskParameters.GUI.LaserBlockLength/TaskParameters.GUI.LaserPercentage;
+        blockJitter=round((rand(1,nSim)-0.5)*2*TaskParameters.GUI.LaserBlockLength);
+        BpodSystem.Data.Custom.blockStarts=blockCenters+blockJitter;
+        BpodSystem.Data.Custom.blockEnds=BpodSystem.Data.Custom.blockStarts+TaskParameters.GUI.LaserBlockLength;
+        BpodSystem.Data.Custom.LaserBlockStart=NaT;
+        
+        if any((BpodSystem.Data.Custom.blockStarts(2:end)-BpodSystem.Data.Custom.blockEnds(1:end-1))<0)
+            error('Check your Optogenetics Settings')
+        end
     end
-    
 end
 
 %% update times & stimulus
@@ -601,8 +602,7 @@ elseif TaskParameters.GUI.RewardAmountCenterSelection==2
     if sum(~isnan(BpodSystem.Data.Custom.ResponseCorrect))>TaskParameters.GUI.RewardAmountCenterEasyTrials
         BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=0;
     else
-        BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=TaskParameters.GUI.RewardAmountCenter;
-        
+        BpodSystem.Data.Custom.RewardAmountCenter(iTrial+1)=TaskParameters.GUI.RewardAmountCenter;       
     end
 end
 
@@ -619,7 +619,9 @@ BpodSystem.Data.Custom.PostTrialRecording(iTrial+1)=TaskParameters.GUI.PostTrial
 
 %Laser Stimulation
 %prepare PulsePal pulse to start
-if ismember(iTrial+1,BpodSystem.Data.Custom.blockStarts)
+if TaskParameters.GUI.LaserBlockLength==1
+    BpodSystem.Data.Custom.LaserTrial(iTrial+1)=randsample([0 1],1,1,[1-TaskParameters.GUI.LaserPercentage TaskParameters.GUI.LaserPercentage]);
+elseif ismember(iTrial+1,BpodSystem.Data.Custom.blockStarts)
     BpodSystem.Data.Custom.LaserTrial(iTrial+1)=1;
     BpodSystem.Data.Custom.LaserBlockStart=datetime('now');
     %prepare PulsePal pulse to end
@@ -635,11 +637,11 @@ elseif ismember(iTrial+1,BpodSystem.Data.Custom.blockEnds)
 else
     BpodSystem.Data.Custom.LaserTrial(iTrial+1)=0;
 end
-%fill in stimulation trial Number
-if ~isnat(BpodSystem.Data.Custom.LaserBlockStart)
-    BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=BpodSystem.Data.Custom.LaserStimulation(iTrial)+1;
-else
-    BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=0;
-end
-
+% %fill in stimulation trial Number
+% if ~isnat(BpodSystem.Data.Custom.LaserBlockStart)
+%     BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=BpodSystem.Data.Custom.LaserStimulation(iTrial)+1;
+% else
+%     BpodSystem.Data.Custom.LaserStimulation(iTrial+1)=0;
+% end
+% 
 end
